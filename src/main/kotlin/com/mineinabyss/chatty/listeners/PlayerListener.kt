@@ -1,8 +1,9 @@
 package com.mineinabyss.chatty.listeners
 
 import com.mineinabyss.chatty.components.HideJoinLeave
-import com.mineinabyss.chatty.components.playerData
+import com.mineinabyss.chatty.components.PlayerData
 import com.mineinabyss.chatty.helpers.chattyConfig
+import com.mineinabyss.chatty.helpers.verifyPlayerChannel
 import com.mineinabyss.geary.papermc.access.toGeary
 import com.mineinabyss.idofront.messaging.broadcast
 import org.bukkit.event.EventHandler
@@ -13,15 +14,17 @@ import org.bukkit.event.player.PlayerQuitEvent
 class PlayerListener : Listener {
 
     @EventHandler
-    fun PlayerJoinEvent.onJoin() {
-        if (player.toGeary().has<HideJoinLeave>()) return
-        if (player.playerData.firstJoin) {
-            player.playerData.firstJoin = false
-            if (chattyConfig.join.enabled && chattyConfig.join.firstJoin.enabled) {
-                broadcast(chattyConfig.join.firstJoin.message)
-            }
+    fun PlayerJoinEvent.onFirstJoin() {
+        if (player.toGeary().has<PlayerData>()) return
+        if (chattyConfig.join.enabled && chattyConfig.join.firstJoin.enabled) {
+            broadcast(chattyConfig.join.firstJoin.message)
         }
-        else if (chattyConfig.join.enabled) {
+    }
+
+    @EventHandler
+    fun PlayerJoinEvent.onJoin() {
+        player.verifyPlayerChannel()
+        if (chattyConfig.join.enabled && !player.toGeary().has<HideJoinLeave>()) {
             broadcast(chattyConfig.join.message)
         }
     }
