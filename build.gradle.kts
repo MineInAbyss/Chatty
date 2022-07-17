@@ -10,6 +10,10 @@ plugins {
     id("org.jetbrains.dokka")
 }
 
+repositories {
+    maven("https://repo.extendedclip.com/content/repositories/placeholderapi/")
+}
+
 dependencies {
     // MineInAbyss platform
     compileOnly(libs.kotlinx.serialization.json)
@@ -19,8 +23,12 @@ dependencies {
     compileOnly(libs.koin.core)
 
     // Other plugins
-    compileOnly(mylibs.geary.papermc.core)
-    compileOnly(mylibs.guiy)
+    compileOnly(chattyLibs.geary.papermc.core)
+    compileOnly(chattyLibs.guiy)
+    compileOnly(chattyLibs.bondrewdlikeshisemotes)
+
+    /// Third-party plugins
+    compileOnly(chattyLibs.placeholderapi)
 
     // Shaded
     implementation(libs.idofront.core)

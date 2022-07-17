@@ -2,7 +2,7 @@
 name: TODO
 version: ${plugin_version}
 author: TODO
-main: com.mineinabyss.example.ExamplePlugin
+main: com.mineinabyss.example.ChattyPlugin
 api-version: 1.18
 #depend:
 #softdepend:

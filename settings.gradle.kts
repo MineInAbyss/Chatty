@@ -22,8 +22,6 @@ pluginManagement {
     }
 }
 
-rootProject.name = "mobzy"
-
 dependencyResolutionManagement {
     val idofrontVersion: String by settings
 
@@ -33,6 +31,8 @@ dependencyResolutionManagement {
 
     versionCatalogs {
         create("libs").from("com.mineinabyss:catalog:$idofrontVersion")
-        create("mylibs").from(files("gradle/mylibs.versions.toml"))
+        create("chattyLibs").from(files("gradle/chattyLibs.versions.toml"))
     }
 }
+
+rootProject.name = "chatty"

@@ -1,8 +1,12 @@
 [versions]
 geary = "0.15.89"
 guiy = "0.5.15"
+bondrewdlikeshisemotes = "1.1.3"
 
 [libraries]
 protocolburrito = "com.mineinabyss:protocolburrito:0.3.32"
 geary-papermc-core = { module = "com.mineinabyss:geary-papermc-core", version.ref = "geary" }
 guiy = { module = "com.mineinabyss:guiy-compose", version.ref = "guiy" }
+bondrewdlikeshisemotes = { module = "io.github.bananapuncher714:bondrewdlikeshisemotes", version.ref = "bondrewdlikeshisemotes" }
+
+placeholderapi = "me.clip:placeholderapi:2.11.1"
