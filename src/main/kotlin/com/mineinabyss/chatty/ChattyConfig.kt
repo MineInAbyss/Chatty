@@ -1,7 +1,6 @@
 package com.mineinabyss.chatty
 
 import com.mineinabyss.chatty.components.ChannelType
-import com.mineinabyss.chatty.helpers.chattyPlugin
 import com.mineinabyss.idofront.config.IdofrontConfig
 import kotlinx.serialization.Serializable
 
@@ -12,7 +11,7 @@ object ChattyConfig : IdofrontConfig<ChattyConfig.Data>(chattyPlugin, Data.seria
         val channelChangedMessage: String = "You have changed channels to %channel%",
         val join: Join,
         val leave: Leave,
-        val channels: List<ChattyChannel>,
+        val channels: Set<ChattyChannel>,
     )
 
     @Serializable
@@ -39,10 +38,17 @@ object ChattyConfig : IdofrontConfig<ChattyConfig.Data>(chattyPlugin, Data.seria
         val channelName: String,
         val channelType: ChannelType,
         val isDefaultChannel: Boolean,
-        val channelPrefix: String = "",
+        val format: Format,
         val channelRadius: Int = 0,
         val emptyChannelMessage: String = "<red>There is no-one to read your message",
         val channelCommand: String = channelName,
         val channelCommandAliases: List<String> = listOf(),
+    )
+
+    @Serializable
+    data class Format(
+        val useDisplayName: Boolean = true,
+        val prefix: String = "",
+        val suffix: String = "",
     )
 }

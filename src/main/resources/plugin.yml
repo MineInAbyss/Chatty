@@ -1,14 +1,10 @@
-# TODO fill in this file
-name: TODO
+name: chatty
 version: ${plugin_version}
-author: TODO
-main: com.mineinabyss.example.ChattyPlugin
-api-version: 1.18
-#depend:
-#softdepend:
+author: boy0000
+main: com.mineinabyss.chatty.ChattyPlugin
+api-version: 1.19
+depend: [ Geary, PlaceholderAPI ]
 description: TODO
 
 commands:
-  example:
-    aliases: [ example, ex ]
-    description: An example command
+  chatty:

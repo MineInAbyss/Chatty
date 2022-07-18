@@ -1,3 +1,28 @@
-firstJoin:
+useChattyCommandPrefix: true
+channelChangedMessage: "<red>You have changed to channel <yellow>%channel%<red>."
+join:
   enabled: true
-  message: "<#058330>W<#22862a>e<#338834>l<#418a1d>c<#4d8d14>o<#598f08>m<#659000>e &5&l{player} <#719200>t<#7c9400>o <#889500>M<#949600>i<#9f9600>n<#ab9700>e <#b79700>i<#c39700>n <#cf9700>A<#db9600>b<#e79500>y<#f39400>s<#ff9200>s"
+  message: "<green>%player%<white> has joined the server."
+  firstJoin:
+    enabled: true
+    message: "<#058330>W<#22862a>e<#338834>l<#418a1d>c<#4d8d14>o<#598f08>m<#659000>e &5&l{player} <#719200>t<#7c9400>o <#889500>M<#949600>i<#9f9600>n<#ab9700>e <#b79700>i<#c39700>n <#cf9700>A<#db9600>b<#e79500>y<#f39400>s<#ff9200>s"
+
+leave:
+  enabled: true
+  message: "<green>%player%<white> has left the server."
+
+channels:
+  - channelName: "global"
+    channelType: GLOBAL
+    isDefaultChannel: true
+    format:
+      usePlayerDisplayName: true
+      prefix: ":survival:"
+      suffix: ": "
+    channelRadius: 0
+    emptyChannelMessage: "<red>There is no-one to read your message"
+    channelCommand: "global"
+    channelCommandAliases:
+      - "g"
+      - "gl"
+

@@ -2,14 +2,13 @@ package com.mineinabyss.chatty
 
 import com.mineinabyss.chatty.components.playerData
 import com.mineinabyss.chatty.helpers.chattyConfig
-import com.mineinabyss.chatty.helpers.chattyPlugin
 import com.mineinabyss.chatty.helpers.getAllChannelNames
-import com.mineinabyss.chatty.helpers.getDefaultChat
+import com.mineinabyss.chatty.helpers.translatePlaceholders
 import com.mineinabyss.idofront.commands.execution.IdofrontCommandExecutor
-import com.mineinabyss.idofront.commands.extensions.actions.ensureSenderIsPlayer
-import com.mineinabyss.idofront.messaging.error
+import com.mineinabyss.idofront.commands.extensions.actions.playerAction
 import com.mineinabyss.idofront.messaging.info
 import com.mineinabyss.idofront.messaging.miniMsg
+import com.mineinabyss.idofront.messaging.success
 import com.mineinabyss.idofront.messaging.warn
 import org.bukkit.command.Command
 import org.bukkit.command.CommandSender
@@ -18,17 +17,59 @@ import org.bukkit.entity.Player
 
 class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
     override val commands = commands(chattyPlugin) {
-
-        "chatty"(desc = "Chatty commands") {
-            ensureSenderIsPlayer()
-            action {
-                (sender as Player).swapChannelCommand(arguments)
+        /*getAllChannelNames().forEach { channelName ->
+            channelName {
+                playerAction {
+                    (sender as Player).swapChannelCommand(channelName)
+                }
             }
+        }
+        chattyConfig.channels.forEach { channel ->
+            channel.channelCommand {
+                playerAction {
+                    (sender as Player).swapChannelCommand(channel.channelName)
+                }
+            }
+            channel.channelCommandAliases.forEach { alias ->
+                alias {
+                    playerAction {
+                        (sender as Player).swapChannelCommand(channel.channelName)
+                    }
+                }
+            }
+        }*/
+        "chatty"(desc = "Chatty commands") {
             "channels"(desc = "List all channels") {
-                action {
+                playerAction {
                     sender.info("<gold>Available channels are:".miniMsg())
-                    getAllChannelNames().forEach {
-                        sender.info("<yellow>$it".miniMsg())
+                    sender.info("<yellow>${getAllChannelNames()}".miniMsg())
+                }
+            }
+            "nickname" {
+                playerAction {
+                    (sender as Player).displayName(arguments.joinToString { it }.miniMsg())
+                    sender.success("Nickname set to ${player.displayName()}")
+                }
+            }
+            "reload" {
+                action {
+                    ChattyConfig.reload()
+                    sender.info("<gold>Chatty config reloaded")
+                }
+            }
+            getAllChannelNames().forEach { channelName ->
+                channelName {
+                    playerAction {
+                        (sender as Player).swapChannelCommand(channelName)
+                    }
+                }
+            }
+            chattyConfig.channels.forEach { channel ->
+                channel.channelCommandAliases.forEach { alias ->
+                    alias {
+                        playerAction {
+                            (sender as Player).swapChannelCommand(channel.channelName)
+                        }
                     }
                 }
             }
@@ -38,30 +79,30 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
     override fun onTabComplete(
         sender: CommandSender,
         command: Command,
-        label: String,
+        alias: String,
         args: Array<out String>
-    ): MutableList<String>? {
-        TODO("Not yet implemented")
+    ): List<String> {
+        return if (command.name == "chatty") {
+            when (args.size) {
+                1 -> listOf("reload", "channels", "nickname")
+                else -> emptyList()
+            }
+        } else emptyList()
     }
 }
 
-private fun Player.swapChannelCommand(arguments: List<String>) {
-    if (arguments.isEmpty()) {
-        performCommand("chatty")
-        return
-    }
-
+private fun Player.swapChannelCommand(channel: String) {
     val newChannel =
         chattyConfig.channels.firstOrNull {
-            it.channelCommand == arguments[0] || it.channelCommandAliases.contains(arguments[0])
+            it.channelName == channel ||
+                    it.channelCommand == channel ||
+                    it.channelCommandAliases.contains(channel)
         }
-    val defaultChannel = getDefaultChat()
     if (newChannel == null) {
-        error("Invalid channel. Valid channels: ${chattyConfig.channels.joinToString(", ")}")
-        warn("Set channel to ${defaultChannel.channelName}")
-        playerData.channel = defaultChannel
+        warn("No channel by the name <i>${channel}</i> exists.")
+        warn("Valid channels are: ${getAllChannelNames()}")
     } else {
-        sendMessage(chattyConfig.channelChangedMessage.replace("%channel%", newChannel.channelName))
+        sendMessage(translatePlaceholders(this, chattyConfig.channelChangedMessage.replace("%channel%", newChannel.channelName)))
         playerData.channel = newChannel
     }
 }

@@ -2,6 +2,7 @@ package com.mineinabyss.chatty.listeners
 
 import com.mineinabyss.chatty.components.ChannelType
 import com.mineinabyss.chatty.components.playerData
+import com.mineinabyss.chatty.helpers.translatePlaceholders
 import com.mineinabyss.idofront.messaging.miniMsg
 import io.papermc.paper.chat.ChatRenderer
 import io.papermc.paper.event.player.AsyncChatEvent
@@ -20,30 +21,39 @@ class ChatListener : Listener {
         val onlinePlayers = Bukkit.getOnlinePlayers().toList()
         val channel = player.playerData.channel
         val audiences = viewers()
+        val displayName = if (channel.format.useDisplayName) player.displayName() else player.name.miniMsg()
+        audiences.clear()
         when (channel.channelType) {
-            ChannelType.GLOBAL -> {}
+            ChannelType.GLOBAL -> {
+                audiences.addAll(onlinePlayers)
+            }
             ChannelType.RADIUS -> {
-                audiences.clear()
                 audiences.addAll(onlinePlayers.filter { p ->
                     p.playerData.channel == channel &&
-                            p.location.distanceSquared(player.location) <= channel.channelRadius
+                            (p.location.distanceSquared(player.location) <= channel.channelRadius ||
+                                    channel.channelRadius <= 0)
                 })
             }
             ChannelType.PRIVATE -> {
-                audiences.clear()
                 audiences.addAll(
                     onlinePlayers.filter { p ->
                         p.playerData.channel == channel
                     })
             }
         }
-
+        message(
+            translatePlaceholders(player, channel.format.prefix)
+            .append(player.displayName())
+            .append(translatePlaceholders(player, channel.format.suffix))
+            .append(originalMessage())
+        )
         if (audiences.isEmpty()) {
             isCancelled = true
             player.sendMessage(channel.emptyChannelMessage.miniMsg())
         } else audiences.forEach { audience ->
-            RendererExtension().render(player, player.displayName(), message(), audience)
+            RendererExtension().render(player, displayName, message(), audience)
         }
+        audiences.clear()
     }
 }
 

@@ -3,6 +3,7 @@ package com.mineinabyss.chatty.listeners
 import com.mineinabyss.chatty.components.HideJoinLeave
 import com.mineinabyss.chatty.components.PlayerData
 import com.mineinabyss.chatty.helpers.chattyConfig
+import com.mineinabyss.chatty.helpers.translatePlaceholders
 import com.mineinabyss.chatty.helpers.verifyPlayerChannel
 import com.mineinabyss.geary.papermc.access.toGeary
 import com.mineinabyss.idofront.messaging.broadcast
@@ -25,14 +26,14 @@ class PlayerListener : Listener {
     fun PlayerJoinEvent.onJoin() {
         player.verifyPlayerChannel()
         if (chattyConfig.join.enabled && !player.toGeary().has<HideJoinLeave>()) {
-            broadcast(chattyConfig.join.message)
+            joinMessage(translatePlaceholders(player, chattyConfig.join.message))
         }
     }
 
     @EventHandler
     fun PlayerQuitEvent.onDisconnect() {
         if (chattyConfig.leave.enabled && !player.toGeary().has<HideJoinLeave>()) {
-            broadcast(chattyConfig.leave.message)
+            quitMessage(translatePlaceholders(player, chattyConfig.leave.message))
         }
     }
 }
