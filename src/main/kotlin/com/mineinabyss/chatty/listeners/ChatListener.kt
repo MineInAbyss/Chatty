@@ -27,7 +27,7 @@ class ChatListener : Listener {
         message(
             "<reset>".miniMsg()
                 .append(translatePlaceholders(player, channel.format.prefix))
-                .append(player.displayName())
+                .append(displayName)
                 .append(translatePlaceholders(player, channel.format.suffix))
                 .append(channel.format.messageFormat.miniMsg().append(originalMessage()))
         )

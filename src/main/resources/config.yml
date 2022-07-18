@@ -11,18 +11,25 @@ leave:
   enabled: true
   message: "<green>%player_name%<white> has left the server."
 
+ping:
+  enabledChannels: # "all" for all channels
+    - "global"
+  defaultPingSound: "block.amethyst_block.place"
+  alternativePingSounds: # "all" to let people choose any sound
+    - "block.stone.break"
+    - "block.grass.place"
+  pingVolume: 1.0
+  pingPitch: 1.0
+  pingPrefix: "@"
+  clickToReply: true
+  pingFormat: "<b>"
+
+
 channels:
   - channelName: "global"
     channelType: GLOBAL
     isDefaultChannel: true
-    ping:
-      enabled: true
-      pingSound: "block.amethyst_block.place"
-      pingVolume: 1.0
-      pingPitch: 1.0
-      pingPrefix: "@"
-      clickToReply: true
-      pingFormat: "<b>"
+
     format:
       usePlayerDisplayName: true
       prefix: ":survival:"

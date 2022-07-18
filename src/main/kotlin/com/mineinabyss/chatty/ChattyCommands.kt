@@ -1,17 +1,11 @@
 package com.mineinabyss.chatty
 
 import com.mineinabyss.chatty.components.playerData
-import com.mineinabyss.chatty.helpers.chattyConfig
-import com.mineinabyss.chatty.helpers.deserialize
-import com.mineinabyss.chatty.helpers.getAllChannelNames
-import com.mineinabyss.chatty.helpers.translatePlaceholders
+import com.mineinabyss.chatty.helpers.*
 import com.mineinabyss.idofront.commands.arguments.stringArg
 import com.mineinabyss.idofront.commands.execution.IdofrontCommandExecutor
 import com.mineinabyss.idofront.commands.extensions.actions.playerAction
-import com.mineinabyss.idofront.messaging.info
-import com.mineinabyss.idofront.messaging.miniMsg
-import com.mineinabyss.idofront.messaging.success
-import com.mineinabyss.idofront.messaging.warn
+import com.mineinabyss.idofront.messaging.*
 import org.bukkit.command.Command
 import org.bukkit.command.CommandSender
 import org.bukkit.command.TabCompleter
@@ -20,11 +14,25 @@ import org.bukkit.entity.Player
 class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
     override val commands = commands(chattyPlugin) {
         "chatty"(desc = "Chatty commands") {
-            "ping"(desc = "Toggle the ping sound.") {
-                playerAction {
-                    val player = sender as Player
-                    player.playerData.disablePingSound = !player.playerData.disablePingSound
-                    player.success("Ping sound is now <i>${if (player.playerData.disablePingSound) "disabled" else "enabled"}.")
+            "ping"(desc = "Commands related to the chat-ping feature.") {
+                "toggle"(desc = "Toggle the ping sound.") {
+                    playerAction {
+                        val player = sender as Player
+                        player.playerData.disablePingSound = !player.playerData.disablePingSound
+                        player.success("Ping sound is now <i>${if (player.playerData.disablePingSound) "disabled" else "enabled"}.")
+                    }
+                }
+                "sound"(desc = "Change your pingsound") {
+                    val soundName by stringArg()
+                    playerAction {
+                        val player = sender as Player
+                        if (soundName in getAlternativePingSounds) {
+                            player.playerData.pingSound = soundName
+                            player.success("Ping sound set to <i>$soundName")
+                        } else {
+                            player.error("<i>$soundName</i> is not a valid ping sound.")
+                        }
+                    }
                 }
             }
             "channels"(desc = "List all channels") {
@@ -77,6 +85,10 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
         return if (command.name == "chatty") {
             when (args.size) {
                 1 -> listOf("ping", "reload", "channels", "nickname")
+                2 -> if (args[0] == "ping") listOf("toggle", "sound") else emptyList()
+                3 ->
+                    if (args[0] == "ping" && args[1] == "sound") getAlternativePingSounds
+                    else emptyList()
                 else -> emptyList()
             }
         } else emptyList()
