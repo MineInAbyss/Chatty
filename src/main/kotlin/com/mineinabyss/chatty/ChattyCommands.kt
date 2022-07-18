@@ -65,7 +65,7 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
                 }
             }
             chattyConfig.channels.forEach { channel ->
-                channel.channelCommandAliases.forEach { alias ->
+                channel.channelAliases.forEach { alias ->
                     alias {
                         playerAction {
                             (sender as Player).swapChannelCommand(channel.channelName)
@@ -92,12 +92,9 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
 }
 
 private fun Player.swapChannelCommand(channel: String) {
-    val newChannel =
-        chattyConfig.channels.firstOrNull {
-            it.channelName == channel ||
-                    it.channelCommand == channel ||
-                    it.channelCommandAliases.contains(channel)
-        }
+    val newChannel = chattyConfig.channels
+        .firstOrNull { it.channelName == channel || it.channelAliases.contains(channel) }
+
     if (newChannel == null) {
         warn("No channel by the name <i>${channel}</i> exists.")
         warn("Valid channels are: ${getAllChannelNames()}")

@@ -41,8 +41,7 @@ object ChattyConfig : IdofrontConfig<ChattyConfig.Data>(chattyPlugin, Data.seria
         val format: Format,
         val channelRadius: Int = 0,
         val emptyChannelMessage: String = "<red>There is no-one to read your message",
-        val channelCommand: String = channelName,
-        val channelCommandAliases: List<String> = listOf(),
+        val channelAliases: List<String> = listOf(),
     )
 
     @Serializable
@@ -50,5 +49,6 @@ object ChattyConfig : IdofrontConfig<ChattyConfig.Data>(chattyPlugin, Data.seria
         val useDisplayName: Boolean = true,
         val prefix: String = "",
         val suffix: String = "",
+        val messageFormat: String = "",
     )
 }

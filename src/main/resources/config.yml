@@ -19,10 +19,21 @@ channels:
       usePlayerDisplayName: true
       prefix: ":survival:"
       suffix: ": "
+      messageFormat: ""
     channelRadius: 0
     emptyChannelMessage: "<red>There is no-one to read your message"
-    channelCommand: "global"
-    channelCommandAliases:
+    channelAliases:
       - "g"
-      - "gl"
 
+  - channelName: "local"
+    channelType: RADIUS
+    isDefaultChannel: false
+    format:
+      usePlayerDisplayName: true
+      prefix: ":survival::local:"
+      suffix: ": "
+      messageFormat: "<yellow>"
+    channelRadius: 500
+    emptyChannelMessage: "<red>There is no-one to read your message"
+    channelAliases:
+      - "l"
