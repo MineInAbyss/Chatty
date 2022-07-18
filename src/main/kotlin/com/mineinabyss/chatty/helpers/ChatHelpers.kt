@@ -7,8 +7,33 @@ import com.mineinabyss.idofront.messaging.miniMsg
 import me.clip.placeholderapi.PlaceholderAPI
 import net.kyori.adventure.audience.Audience
 import net.kyori.adventure.text.Component
+import net.kyori.adventure.text.TextReplacementConfig
+import net.kyori.adventure.text.minimessage.MiniMessage
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
+
+fun String.checkForPlayerPings(channel: ChattyConfig.ChattyChannel): Player? {
+    if (channel.ping == null || channel.ping.pingPrefix == "" || channel.ping.pingPrefix !in this) return null
+    val pingedName = this.substringAfter(channel.ping.pingPrefix).split(" ")[0]
+    return Bukkit.getOnlinePlayers().firstOrNull {
+        it.name == pingedName || it.displayName().deserialize() == pingedName
+    }
+}
+
+fun Component.handlePlayerPings(player: Player, pingedPlayer: Player) {
+    val channel = player.playerData.channel
+    val ping = channel.ping ?: return
+    val displayName = if (channel.format.useDisplayName) pingedPlayer.displayName().stripTags() else pingedPlayer.name
+    val pingMessage = this.replaceText(
+        TextReplacementConfig.builder()
+            .once()
+            .match(ping.pingPrefix + displayName)
+            .replacement((ping.pingFormat + ping.pingPrefix + displayName).miniMsg()).build()
+    )
+
+    pingedPlayer.sendMessage(pingMessage)
+    pingedPlayer.playSound(pingedPlayer.location, ping.pingSound, ping.pingVolume, ping.pingPitch)
+}
 
 fun getGlobalChat(): ChattyConfig.ChattyChannel? {
     return chattyConfig.channels.firstOrNull { it.channelType == ChannelType.GLOBAL }
@@ -38,9 +63,9 @@ fun translatePlaceholders(player: Player, message: String): Component {
 fun setAudienceForChannelType(player: Player) : Set<Audience>{
     val onlinePlayers = Bukkit.getOnlinePlayers()
     val channel = player.playerData.channel
-    val channelType = channel.channelType
     val audiences = mutableSetOf<Audience>()
-    when (channelType) {
+
+    when (channel.channelType) {
         ChannelType.GLOBAL -> {
             audiences.addAll(onlinePlayers)
         }
@@ -62,4 +87,12 @@ fun setAudienceForChannelType(player: Player) : Set<Audience>{
         }
     }
     return audiences
+}
+
+fun Component.deserialize() : String {
+    return MiniMessage.builder().build().serialize(this)
+}
+
+fun Component.stripTags() : String {
+    return MiniMessage.builder().build().stripTags(this.deserialize())
 }

@@ -6,7 +6,6 @@ import com.mineinabyss.chatty.helpers.chattyConfig
 import com.mineinabyss.chatty.helpers.translatePlaceholders
 import com.mineinabyss.chatty.helpers.verifyPlayerChannel
 import com.mineinabyss.geary.papermc.access.toGeary
-import com.mineinabyss.idofront.messaging.broadcast
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.player.PlayerJoinEvent
@@ -18,7 +17,7 @@ class PlayerListener : Listener {
     fun PlayerJoinEvent.onFirstJoin() {
         if (player.toGeary().has<PlayerData>()) return
         if (chattyConfig.join.enabled && chattyConfig.join.firstJoin.enabled) {
-            broadcast(chattyConfig.join.firstJoin.message)
+            joinMessage(translatePlaceholders(player, chattyConfig.join.firstJoin.message))
         }
     }
 

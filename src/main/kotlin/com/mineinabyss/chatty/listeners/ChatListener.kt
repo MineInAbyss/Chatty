@@ -1,9 +1,7 @@
 package com.mineinabyss.chatty.listeners
 
 import com.mineinabyss.chatty.components.playerData
-import com.mineinabyss.chatty.helpers.setAudienceForChannelType
-import com.mineinabyss.chatty.helpers.translatePlaceholders
-import com.mineinabyss.chatty.helpers.verifyPlayerChannel
+import com.mineinabyss.chatty.helpers.*
 import com.mineinabyss.idofront.messaging.miniMsg
 import io.papermc.paper.chat.ChatRenderer
 import io.papermc.paper.event.player.AsyncChatEvent
@@ -27,24 +25,30 @@ class ChatListener : Listener {
         audiences.addAll(setAudienceForChannelType(player))
 
         message(
-            translatePlaceholders(player, channel.format.prefix)
+            "<reset>".miniMsg()
+                .append(translatePlaceholders(player, channel.format.prefix))
                 .append(player.displayName())
                 .append(translatePlaceholders(player, channel.format.suffix))
                 .append(channel.format.messageFormat.miniMsg().append(originalMessage()))
         )
 
-        if (audiences.isEmpty() && channel.emptyChannelMessage != null) {
+        val pingedPlayer = originalMessage().deserialize().checkForPlayerPings(channel)
+        if (pingedPlayer != null && pingedPlayer != player && pingedPlayer in audiences) {
+            message().handlePlayerPings(player, pingedPlayer)
+            audiences.remove(pingedPlayer)
+        }
+
+        if (pingedPlayer == null && audiences.isEmpty() && channel.emptyChannelMessage != null) {
             isCancelled = true
             player.sendMessage(channel.emptyChannelMessage.miniMsg())
-        }
-        else audiences.forEach { audience ->
+        } else audiences.forEach { audience ->
             RendererExtension().render(player, displayName, message(), audience)
         }
         audiences.clear()
     }
 }
 
-private class RendererExtension : ChatRenderer {
+class RendererExtension : ChatRenderer {
     override fun render(source: Player, sourceDisplayName: Component, message: Component, viewer: Audience): Component {
         if (viewer is Player) {
             viewer.sendMessage(message)

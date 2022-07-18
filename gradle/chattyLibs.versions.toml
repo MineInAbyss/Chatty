@@ -1,6 +1,6 @@
 [versions]
-geary = "0.15.89"
-guiy = "0.5.15"
+geary = "0.16.100"
+guiy = "0.6.21"
 bondrewdlikeshisemotes = "1.1.3"
 
 [libraries]
