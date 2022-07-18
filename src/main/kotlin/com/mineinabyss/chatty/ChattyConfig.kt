@@ -9,6 +9,7 @@ object ChattyConfig : IdofrontConfig<ChattyConfig.Data>(chattyPlugin, Data.seria
     data class Data(
         val useChattyCommandPrefix: Boolean = true,
         val channelChangedMessage: String = "You have changed channels to %channel%",
+        val ping: Ping,
         val join: Join,
         val leave: Leave,
         val channels: Set<ChattyChannel>,
@@ -39,7 +40,6 @@ object ChattyConfig : IdofrontConfig<ChattyConfig.Data>(chattyPlugin, Data.seria
         val channelType: ChannelType,
         val permission: String = "",
         val isDefaultChannel: Boolean = false,
-        val ping: Ping? = null,
         val format: Format,
         val channelRadius: Int = 0,
         val emptyChannelMessage: String? = null,
@@ -56,7 +56,9 @@ object ChattyConfig : IdofrontConfig<ChattyConfig.Data>(chattyPlugin, Data.seria
 
     @Serializable
     data class Ping(
-        val pingSound: String = "block.amethyst_block.place",
+        val enabledChannels: List<String> = listOf(),
+        val defaultPingSound: String = "block.amethyst_block.place",
+        val alternativePingSounds: List<String> = emptyList(),
         val pingVolume: Float = 1.0f,
         val pingPitch: Float = 1.0f,
         val pingPrefix: String = "@",

@@ -12,6 +12,7 @@ import org.bukkit.entity.Player
 class PlayerData(
     var channel: ChattyConfig.ChattyChannel = getDefaultChat(),
     var disablePingSound: Boolean = false,
+    var pingSound: String? = null,
 )
 
 val Player.playerData get() = toGeary().getOrSetPersisting { PlayerData() }

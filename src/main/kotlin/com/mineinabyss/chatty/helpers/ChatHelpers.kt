@@ -3,6 +3,7 @@ package com.mineinabyss.chatty.helpers
 import com.mineinabyss.chatty.ChattyConfig
 import com.mineinabyss.chatty.components.ChannelType
 import com.mineinabyss.chatty.components.playerData
+import com.mineinabyss.idofront.messaging.broadcast
 import com.mineinabyss.idofront.messaging.miniMsg
 import me.clip.placeholderapi.PlaceholderAPI
 import net.kyori.adventure.audience.Audience
@@ -10,11 +11,13 @@ import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.TextReplacementConfig
 import net.kyori.adventure.text.minimessage.MiniMessage
 import org.bukkit.Bukkit
+import org.bukkit.Sound
 import org.bukkit.entity.Player
 
 fun String.checkForPlayerPings(channel: ChattyConfig.ChattyChannel): Player? {
-    if (channel.ping == null || channel.ping.pingPrefix == "" || channel.ping.pingPrefix !in this) return null
-    val pingedName = this.substringAfter(channel.ping.pingPrefix).split(" ")[0]
+    val ping = chattyConfig.ping
+    if (channel.channelName !in getPingEnabledChannels || ping.pingPrefix == "" || ping.pingPrefix !in this) return null
+    val pingedName = this.substringAfter(ping.pingPrefix).split(" ")[0]
     return Bukkit.getOnlinePlayers().firstOrNull {
         it.name == pingedName || it.displayName().deserialize() == pingedName
     }
@@ -22,18 +25,22 @@ fun String.checkForPlayerPings(channel: ChattyConfig.ChattyChannel): Player? {
 
 fun Component.handlePlayerPings(player: Player, pingedPlayer: Player) {
     val channel = player.playerData.channel
-    val ping = channel.ping ?: return
+    val ping = chattyConfig.ping
+    val pingSound = pingedPlayer.playerData.pingSound ?: ping.defaultPingSound
     val displayName = if (channel.format.useDisplayName) pingedPlayer.displayName().stripTags() else pingedPlayer.name
     val clickToReply =
-        if (ping.clickToReply) "<insert:@${player.displayName().stripTags()} ><hover:show_text:'<red>Shift + Click to reply!'>"
+        if (ping.clickToReply) "<insert:@${
+            player.displayName().stripTags()
+        } ><hover:show_text:'<red>Shift + Click to reply!'>"
         else ""
     val pingMessage = this.replaceText(
         TextReplacementConfig.builder()
             .match(ping.pingPrefix + displayName)
             .replacement((ping.pingFormat + clickToReply + ping.pingPrefix + displayName).miniMsg()).build()
     )
+    broadcast(pingedPlayer.playerData.pingSound)
     if (!pingedPlayer.playerData.disablePingSound)
-        pingedPlayer.playSound(pingedPlayer.location, ping.pingSound, ping.pingVolume, ping.pingPitch)
+        pingedPlayer.playSound(pingedPlayer.location, pingSound, ping.pingVolume, ping.pingPitch)
     pingedPlayer.sendMessage(pingMessage)
 }
 
@@ -52,7 +59,7 @@ fun Player.verifyPlayerChannel() {
         playerData.channel = getDefaultChat()
 }
 
-fun getAllChannelNames() : List<String> {
+fun getAllChannelNames(): List<String> {
     val list = mutableListOf<String>()
     chattyConfig.channels.forEach { list.add(it.channelName) }
     return list
@@ -62,7 +69,7 @@ fun translatePlaceholders(player: Player, message: String): Component {
     return PlaceholderAPI.setPlaceholders(player, message).miniMsg()
 }
 
-fun setAudienceForChannelType(player: Player) : Set<Audience>{
+fun setAudienceForChannelType(player: Player): Set<Audience> {
     val onlinePlayers = Bukkit.getOnlinePlayers()
     val channel = player.playerData.channel
     val audiences = mutableSetOf<Audience>()
@@ -91,10 +98,19 @@ fun setAudienceForChannelType(player: Player) : Set<Audience>{
     return audiences
 }
 
-fun Component.deserialize() : String {
+val ping = chattyConfig.ping
+val getAlternativePingSounds: List<String> =
+    if ("*" in ping.alternativePingSounds || "all" in ping.alternativePingSounds)
+        Sound.values().map { it.key.toString() }.toList() else ping.alternativePingSounds
+
+val getPingEnabledChannels: List<String> =
+    if ("*" in ping.enabledChannels || "all" in ping.enabledChannels) getAllChannelNames() else ping.enabledChannels
+
+
+fun Component.deserialize(): String {
     return MiniMessage.builder().build().serialize(this)
 }
 
-fun Component.stripTags() : String {
+fun Component.stripTags(): String {
     return MiniMessage.builder().build().stripTags(this.deserialize())
 }
