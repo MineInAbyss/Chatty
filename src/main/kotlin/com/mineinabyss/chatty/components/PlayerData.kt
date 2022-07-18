@@ -11,6 +11,7 @@ import org.bukkit.entity.Player
 @SerialName("chatty:player_data")
 class PlayerData(
     var channel: ChattyConfig.ChattyChannel = getDefaultChat(),
+    var disablePingSound: Boolean = false,
 )
 
 val Player.playerData get() = toGeary().getOrSetPersisting { PlayerData() }

@@ -24,15 +24,17 @@ fun Component.handlePlayerPings(player: Player, pingedPlayer: Player) {
     val channel = player.playerData.channel
     val ping = channel.ping ?: return
     val displayName = if (channel.format.useDisplayName) pingedPlayer.displayName().stripTags() else pingedPlayer.name
+    val clickToReply =
+        if (ping.clickToReply) "<insert:@${player.displayName().stripTags()} ><hover:show_text:'<red>Shift + Click to reply!'>"
+        else ""
     val pingMessage = this.replaceText(
         TextReplacementConfig.builder()
-            .once()
             .match(ping.pingPrefix + displayName)
-            .replacement((ping.pingFormat + ping.pingPrefix + displayName).miniMsg()).build()
+            .replacement((ping.pingFormat + clickToReply + ping.pingPrefix + displayName).miniMsg()).build()
     )
-
+    if (!pingedPlayer.playerData.disablePingSound)
+        pingedPlayer.playSound(pingedPlayer.location, ping.pingSound, ping.pingVolume, ping.pingPitch)
     pingedPlayer.sendMessage(pingMessage)
-    pingedPlayer.playSound(pingedPlayer.location, ping.pingSound, ping.pingVolume, ping.pingPitch)
 }
 
 fun getGlobalChat(): ChattyConfig.ChattyChannel? {
