@@ -19,10 +19,33 @@ channels:
       usePlayerDisplayName: true
       prefix: ":survival:"
       suffix: ": "
-    channelRadius: 0
-    emptyChannelMessage: "<red>There is no-one to read your message"
-    channelCommand: "global"
-    channelCommandAliases:
+      messageFormat: ""
+    channelAliases:
       - "g"
-      - "gl"
 
+  - channelName: "local"
+    channelType: RADIUS
+    isDefaultChannel: false
+    format:
+      usePlayerDisplayName: true
+      prefix: "<yellow>[Local]"
+      suffix: ": "
+      messageFormat: "<yellow>"
+    channelRadius: 500
+    emptyChannelMessage: "<red>There is no-one to read your message"
+    channelAliases:
+      - "l"
+
+  - channelName: "staff"
+    channelType: PERMISSION
+    permission: "chatty.channel.staff"
+    requireEffectivePermission: false
+    isDefaultChannel: false
+    format:
+      usePlayerDisplayName: true
+      prefix: "<red>[Staff]"
+      suffix: ": "
+      messageFormat: "<red>"
+    emptyChannelMessage: "<red>There is no-one to read your message"
+    channelAliases:
+      - "s"
