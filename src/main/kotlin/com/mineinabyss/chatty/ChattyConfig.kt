@@ -37,10 +37,11 @@ object ChattyConfig : IdofrontConfig<ChattyConfig.Data>(chattyPlugin, Data.seria
     data class ChattyChannel(
         val channelName: String,
         val channelType: ChannelType,
+        val permission: String = "",
         val isDefaultChannel: Boolean,
         val format: Format,
         val channelRadius: Int = 0,
-        val emptyChannelMessage: String = "<red>There is no-one to read your message",
+        val emptyChannelMessage: String? = null,
         val channelAliases: List<String> = listOf(),
     )
 

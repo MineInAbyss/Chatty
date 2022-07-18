@@ -15,5 +15,6 @@ val Player.playerData get() = toGeary().getOrSetPersisting { PlayerData() }
 enum class ChannelType {
     GLOBAL,
     RADIUS,
+    PERMISSION,
     PRIVATE
 }
