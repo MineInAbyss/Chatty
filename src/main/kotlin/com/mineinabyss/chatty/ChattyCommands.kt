@@ -20,6 +20,13 @@ import org.bukkit.entity.Player
 class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
     override val commands = commands(chattyPlugin) {
         "chatty"(desc = "Chatty commands") {
+            "ping"(desc = "Toggle the ping sound.") {
+                playerAction {
+                    val player = sender as Player
+                    player.playerData.disablePingSound = !player.playerData.disablePingSound
+                    player.success("Ping sound is now <i>${if (player.playerData.disablePingSound) "disabled" else "enabled"}.")
+                }
+            }
             "channels"(desc = "List all channels") {
                 playerAction {
                     sender.info("<gold>Available channels are:".miniMsg())
@@ -69,7 +76,7 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
     ): List<String> {
         return if (command.name == "chatty") {
             when (args.size) {
-                1 -> listOf("reload", "channels", "nickname")
+                1 -> listOf("ping", "reload", "channels", "nickname")
                 else -> emptyList()
             }
         } else emptyList()
@@ -84,7 +91,12 @@ private fun Player.swapChannelCommand(channel: String) {
         warn("No channel by the name <i>${channel}</i> exists.")
         warn("Valid channels are: ${getAllChannelNames()}")
     } else {
-        sendMessage(translatePlaceholders(this, chattyConfig.channelChangedMessage.replace("%chatty_channel%", newChannel.channelName)))
+        sendMessage(
+            translatePlaceholders(
+                this,
+                chattyConfig.channelChangedMessage.replace("%chatty_channel%", newChannel.channelName)
+            )
+        )
         playerData.channel = newChannel
     }
 }

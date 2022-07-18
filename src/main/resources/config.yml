@@ -21,6 +21,7 @@ channels:
       pingVolume: 1.0
       pingPitch: 1.0
       pingPrefix: "@"
+      clickToReply: true
       pingFormat: "<b>"
     format:
       usePlayerDisplayName: true
