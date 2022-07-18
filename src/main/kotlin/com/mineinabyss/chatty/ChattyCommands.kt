@@ -27,11 +27,12 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
                 }
             }
             "nickname" {
-                val nickname by stringArg {  }
+                val nickname by stringArg()
                 action {
                     val player = sender as Player
-                    player.displayName(nickname.miniMsg())
-                    sender.success("Nickname set to <dark_green><i>${player.displayName().deserialize()}</i></dark_green>.")
+                    if (nickname.isEmpty()) player.displayName(player.name.miniMsg())
+                    else player.displayName(arguments.joinToString().replace(", ", " ").miniMsg())
+                    sender.success("Nickname set to <white><i>${player.displayName().deserialize()}</i></white>.")
                 }
             }
             "reload" {
