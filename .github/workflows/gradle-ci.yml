@@ -1,4 +1,4 @@
-name: Gradle CI
+name: Java CI with Gradle
 
 on:
   push:
@@ -19,7 +19,6 @@ jobs:
         with:
           distribution: temurin
           java-version: 17
-          cache: gradle
 
       - name: Build
         run: gradle build
