@@ -16,15 +16,15 @@ object ChattyConfig : IdofrontConfig<ChattyConfig.Data>(chattyPlugin, Data.seria
 
     @Serializable
     data class Join(
-        val enabled: Boolean,
-        val message: String,
+        val enabled: Boolean = true,
+        val message: String = "<green>%player_name%<white> has joined the server.",
         val firstJoin: FirstJoin,
     )
 
     @Serializable
     data class FirstJoin(
-        val enabled: Boolean,
-        val message: String,
+        val enabled: Boolean = true,
+        val message: String = "<gradient:#058330:#ff9200>Welcome %player_name% to %server_name%</gradient>",
     )
 
     @Serializable
@@ -38,7 +38,8 @@ object ChattyConfig : IdofrontConfig<ChattyConfig.Data>(chattyPlugin, Data.seria
         val channelName: String,
         val channelType: ChannelType,
         val permission: String = "",
-        val isDefaultChannel: Boolean,
+        val isDefaultChannel: Boolean = false,
+        val ping: Ping? = null,
         val format: Format,
         val channelRadius: Int = 0,
         val emptyChannelMessage: String? = null,
@@ -51,5 +52,14 @@ object ChattyConfig : IdofrontConfig<ChattyConfig.Data>(chattyPlugin, Data.seria
         val prefix: String = "",
         val suffix: String = "",
         val messageFormat: String = "",
+    )
+
+    @Serializable
+    data class Ping(
+        val pingSound: String = "block.amethyst_block.place",
+        val pingVolume: Float = 1.0f,
+        val pingPitch: Float = 1.0f,
+        val pingPrefix: String = "@",
+        val pingFormat: String = "<yellow><b>"
     )
 }

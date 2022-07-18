@@ -2,19 +2,26 @@ useChattyCommandPrefix: true
 channelChangedMessage: "<red>You have changed to channel <yellow>%chatty_channel%<red>."
 join:
   enabled: true
-  message: "<green>%player_displayname%<white> has joined the server."
+  message: "<green>%player_name%<white> has joined the server."
   firstJoin:
     enabled: true
-    message: "<gradient:#058330:#ff9200>Welcome %player_displayname% to %server_name%</gradient>"
+    message: "<gradient:#058330:#ff9200>Welcome %player_name% to %server_name%</gradient>"
 
 leave:
   enabled: true
-  message: "<green>%player_displayname%<white> has left the server."
+  message: "<green>%player_name%<white> has left the server."
 
 channels:
   - channelName: "global"
     channelType: GLOBAL
     isDefaultChannel: true
+    ping:
+      enabled: true
+      pingSound: "block.amethyst_block.place"
+      pingVolume: 1.0
+      pingPitch: 1.0
+      pingPrefix: "@"
+      pingFormat: "<b>"
     format:
       usePlayerDisplayName: true
       prefix: ":survival:"
