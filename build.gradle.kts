@@ -29,7 +29,7 @@ dependencies {
 
     // Shaded
     //implementation(project(":velocity"))
-    //implementation(project(":paper"))
+    //implementation(project(":chatty-paper"))
     //implementation(libs.idofront.core)
 //    compileOnly(libs.idofront.nms)
 }

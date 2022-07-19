@@ -3,6 +3,7 @@ pluginManagement {
     val idofrontVersion: String by settings
 
     repositories {
+        mavenCentral()
         gradlePluginPortal()
         maven("https://repo.mineinabyss.com/releases")
         maven("https://repo.papermc.io/repository/maven-public/")
@@ -10,8 +11,12 @@ pluginManagement {
     }
 
     plugins {
+
         kotlin("jvm") version kotlinVersion
+        kotlin("kapt") version kotlinVersion
         kotlin("plugin.serialization") version kotlinVersion
+
+        id("com.github.johnrengelman.shadow") version "6.1.0"
     }
 
     resolutionStrategy.eachPlugin {
@@ -20,8 +25,8 @@ pluginManagement {
 }
 
 include(
-    "paper",
-    "velocity"
+    "chatty-paper",
+    "chatty-velocity"
 )
 
 dependencyResolutionManagement {
