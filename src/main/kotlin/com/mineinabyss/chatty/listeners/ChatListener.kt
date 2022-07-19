@@ -18,7 +18,7 @@ class ChatListener : Listener {
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     fun AsyncChatEvent.onPlayerChat() {
         player.verifyPlayerChannel()
-        val channel = player.playerData.channel
+        val channel = getChannelFromId(player.playerData.channelId) ?: return
         val displayName = if (channel.format.useDisplayName) player.displayName() else player.name.miniMsg()
         val audiences = viewers()
         audiences.clear()
@@ -31,16 +31,16 @@ class ChatListener : Listener {
                 .append(channel.format.messageFormat.miniMsg().append(originalMessage()))
         )
 
-        val pingedPlayer = originalMessage().deserialize().checkForPlayerPings(channel)
+        val pingedPlayer = originalMessage().deserialize().checkForPlayerPings(player.playerData.channelId)
         if (pingedPlayer != null && pingedPlayer != player && pingedPlayer in audiences) {
             message().handlePlayerPings(player, pingedPlayer)
             audiences.remove(pingedPlayer)
             audiences.remove(player)
         }
 
-        if (pingedPlayer == null && audiences.isEmpty() && channel.emptyChannelMessage != null) {
+        if (pingedPlayer == null && audiences.isEmpty()) {
             isCancelled = true
-            player.sendMessage(channel.emptyChannelMessage.miniMsg())
+            player.sendFormattedMessage(messages.emptyChannelMessage)
         } else audiences.forEach { audience ->
             RendererExtension().render(player, displayName, message(), audience)
         }

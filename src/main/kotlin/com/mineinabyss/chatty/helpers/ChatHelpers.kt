@@ -19,9 +19,9 @@ import org.bukkit.entity.Player
 import java.awt.Color
 import javax.imageio.ImageIO
 
-fun String.checkForPlayerPings(channel: ChattyConfig.ChattyChannel): Player? {
+fun String.checkForPlayerPings(channelId: String): Player? {
     val ping = chattyConfig.ping
-    if (channel.channelName !in getPingEnabledChannels || ping.pingPrefix == "" || ping.pingPrefix !in this) return null
+    if (channelId !in getPingEnabledChannels || ping.pingPrefix == "" || ping.pingPrefix !in this) return null
     val pingedName = this.substringAfter(ping.pingPrefix).split(" ")[0]
     return Bukkit.getOnlinePlayers().firstOrNull {
         it.name == pingedName || it.displayName().deserialize() == pingedName
@@ -29,7 +29,7 @@ fun String.checkForPlayerPings(channel: ChattyConfig.ChattyChannel): Player? {
 }
 
 fun Component.handlePlayerPings(player: Player, pingedPlayer: Player) {
-    val channel = player.playerData.channel
+    val channel = getChannelFromId(player.playerData.channelId) ?: return
     val ping = chattyConfig.ping
     val pingSound = pingedPlayer.playerData.pingSound ?: ping.defaultPingSound
     val displayName = if (channel.format.useDisplayName) pingedPlayer.displayName().stripTags() else pingedPlayer.name
@@ -56,24 +56,32 @@ fun Component.handlePlayerPings(player: Player, pingedPlayer: Player) {
     player.sendMessage(pingerMessage)
 }
 
-fun getGlobalChat(): ChattyConfig.ChattyChannel? {
-    return chattyConfig.channels.firstOrNull { it.channelType == ChannelType.GLOBAL }
+fun getGlobalChat(): Map.Entry<String, ChattyConfig.ChattyChannel>? {
+    return chattyConfig.channels.entries.firstOrNull { it.value.channelType == ChannelType.GLOBAL }
 }
 
-fun getDefaultChat(): ChattyConfig.ChattyChannel {
-    return chattyConfig.channels.firstOrNull { it.isDefaultChannel }
+fun getDefaultChat(): Map.Entry<String, ChattyConfig.ChattyChannel> {
+    return chattyConfig.channels.entries.firstOrNull { it.value.isDefaultChannel }
         ?: getGlobalChat()
         ?: throw IllegalStateException("No Default or Global channel found")
 }
 
+fun getChannelFromId(channelId: String) : ChattyConfig.ChattyChannel? {
+    return chattyConfig.channels.entries.firstOrNull { it.key == channelId }?.value
+}
+
+fun Player.getChannelFromPlayer() : ChattyConfig.ChattyChannel? {
+    return chattyConfig.channels.entries.firstOrNull { it.key == this.playerData.channelId }?.value
+}
+
 fun Player.verifyPlayerChannel() {
-    if (playerData.channel !in chattyConfig.channels)
-        playerData.channel = getDefaultChat()
+    if (playerData.channelId !in chattyConfig.channels)
+        playerData.channelId = getDefaultChat().key
 }
 
 fun getAllChannelNames(): List<String> {
     val list = mutableListOf<String>()
-    chattyConfig.channels.forEach { list.add(it.channelName) }
+    chattyConfig.channels.forEach { list.add(it.key) }
     return list
 }
 
@@ -119,7 +127,7 @@ fun Player.translatePlayerHeadComponent(): Component {
 
 fun setAudienceForChannelType(player: Player): Set<Audience> {
     val onlinePlayers = Bukkit.getOnlinePlayers()
-    val channel = player.playerData.channel
+    val channel = getChannelFromId(player.playerData.channelId) ?: return emptySet()
     val audiences = mutableSetOf<Audience>()
 
     when (channel.channelType) {
@@ -139,13 +147,12 @@ fun setAudienceForChannelType(player: Player): Set<Audience> {
         ChannelType.PRIVATE -> {
             audiences.addAll(
                 onlinePlayers.filter { p ->
-                    p.playerData.channel == channel
+                    p.playerData.channelId == player.playerData.channelId
                 })
         }
     }
     return audiences
 }
-
 val ping = chattyConfig.ping
 val getAlternativePingSounds: List<String> =
     if ("*" in ping.alternativePingSounds || "all" in ping.alternativePingSounds)
@@ -162,3 +169,5 @@ fun Component.deserialize(): String {
 fun Component.stripTags(): String {
     return MiniMessage.builder().build().stripTags(this.deserialize())
 }
+
+fun Player.sendFormattedMessage(message: String) = this.sendMessage(translatePlaceholders(this, message))

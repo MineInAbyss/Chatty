@@ -4,6 +4,8 @@ import com.mineinabyss.chatty.components.playerData
 import com.mineinabyss.chatty.helpers.*
 import com.mineinabyss.idofront.commands.arguments.stringArg
 import com.mineinabyss.idofront.commands.execution.IdofrontCommandExecutor
+import com.mineinabyss.idofront.commands.extensions.actions.ensureSenderIsPlayer
+import com.mineinabyss.idofront.messaging.miniMsg
 import com.mineinabyss.idofront.commands.extensions.actions.playerAction
 import com.mineinabyss.idofront.messaging.*
 import org.bukkit.command.Command
@@ -16,59 +18,66 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
         "chatty"(desc = "Chatty commands") {
             "ping"(desc = "Commands related to the chat-ping feature.") {
                 "toggle"(desc = "Toggle the ping sound.") {
-                    playerAction {
-                        val player = sender as Player
+                    ensureSenderIsPlayer()
+                    action {
+                        val player = sender as? Player ?: return@action
                         player.playerData.disablePingSound = !player.playerData.disablePingSound
-                        player.success("Ping sound is now <i>${if (player.playerData.disablePingSound) "disabled" else "enabled"}.")
+                        player.sendFormattedMessage(messages.toggledPingSound)
                     }
                 }
                 "sound"(desc = "Change your pingsound") {
                     val soundName by stringArg()
-                    playerAction {
-                        val player = sender as Player
+                    ensureSenderIsPlayer()
+                    action {
+                        val player = sender as? Player ?: return@action
                         if (soundName in getAlternativePingSounds) {
                             player.playerData.pingSound = soundName
-                            player.success("Ping sound set to <i>$soundName")
+                            player.sendFormattedMessage(messages.changedPingSound)
                         } else {
-                            player.error("<i>$soundName</i> is not a valid ping sound.")
+                            player.sendFormattedMessage(messages.invalidPingSound)
                         }
                     }
                 }
             }
             "channels"(desc = "List all channels") {
-                playerAction {
-                    sender.info("<gold>Available channels are:".miniMsg())
-                    sender.info("<yellow>${getAllChannelNames()}".miniMsg())
+                action {
+                    (sender as? Player)?.sendFormattedMessage(messages.availableChannels)
+                        ?: sender.sendMessage(messages.availableChannels)
                 }
             }
             "nickname" {
                 val nickname by stringArg()
+                ensureSenderIsPlayer()
                 action {
-                    val player = sender as Player
+                    val player = sender as? Player ?: return@action
                     if (nickname.isEmpty()) player.displayName(player.name.miniMsg())
                     else player.displayName(arguments.joinToString().replace(", ", " ").miniMsg())
-                    sender.success("Nickname set to <white><i>${player.displayName().deserialize()}</i></white>.")
+                    player.sendFormattedMessage(messages.nickNameChanged)
                 }
             }
             "reload" {
                 action {
                     ChattyConfig.reload()
                     ChattyConfig.load()
-                    sender.info("<gold>Chatty config reloaded")
+                    (sender as? Player)?.sendFormattedMessage(messages.configReloaded) ?: sender.sendMessage(messages.configReloaded.miniMsg())
                 }
             }
             getAllChannelNames().forEach { channelName ->
                 channelName {
-                    playerAction {
-                        (sender as Player).swapChannelCommand(channelName)
+                    ensureSenderIsPlayer()
+                    action {
+                        val player = sender as? Player ?: return@action
+                        player.swapChannelCommand(channelName)
                     }
                 }
             }
-            chattyConfig.channels.forEach { channel ->
+            chattyConfig.channels.forEach { (channelId, channel) ->
                 channel.channelAliases.forEach { alias ->
                     alias {
-                        playerAction {
-                            (sender as Player).swapChannelCommand(channel.channelName)
+                        ensureSenderIsPlayer()
+                        action {
+                            val player = sender as? Player ?: return@action
+                            player.swapChannelCommand(channelId)
                         }
                     }
                 }
@@ -95,20 +104,15 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
     }
 }
 
-private fun Player.swapChannelCommand(channel: String) {
-    val newChannel = chattyConfig.channels
-        .firstOrNull { it.channelName == channel || it.channelAliases.contains(channel) }
+private fun Player.swapChannelCommand(channelId: String) {
+    val newChannel = getChannelFromId(channelId)
 
     if (newChannel == null) {
-        warn("No channel by the name <i>${channel}</i> exists.")
-        warn("Valid channels are: ${getAllChannelNames()}")
+        sendFormattedMessage(messages.noChannelWithName)
+    } else if (!hasPermission(newChannel.permission)) {
+        sendFormattedMessage(messages.missingChannelPermission)
     } else {
-        sendMessage(
-            translatePlaceholders(
-                this,
-                chattyConfig.channelChangedMessage.replace("%chatty_channel%", newChannel.channelName)
-            )
-        )
-        playerData.channel = newChannel
+        playerData.channelId = channelId
+        sendFormattedMessage(messages.channelChanged)
     }
 }
