@@ -1,10 +1,10 @@
 plugins {
-    kotlin("jvm")
-    kotlin("plugin.serialization")
     id("com.mineinabyss.conventions.kotlin")
     id("com.mineinabyss.conventions.papermc")
     id("com.mineinabyss.conventions.publication")
     id("com.mineinabyss.conventions.testing")
+    kotlin("plugin.serialization")
+    id("org.jetbrains.dokka")
 }
 
 repositories {
@@ -27,29 +27,6 @@ dependencies {
     compileOnly(chattyLibs.placeholderapi)
 
     // Shaded
-    implementation(project(":paper"))
-    implementation(project(":velocity"))
     implementation(libs.idofront.core)
 //    compileOnly(libs.idofront.nms)
-}
-
-val copyJar: String? by project
-val pluginPath = project.findProperty("plugin_path")
-
-if(copyJar != "false" && pluginPath != null) {
-    tasks {
-        println("Copying jar to $pluginPath")
-        register<Copy>("copyJar") {
-            from(findByName("reobfJar") ?: findByName("shadowJar") ?: findByName("jar"))
-            rename("${project.name}-${project.version}.jar","${rootProject.name}-${project.name}-${project.version}.jar")
-            into(pluginPath)
-            doLast {
-                println("Copied to plugin directory $pluginPath")
-            }
-        }
-
-        named<DefaultTask>("build") {
-            dependsOn("copyJar")
-        }
-    }
 }

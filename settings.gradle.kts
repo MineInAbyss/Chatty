@@ -6,21 +6,24 @@ pluginManagement {
     repositories {
         gradlePluginPortal()
         maven("https://repo.mineinabyss.com/releases")
-        maven("https://papermc.io/repo/repository/maven-public/")
+        maven("https://repo.papermc.io/repository/maven-public/")
         google()
     }
 
     plugins {
         kotlin("jvm") version kotlinVersion
         kotlin("plugin.serialization") version kotlinVersion
-        id("org.jetbrains.dokka") version kotlinVersion
-        id("org.jetbrains.compose") version composeVersion
     }
 
     resolutionStrategy.eachPlugin {
         if (requested.id.id.startsWith("com.mineinabyss.conventions")) useVersion(idofrontVersion)
     }
 }
+
+include(
+    "paper",
+    "velocity"
+)
 
 dependencyResolutionManagement {
     val idofrontVersion: String by settings
