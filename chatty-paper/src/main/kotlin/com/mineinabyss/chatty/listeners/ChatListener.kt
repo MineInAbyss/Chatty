@@ -1,5 +1,7 @@
 package com.mineinabyss.chatty.listeners
 
+import com.mineinabyss.chatty.chattyPlugin
+import com.mineinabyss.chatty.chattyProxyChannel
 import com.mineinabyss.chatty.components.playerData
 import com.mineinabyss.chatty.helpers.*
 import com.mineinabyss.idofront.messaging.miniMsg
@@ -15,7 +17,7 @@ import org.bukkit.event.Listener
 
 class ChatListener : Listener {
 
-    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
     fun AsyncChatEvent.onPlayerChat() {
         player.verifyPlayerChannel()
         val channel = getChannelFromId(player.playerData.channelId) ?: return
@@ -44,6 +46,9 @@ class ChatListener : Listener {
         } else audiences.forEach { audience ->
             RendererExtension().render(player, displayName, message(), audience)
         }
+        //TODO If channel is proxyChannel
+        //Bukkit.getServer().sendPluginMessage(chattyPlugin, chattyProxyChannel, message().deserialize().toByteArray())
+        player.sendPluginMessage(chattyPlugin, chattyProxyChannel, message().deserialize().toByteArray())
         audiences.clear()
     }
 }

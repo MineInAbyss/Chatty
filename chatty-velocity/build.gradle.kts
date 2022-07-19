@@ -29,7 +29,6 @@ dependencies {
 
     compileOnly(chattyLibs.velocity)
     kapt(chattyLibs.velocity)
-    //annotationProcessor(chattyLibs.velocity)
 }
 
 tasks.build {
