@@ -9,6 +9,7 @@ object ChattyConfig : IdofrontConfig<ChattyConfig.Data>(chattyPlugin, Data.seria
     data class Data(
         val useChattyCommandPrefix: Boolean = true,
         val channelChangedMessage: String = "You have changed channels to %channel%",
+        val playerHeadFont: String = "minecraft:chatty_heads",
         val ping: Ping,
         val join: Join,
         val leave: Leave,

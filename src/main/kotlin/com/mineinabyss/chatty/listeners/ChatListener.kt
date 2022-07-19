@@ -24,8 +24,7 @@ class ChatListener : Listener {
         audiences.clear()
         audiences.addAll(setAudienceForChannelType(player))
 
-        message(
-            "<reset>".miniMsg()
+        message("<reset>".miniMsg()
                 .append(translatePlaceholders(player, channel.format.prefix))
                 .append(displayName)
                 .append(translatePlaceholders(player, channel.format.suffix))
