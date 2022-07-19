@@ -1,5 +1,11 @@
 useChattyCommandPrefix: true
 channelChangedMessage: "<red>You have changed to channel <yellow>%chatty_channel%<red>."
+
+# Used for displaying playerheads in chat.
+# This is the default font that comes with the plugin
+# %chatty_playerhead% will be replaced with the playerhead of the player who sent the message
+playerHeadFont: "minecraft:chatty_heads"
+
 join:
   enabled: true
   message: "<green>%player_name%<white> has joined the server."
@@ -29,7 +35,6 @@ channels:
   - channelName: "global"
     channelType: GLOBAL
     isDefaultChannel: true
-
     format:
       usePlayerDisplayName: true
       prefix: ":survival:"
@@ -37,6 +42,17 @@ channels:
       messageFormat: ""
     channelAliases:
       - "g"
+
+  - channelName: "playerhead"
+      channelType: GLOBAL
+      isDefaultChannel: true
+      format:
+        usePlayerDisplayName: true
+        prefix: "%chatty_playerhead% "
+        suffix: ": "
+        messageFormat: ""
+      channelAliases:
+        - "head"
 
   - channelName: "local"
     channelType: RADIUS
