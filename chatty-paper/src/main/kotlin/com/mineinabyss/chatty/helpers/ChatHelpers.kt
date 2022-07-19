@@ -74,6 +74,10 @@ fun Player.getChannelFromPlayer() : ChattyConfig.ChattyChannel? {
     return chattyConfig.channels.entries.firstOrNull { it.key == this.playerData.channelId }?.value
 }
 
+fun Player.channelIsProxyEnabled() : Boolean {
+    return getChannelFromPlayer()?.proxy ?: false
+}
+
 fun Player.verifyPlayerChannel() {
     if (playerData.channelId !in chattyConfig.channels)
         playerData.channelId = getDefaultChat().key

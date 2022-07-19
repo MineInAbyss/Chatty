@@ -20,6 +20,7 @@ fun chattyPlaceholders(player: Player, string: String) : Map<String, String> {
         "player_channel_format_suffix" to channel?.format?.suffix.toString(),
         "player_channel_format_message" to channel?.format?.messageFormat.toString(),
         "player_channel_aliases" to channel?.channelAliases.toString(),
+        "player_channel_proxy_enabled" to channel?.proxy.toString(),
 
         "ping_defaultsound" to ping.defaultPingSound,
         "ping_volume" to ping.pingVolume.toString(),
