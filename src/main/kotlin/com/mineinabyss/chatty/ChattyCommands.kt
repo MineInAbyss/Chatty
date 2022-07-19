@@ -5,7 +5,6 @@ import com.mineinabyss.chatty.helpers.*
 import com.mineinabyss.idofront.commands.arguments.stringArg
 import com.mineinabyss.idofront.commands.execution.IdofrontCommandExecutor
 import com.mineinabyss.idofront.commands.extensions.actions.ensureSenderIsPlayer
-import com.mineinabyss.idofront.commands.extensions.actions.playerAction
 import com.mineinabyss.idofront.messaging.miniMsg
 import org.bukkit.command.Command
 import org.bukkit.command.CommandSender
@@ -17,16 +16,18 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
         "chatty"(desc = "Chatty commands") {
             "ping"(desc = "Commands related to the chat-ping feature.") {
                 "toggle"(desc = "Toggle the ping sound.") {
-                    playerAction {
-                        val player = sender as Player
+                    ensureSenderIsPlayer()
+                    action {
+                        val player = sender as? Player ?: return@action
                         player.playerData.disablePingSound = !player.playerData.disablePingSound
                         player.sendFormattedMessage(messages.toggledPingSound)
                     }
                 }
                 "sound"(desc = "Change your pingsound") {
                     val soundName by stringArg()
-                    playerAction {
-                        val player = sender as Player
+                    ensureSenderIsPlayer()
+                    action {
+                        val player = sender as? Player ?: return@action
                         if (soundName in getAlternativePingSounds) {
                             player.playerData.pingSound = soundName
                             player.sendFormattedMessage(messages.changedPingSound)
@@ -37,13 +38,14 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
                 }
             }
             "channels"(desc = "List all channels") {
-                playerAction {
-                    (sender as Player).sendFormattedMessage(messages.availableChannels)
+                action {
+                    (sender as? Player)?.sendFormattedMessage(messages.availableChannels)
+                        ?: sender.sendMessage(messages.availableChannels)
                 }
             }
             "nickname" {
-                ensureSenderIsPlayer()
                 val nickname by stringArg()
+                ensureSenderIsPlayer()
                 action {
                     val player = sender as? Player ?: return@action
                     if (nickname.isEmpty()) player.displayName(player.name.miniMsg())
@@ -60,16 +62,20 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
             }
             getAllChannelNames().forEach { channelName ->
                 channelName {
-                    playerAction {
-                        (sender as Player).swapChannelCommand(channelName)
+                    ensureSenderIsPlayer()
+                    action {
+                        val player = sender as? Player ?: return@action
+                        player.swapChannelCommand(channelName)
                     }
                 }
             }
             chattyConfig.channels.forEach { (channelId, channel) ->
                 channel.channelAliases.forEach { alias ->
                     alias {
-                        playerAction {
-                            (sender as Player).swapChannelCommand(channelId)
+                        ensureSenderIsPlayer()
+                        action {
+                            val player = sender as? Player ?: return@action
+                            player.swapChannelCommand(channelId)
                         }
                     }
                 }
@@ -104,7 +110,7 @@ private fun Player.swapChannelCommand(channelId: String) {
     } else if (!hasPermission(newChannel.permission)) {
         sendFormattedMessage(messages.missingChannelPermission)
     } else {
-        sendFormattedMessage(messages.channelChanged)
         playerData.channelId = channelId
+        sendFormattedMessage(messages.channelChanged)
     }
 }

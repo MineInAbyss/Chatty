@@ -18,17 +18,15 @@ class PlaceholderHook : PlaceholderExpansion() {
     }
 
     override fun persist(): Boolean {
-        return true // This is required or else PlaceholderAPI will unregister the Expansion on reload
+        return true
     }
 
-    override fun onPlaceholderRequest(player: Player?, string: String): String? {
-        if (player == null) return null
-        chattyPlaceholders(player).forEach { placeholder ->
+    override fun onPlaceholderRequest(player: Player, string: String): String {
+        chattyPlaceholders(player, string).forEach { placeholder ->
             if (string == placeholder.key) {
-                return placeholder.value.toString()
+                return placeholder.value
             }
         }
         return string
     }
-
 }

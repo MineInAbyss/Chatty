@@ -70,6 +70,10 @@ fun getChannelFromId(channelId: String) : ChattyConfig.ChattyChannel? {
     return chattyConfig.channels.entries.firstOrNull { it.key == channelId }?.value
 }
 
+fun Player.getChannelFromPlayer() : ChattyConfig.ChattyChannel? {
+    return chattyConfig.channels.entries.firstOrNull { it.key == this.playerData.channelId }?.value
+}
+
 fun Player.verifyPlayerChannel() {
     if (playerData.channelId !in chattyConfig.channels)
         playerData.channelId = getDefaultChat().key
@@ -82,12 +86,7 @@ fun getAllChannelNames(): List<String> {
 }
 
 fun translatePlaceholders(player: Player, message: String): Component {
-    val msg = message.miniMsg().replaceText(
-        TextReplacementConfig.builder()
-            .match("%chatty_playerhead%")
-            .replacement(player.translatePlayerHeadComponent()).build()
-    )
-    return PlaceholderAPI.setPlaceholders(player, msg.deserialize()).miniMsg()
+    return PlaceholderAPI.setPlaceholders(player, message).miniMsg()
 }
 
 //TODO Convert to using BLHE
