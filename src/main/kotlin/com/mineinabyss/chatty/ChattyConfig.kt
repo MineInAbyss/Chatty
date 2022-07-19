@@ -64,6 +64,7 @@ object ChattyConfig : IdofrontConfig<ChattyConfig.Data>(chattyPlugin, Data.seria
         val pingPitch: Float = 1.0f,
         val pingPrefix: String = "@",
         val clickToReply: Boolean = true,
-        val pingFormat: String = "<yellow><b>"
+        val pingReceiveFormat: String = "<yellow><b>",
+        val pingSendFormat: String = "<i>"
     )
 }
