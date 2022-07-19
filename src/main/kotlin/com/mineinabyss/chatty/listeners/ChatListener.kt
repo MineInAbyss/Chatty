@@ -35,6 +35,7 @@ class ChatListener : Listener {
         if (pingedPlayer != null && pingedPlayer != player && pingedPlayer in audiences) {
             message().handlePlayerPings(player, pingedPlayer)
             audiences.remove(pingedPlayer)
+            audiences.remove(player)
         }
 
         if (pingedPlayer == null && audiences.isEmpty() && channel.emptyChannelMessage != null) {

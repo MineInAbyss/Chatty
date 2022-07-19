@@ -41,11 +41,19 @@ fun Component.handlePlayerPings(player: Player, pingedPlayer: Player) {
     val pingMessage = this.replaceText(
         TextReplacementConfig.builder()
             .match(ping.pingPrefix + displayName)
-            .replacement((ping.pingFormat + clickToReply + ping.pingPrefix + displayName).miniMsg()).build()
+            .replacement((ping.pingReceiveFormat + clickToReply + ping.pingPrefix + displayName).miniMsg()).build()
     )
+
     if (!pingedPlayer.playerData.disablePingSound)
         pingedPlayer.playSound(pingedPlayer.location, pingSound, ping.pingVolume, ping.pingPitch)
     pingedPlayer.sendMessage(pingMessage)
+
+    val pingerMessage = this.replaceText(
+        TextReplacementConfig.builder()
+            .match(ping.pingPrefix + displayName)
+            .replacement((ping.pingSendFormat + clickToReply + ping.pingPrefix + displayName).miniMsg()).build()
+    )
+    player.sendMessage(pingerMessage)
 }
 
 fun getGlobalChat(): ChattyConfig.ChattyChannel? {

@@ -28,7 +28,8 @@ ping:
   pingPitch: 1.0
   pingPrefix: "@"
   clickToReply: true
-  pingFormat: "<b>"
+  pingReceiveFormat: "<b>"
+  pingSendFormat: "<i>"
 
 
 channels:
