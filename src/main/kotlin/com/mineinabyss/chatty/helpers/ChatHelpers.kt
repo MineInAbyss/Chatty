@@ -19,42 +19,6 @@ import org.bukkit.entity.Player
 import java.awt.Color
 import javax.imageio.ImageIO
 
-fun String.checkForPlayerPings(channel: ChattyConfig.ChattyChannel): Player? {
-    val ping = chattyConfig.ping
-    if (channel.channelName !in getPingEnabledChannels || ping.pingPrefix == "" || ping.pingPrefix !in this) return null
-    val pingedName = this.substringAfter(ping.pingPrefix).split(" ")[0]
-    return Bukkit.getOnlinePlayers().firstOrNull {
-        it.name == pingedName || it.displayName().deserialize() == pingedName
-    }
-}
-
-fun Component.handlePlayerPings(player: Player, pingedPlayer: Player) {
-    val channel = player.playerData.channel
-    val ping = chattyConfig.ping
-    val pingSound = pingedPlayer.playerData.pingSound ?: ping.defaultPingSound
-    val displayName = if (channel.format.useDisplayName) pingedPlayer.displayName().stripTags() else pingedPlayer.name
-    val clickToReply =
-        if (ping.clickToReply) "<insert:@${
-            player.displayName().stripTags()
-        } ><hover:show_text:'<red>Shift + Click to reply!'>"
-        else ""
-    val pingMessage = this.replaceText(
-        TextReplacementConfig.builder()
-            .match(ping.pingPrefix + displayName)
-            .replacement((ping.pingReceiveFormat + clickToReply + ping.pingPrefix + displayName).miniMsg()).build()
-    )
-
-    if (!pingedPlayer.playerData.disablePingSound)
-        pingedPlayer.playSound(pingedPlayer.location, pingSound, ping.pingVolume, ping.pingPitch)
-    pingedPlayer.sendMessage(pingMessage)
-
-    val pingerMessage = this.replaceText(
-        TextReplacementConfig.builder()
-            .match(ping.pingPrefix + displayName)
-            .replacement((ping.pingSendFormat + clickToReply + ping.pingPrefix + displayName).miniMsg()).build()
-    )
-    player.sendMessage(pingerMessage)
-
 fun String.checkForPlayerPings(channelId: String): Player? {
     val ping = chattyConfig.ping
     if (channelId !in getPingEnabledChannels || ping.pingPrefix == "" || ping.pingPrefix !in this) return null
@@ -189,7 +153,6 @@ fun setAudienceForChannelType(player: Player): Set<Audience> {
     }
     return audiences
 }
-
 val ping = chattyConfig.ping
 val getAlternativePingSounds: List<String> =
     if ("*" in ping.alternativePingSounds || "all" in ping.alternativePingSounds)
@@ -207,6 +170,4 @@ fun Component.stripTags(): String {
     return MiniMessage.builder().build().stripTags(this.deserialize())
 }
 
-fun Player.sendFormattedMessage(message: String) {
-    this.sendMessage(translatePlaceholders(this, message))
-}
+fun Player.sendFormattedMessage(message: String) = this.sendMessage(translatePlaceholders(this, message))
