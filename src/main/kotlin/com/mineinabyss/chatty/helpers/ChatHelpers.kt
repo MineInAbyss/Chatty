@@ -162,3 +162,7 @@ fun Component.deserialize(): String {
 fun Component.stripTags(): String {
     return MiniMessage.builder().build().stripTags(this.deserialize())
 }
+
+fun Player.sendFormattedMessage(message: String) {
+    this.sendMessage(translatePlaceholders(this, message))
+}

@@ -4,8 +4,9 @@ import com.mineinabyss.chatty.components.playerData
 import com.mineinabyss.chatty.helpers.*
 import com.mineinabyss.idofront.commands.arguments.stringArg
 import com.mineinabyss.idofront.commands.execution.IdofrontCommandExecutor
+import com.mineinabyss.idofront.commands.extensions.actions.ensureSenderIsPlayer
 import com.mineinabyss.idofront.commands.extensions.actions.playerAction
-import com.mineinabyss.idofront.messaging.*
+import com.mineinabyss.idofront.messaging.miniMsg
 import org.bukkit.command.Command
 import org.bukkit.command.CommandSender
 import org.bukkit.command.TabCompleter
@@ -19,7 +20,7 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
                     playerAction {
                         val player = sender as Player
                         player.playerData.disablePingSound = !player.playerData.disablePingSound
-                        player.success("Ping sound is now <i>${if (player.playerData.disablePingSound) "disabled" else "enabled"}.")
+                        player.sendFormattedMessage(messages.toggledPingSound)
                     }
                 }
                 "sound"(desc = "Change your pingsound") {
@@ -28,33 +29,33 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
                         val player = sender as Player
                         if (soundName in getAlternativePingSounds) {
                             player.playerData.pingSound = soundName
-                            player.success("Ping sound set to <i>$soundName")
+                            player.sendFormattedMessage(messages.changedPingSound)
                         } else {
-                            player.error("<i>$soundName</i> is not a valid ping sound.")
+                            player.sendFormattedMessage(messages.invalidPingSound)
                         }
                     }
                 }
             }
             "channels"(desc = "List all channels") {
                 playerAction {
-                    sender.info("<gold>Available channels are:".miniMsg())
-                    sender.info("<yellow>${getAllChannelNames()}".miniMsg())
+                    (sender as Player).sendFormattedMessage(messages.availableChannels)
                 }
             }
             "nickname" {
+                ensureSenderIsPlayer()
                 val nickname by stringArg()
                 action {
-                    val player = sender as Player
+                    val player = sender as? Player ?: return@action
                     if (nickname.isEmpty()) player.displayName(player.name.miniMsg())
                     else player.displayName(arguments.joinToString().replace(", ", " ").miniMsg())
-                    sender.success("Nickname set to <white><i>${player.displayName().deserialize()}</i></white>.")
+                    player.sendFormattedMessage(messages.nickNameChanged)
                 }
             }
             "reload" {
                 action {
                     ChattyConfig.reload()
                     ChattyConfig.load()
-                    sender.info("<gold>Chatty config reloaded")
+                    (sender as? Player)?.sendFormattedMessage(messages.configReloaded) ?: sender.sendMessage(messages.configReloaded.miniMsg())
                 }
             }
             getAllChannelNames().forEach { channelName ->
@@ -100,10 +101,11 @@ private fun Player.swapChannelCommand(channel: String) {
         .firstOrNull { it.channelName == channel || it.channelAliases.contains(channel) }
 
     if (newChannel == null) {
-        warn("No channel by the name <i>${channel}</i> exists.")
-        warn("Valid channels are: ${getAllChannelNames()}")
+        sendFormattedMessage(messages.noChannelWithName)
+    } else if (!hasPermission(newChannel.permission)) {
+        sendFormattedMessage(messages.missingChannelPermission)
     } else {
-        sendMessage(translatePlaceholders(this, messages.channelChangedMessage.replace("%chatty_channel%", newChannel.channelName)))
+        sendFormattedMessage(messages.channelChanged)
         playerData.channel = newChannel
     }
 }
