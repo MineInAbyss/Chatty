@@ -1,7 +1,6 @@
 pluginManagement {
     val kotlinVersion: String by settings
     val idofrontVersion: String by settings
-    val composeVersion: String by settings
 
     repositories {
         gradlePluginPortal()
