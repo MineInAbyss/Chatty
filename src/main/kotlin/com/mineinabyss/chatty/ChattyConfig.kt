@@ -8,31 +8,28 @@ object ChattyConfig : IdofrontConfig<ChattyConfig.Data>(chattyPlugin, Data.seria
     @Serializable
     data class Data(
         val useChattyCommandPrefix: Boolean = true,
-        val channelChangedMessage: String = "You have changed channels to %channel%",
         val playerHeadFont: String = "minecraft:chatty_heads",
         val ping: Ping,
         val join: Join,
         val leave: Leave,
         val channels: Set<ChattyChannel>,
+        val messages: Messages,
     )
 
     @Serializable
     data class Join(
         val enabled: Boolean = true,
-        val message: String = "<green>%player_name%<white> has joined the server.",
         val firstJoin: FirstJoin,
     )
 
     @Serializable
     data class FirstJoin(
         val enabled: Boolean = true,
-        val message: String = "<gradient:#058330:#ff9200>Welcome %player_name% to %server_name%</gradient>",
     )
 
     @Serializable
     data class Leave(
         val enabled: Boolean,
-        val message: String,
     )
 
     @Serializable
@@ -43,7 +40,6 @@ object ChattyConfig : IdofrontConfig<ChattyConfig.Data>(chattyPlugin, Data.seria
         val isDefaultChannel: Boolean = false,
         val format: Format,
         val channelRadius: Int = 0,
-        val emptyChannelMessage: String? = null,
         val channelAliases: List<String> = listOf(),
     )
 
@@ -66,5 +62,16 @@ object ChattyConfig : IdofrontConfig<ChattyConfig.Data>(chattyPlugin, Data.seria
         val clickToReply: Boolean = true,
         val pingReceiveFormat: String = "<yellow><b>",
         val pingSendFormat: String = "<i>"
+    )
+
+    @Serializable
+    data class Messages(
+        val changedPingSound: String = "Ping sound set to <i>%chatty_ping_sound%</i>",
+        val noSoundError: String = "<red>You must specify a valid sound to play.",
+        val channelChangedMessage: String = "<red>You have changed to channel <yellow>%chatty_channel%<red>.",
+        val emptyChannelMessage: String = "<red>There is no-one to read your message",
+        val firstJoinMessage: String = "<gradient:#058330:#ff9200>Welcome %player_name% to %server_name%</gradient>",
+        val joinMessage: String = "<green>%player_name%<white> has joined the server.",
+        val leaveMessage: String = "<red>%player_name%<white> has left the server.",
     )
 }

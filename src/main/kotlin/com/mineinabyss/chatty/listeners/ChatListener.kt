@@ -38,9 +38,9 @@ class ChatListener : Listener {
             audiences.remove(player)
         }
 
-        if (pingedPlayer == null && audiences.isEmpty() && channel.emptyChannelMessage != null) {
+        if (pingedPlayer == null && audiences.isEmpty() && messages.emptyChannelMessage != null) {
             isCancelled = true
-            player.sendMessage(channel.emptyChannelMessage.miniMsg())
+            player.sendMessage(messages.emptyChannelMessage.miniMsg())
         } else audiences.forEach { audience ->
             RendererExtension().render(player, displayName, message(), audience)
         }

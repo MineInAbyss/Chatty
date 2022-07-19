@@ -103,12 +103,7 @@ private fun Player.swapChannelCommand(channel: String) {
         warn("No channel by the name <i>${channel}</i> exists.")
         warn("Valid channels are: ${getAllChannelNames()}")
     } else {
-        sendMessage(
-            translatePlaceholders(
-                this,
-                chattyConfig.channelChangedMessage.replace("%chatty_channel%", newChannel.channelName)
-            )
-        )
+        sendMessage(translatePlaceholders(this, messages.channelChangedMessage.replace("%chatty_channel%", newChannel.channelName)))
         playerData.channel = newChannel
     }
 }
