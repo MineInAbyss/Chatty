@@ -65,11 +65,11 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
                     }
                 }
             }
-            chattyConfig.channels.forEach { channel ->
+            chattyConfig.channels.forEach { (channelId, channel) ->
                 channel.channelAliases.forEach { alias ->
                     alias {
                         playerAction {
-                            (sender as Player).swapChannelCommand(channel.channelName)
+                            (sender as Player).swapChannelCommand(channelId)
                         }
                     }
                 }
@@ -96,9 +96,8 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
     }
 }
 
-private fun Player.swapChannelCommand(channel: String) {
-    val newChannel = chattyConfig.channels
-        .firstOrNull { it.channelName == channel || it.channelAliases.contains(channel) }
+private fun Player.swapChannelCommand(channelId: String) {
+    val newChannel = getChannelFromId(channelId)
 
     if (newChannel == null) {
         sendFormattedMessage(messages.noChannelWithName)
@@ -106,6 +105,6 @@ private fun Player.swapChannelCommand(channel: String) {
         sendFormattedMessage(messages.missingChannelPermission)
     } else {
         sendFormattedMessage(messages.channelChanged)
-        playerData.channel = newChannel
+        playerData.channelId = channelId
     }
 }

@@ -12,7 +12,7 @@ object ChattyConfig : IdofrontConfig<ChattyConfig.Data>(chattyPlugin, Data.seria
         val ping: Ping,
         val join: Join,
         val leave: Leave,
-        val channels: Set<ChattyChannel>,
+        val channels: Map<String, ChattyChannel>,
         val messages: Messages,
     )
 
@@ -34,7 +34,6 @@ object ChattyConfig : IdofrontConfig<ChattyConfig.Data>(chattyPlugin, Data.seria
 
     @Serializable
     data class ChattyChannel(
-        val channelName: String,
         val channelType: ChannelType,
         val permission: String = "",
         val isDefaultChannel: Boolean = false,
