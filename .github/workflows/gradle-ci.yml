@@ -23,8 +23,14 @@ jobs:
       - name: Build
         run: gradle build
 
-      - name: Upload build
+      - name: Upload Velocity build
         uses: actions/upload-artifact@v1
         with:
-          name: build
-          path: build/libs
+          name: velocity-build
+          path: chatty-velocity/build/libs
+
+      - name: Upload Paper build
+        uses: actions/upload-artifact@v1
+        with:
+          name: paper-build
+          path: chatty-paper/build/libs

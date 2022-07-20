@@ -36,4 +36,13 @@ jobs:
           prerelease: false
           automatic_release_tag: v${{ steps.extract_version.outputs.version }}
           files: |
-            build/libs/*-all.jar
+            chatty-velocity/build/libs/*-all.jar
+
+      - name: Create GitHub Release
+        uses: marvinpinto/action-automatic-releases@latest
+        with:
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          prerelease: false
+          automatic_release_tag: v${{ steps.extract_version.outputs.version }}
+          files: |
+            chatty-paper/build/libs/*-all.jar
