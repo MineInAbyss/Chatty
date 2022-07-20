@@ -13,6 +13,9 @@ join:
 leave:
   enabled: true
 
+proxy:
+  enableProxySwitchMessages: false
+
 ping:
   enabledChannels: # "all" for all channels
     - "global"
@@ -90,3 +93,7 @@ messages:
   leaveMessage: "<red>%player_name%<white> has left the server."
   nickNameChanged: "Nickname set to <white><i>%player_displayname%</i></white>."
   configReloaded: "<green>Chatty config reloaded."
+  proxyJoin: "<green>+ <white>| <aqua>%player_displayname%%player_server%)"
+  proxyLeave: "<red>- <white>| <aqua>%player_displayname%"
+  proxySwitchToMessage: "<gray>↑<white> ┃ <aqua>%player_displayname% <gray>left to <aqua>%player_proxy_new_server% server."
+  proxySwitchFromMessage: "<gray>↑<white> ┃ <aqua>%player_displayname% <gray>left to <aqua>%player_proxy_new_server% server."

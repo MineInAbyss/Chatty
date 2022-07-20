@@ -1,11 +1,10 @@
 plugins {
-    kotlin("jvm")
-    kotlin("plugin.serialization")
     id("com.mineinabyss.conventions.kotlin")
     id("com.mineinabyss.conventions.papermc")
     id("com.mineinabyss.conventions.copyjar")
     id("com.mineinabyss.conventions.publication")
     id("com.mineinabyss.conventions.testing")
+    kotlin("plugin.serialization")
 }
 
 repositories {
@@ -28,8 +27,6 @@ dependencies {
     compileOnly(chattyLibs.placeholderapi)
 
     // Shaded
-    //implementation(project(":velocity"))
-    //implementation(project(":chatty-paper"))
-    //implementation(libs.idofront.core)
+    implementation(libs.idofront.core)
 //    compileOnly(libs.idofront.nms)
 }

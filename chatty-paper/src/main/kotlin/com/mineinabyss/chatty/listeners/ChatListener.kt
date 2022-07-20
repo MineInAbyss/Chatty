@@ -1,5 +1,7 @@
 package com.mineinabyss.chatty.listeners
 
+import com.mineinabyss.chatty.chattyPlugin
+import com.mineinabyss.chatty.chattyProxyChannel
 import com.mineinabyss.chatty.components.playerData
 import com.mineinabyss.chatty.helpers.*
 import com.mineinabyss.idofront.messaging.miniMsg
@@ -15,10 +17,11 @@ import org.bukkit.event.Listener
 
 class ChatListener : Listener {
 
-    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
     fun AsyncChatEvent.onPlayerChat() {
         player.verifyPlayerChannel()
-        val channel = getChannelFromId(player.playerData.channelId) ?: return
+        val channelId = player.playerData.channelId
+        val channel = getChannelFromId(channelId) ?: return
         val displayName = if (channel.format.useDisplayName) player.displayName() else player.name.miniMsg()
         val audiences = viewers()
         audiences.clear()
@@ -31,7 +34,7 @@ class ChatListener : Listener {
                 .append(channel.format.messageFormat.miniMsg().append(originalMessage()))
         )
 
-        val pingedPlayer = originalMessage().deserialize().checkForPlayerPings(player.playerData.channelId)
+        val pingedPlayer = originalMessage().deserialize().checkForPlayerPings(channelId)
         if (pingedPlayer != null && pingedPlayer != player && pingedPlayer in audiences) {
             message().handlePlayerPings(player, pingedPlayer)
             audiences.remove(pingedPlayer)
@@ -43,6 +46,11 @@ class ChatListener : Listener {
             player.sendFormattedMessage(messages.emptyChannelMessage)
         } else audiences.forEach { audience ->
             RendererExtension().render(player, displayName, message(), audience)
+        }
+
+        if (channel.proxy) {
+            //Append channel to give proxy info on what channel the message is from
+            player.sendPluginMessage(chattyPlugin, chattyProxyChannel, ("$channelId " + message().deserialize()).toByteArray())
         }
         audiences.clear()
     }

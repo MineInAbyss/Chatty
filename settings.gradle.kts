@@ -1,26 +1,33 @@
 pluginManagement {
     val kotlinVersion: String by settings
     val idofrontVersion: String by settings
-    val composeVersion: String by settings
 
     repositories {
+        mavenCentral()
         gradlePluginPortal()
         maven("https://repo.mineinabyss.com/releases")
-        maven("https://papermc.io/repo/repository/maven-public/")
+        maven("https://repo.papermc.io/repository/maven-public/")
         google()
     }
 
     plugins {
+
         kotlin("jvm") version kotlinVersion
+        kotlin("kapt") version kotlinVersion
         kotlin("plugin.serialization") version kotlinVersion
-        id("org.jetbrains.dokka") version kotlinVersion
-        id("org.jetbrains.compose") version composeVersion
+
+        id("com.github.johnrengelman.shadow") version "6.1.0"
     }
 
     resolutionStrategy.eachPlugin {
         if (requested.id.id.startsWith("com.mineinabyss.conventions")) useVersion(idofrontVersion)
     }
 }
+
+include(
+    "chatty-paper",
+    "chatty-velocity"
+)
 
 dependencyResolutionManagement {
     val idofrontVersion: String by settings
