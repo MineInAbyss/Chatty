@@ -26,6 +26,7 @@ class ChattyPlugin : JavaPlugin() {
     }
 
     override fun onEnable() {
+        saveResource("messages.yml", false)
         saveDefaultConfig()
         reloadConfig()
         ChattyConfig.load()

@@ -20,7 +20,7 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
                     action {
                         val player = sender as? Player ?: return@action
                         player.playerData.disablePingSound = !player.playerData.disablePingSound
-                        player.sendFormattedMessage(messages.toggledPingSound)
+                        player.sendFormattedMessage(messages.ping.toggledPingSound)
                     }
                 }
                 "sound"(desc = "Change your pingsound") {
@@ -30,17 +30,17 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
                         val player = sender as? Player ?: return@action
                         if (soundName in getAlternativePingSounds) {
                             player.playerData.pingSound = soundName
-                            player.sendFormattedMessage(messages.changedPingSound)
+                            player.sendFormattedMessage(messages.ping.changedPingSound)
                         } else {
-                            player.sendFormattedMessage(messages.invalidPingSound)
+                            player.sendFormattedMessage(messages.ping.invalidPingSound)
                         }
                     }
                 }
             }
             "channels"(desc = "List all channels") {
                 action {
-                    (sender as? Player)?.sendFormattedMessage(messages.availableChannels)
-                        ?: sender.sendMessage(messages.availableChannels)
+                    (sender as? Player)?.sendFormattedMessage(messages.channels.availableChannels)
+                        ?: sender.sendMessage(messages.channels.availableChannels)
                 }
             }
             "nickname" {
@@ -50,15 +50,27 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
                     val player = sender as? Player ?: return@action
                     if (nickname.isEmpty()) player.displayName(player.name.miniMsg())
                     else player.displayName(arguments.joinToString().replace(", ", " ").miniMsg())
-                    player.sendFormattedMessage(messages.nickNameChanged)
+                    player.sendFormattedMessage(messages.other.nickNameChanged)
                 }
             }
             "reload" {
-                action {
-                    ChattyConfig.reload()
-                    ChattyConfig.load()
-                    (sender as? Player)?.sendFormattedMessage(messages.configReloaded) ?: sender.sendMessage(messages.configReloaded.miniMsg())
+                "config" {
+                    action {
+                        ChattyConfig.reload()
+                        ChattyConfig.load()
+                        (sender as? Player)?.sendFormattedMessage(messages.other.configReloaded)
+                            ?: sender.sendMessage(messages.other.configReloaded.miniMsg())
+                    }
                 }
+                "messages" {
+                    action {
+                        ChattyMessages.reload()
+                        ChattyMessages.load()
+                        (sender as? Player)?.sendFormattedMessage(messages.other.messagesReloaded)
+                            ?: sender.sendMessage(messages.other.messagesReloaded.miniMsg())
+                    }
+                }
+
             }
             getAllChannelNames().forEach { channelName ->
                 channelName {
@@ -106,11 +118,11 @@ private fun Player.swapChannelCommand(channelId: String) {
     val newChannel = getChannelFromId(channelId)
 
     if (newChannel == null) {
-        sendFormattedMessage(messages.noChannelWithName)
+        sendFormattedMessage(messages.channels.noChannelWithName)
     } else if (!hasPermission(newChannel.permission)) {
-        sendFormattedMessage(messages.missingChannelPermission)
+        sendFormattedMessage(messages.channels.missingChannelPermission)
     } else {
         playerData.channelId = channelId
-        sendFormattedMessage(messages.channelChanged)
+        sendFormattedMessage(messages.channels.channelChanged)
     }
 }

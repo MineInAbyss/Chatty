@@ -15,7 +15,7 @@ class PlayerListener : Listener {
     fun PlayerJoinEvent.onFirstJoin() {
         if (player.toGeary().has<PlayerData>() || player.channelIsProxyEnabled()) return
         if (chattyConfig.join.enabled && chattyConfig.join.firstJoin.enabled)
-            joinMessage(translatePlaceholders(player, messages.firstJoinMessage))
+            joinMessage(translatePlaceholders(player, messages.joinLeave.firstJoinMessage))
     }
 
     @EventHandler
@@ -23,13 +23,13 @@ class PlayerListener : Listener {
         player.verifyPlayerChannel()
         if (player.toGeary().has<HideJoinLeave>() || player.channelIsProxyEnabled()) return
         if (chattyConfig.join.enabled)
-            joinMessage(translatePlaceholders(player, messages.joinMessage))
+            joinMessage(translatePlaceholders(player, messages.joinLeave.joinMessage))
     }
 
     @EventHandler
     fun PlayerQuitEvent.onDisconnect() {
         if (player.toGeary().has<HideJoinLeave>() || player.channelIsProxyEnabled()) return
         if (chattyConfig.leave.enabled)
-            quitMessage(translatePlaceholders(player, messages.leaveMessage))
+            quitMessage(translatePlaceholders(player, messages.joinLeave.leaveMessage))
     }
 }

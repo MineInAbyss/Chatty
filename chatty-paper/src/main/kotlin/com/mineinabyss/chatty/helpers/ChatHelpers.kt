@@ -36,7 +36,7 @@ fun Component.handlePlayerPings(player: Player, pingedPlayer: Player) {
     val clickToReply =
         if (ping.clickToReply) "<insert:@${
             player.displayName().stripTags()
-        } ><hover:show_text:'<red>Shift + Click to reply!'>"
+        } ><hover:show_text:'<red>Shift + Click to mention!'>"
         else ""
     val pingMessage = this.replaceText(
         TextReplacementConfig.builder()
