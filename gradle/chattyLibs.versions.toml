@@ -3,6 +3,7 @@ geary = "0.16.100"
 guiy = "0.6.21"
 bondrewdlikeshisemotes = "1.1.3"
 velocity = "3.1.1"
+discordsrv = "1.25.1"
 
 [libraries]
 protocolburrito = "com.mineinabyss:protocolburrito:0.3.32"
@@ -10,4 +11,5 @@ geary-papermc-core = { module = "com.mineinabyss:geary-papermc-core", version.re
 guiy = { module = "com.mineinabyss:guiy-compose", version.ref = "guiy" }
 bondrewdlikeshisemotes = { module = "io.github.bananapuncher714:bondrewdlikeshisemotes", version.ref = "bondrewdlikeshisemotes" }
 velocity = { module = "com.velocitypowered:velocity-api", version.ref = "velocity" }
+discordsrv = { module = "com.discordsrv:discordsrv", version.ref = "discordsrv" }
 placeholderapi = "me.clip:placeholderapi:2.11.1"
