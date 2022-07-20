@@ -19,17 +19,20 @@ object ChattyConfig : IdofrontConfig<ChattyConfig.Data>(chattyPlugin, Data.seria
     @Serializable
     data class Join(
         val enabled: Boolean = true,
+        val sendAcrossProxy: Boolean = true,
         val firstJoin: FirstJoin,
     )
 
     @Serializable
     data class FirstJoin(
         val enabled: Boolean = true,
+        val sendAcrossProxy: Boolean = true,
     )
 
     @Serializable
     data class Leave(
         val enabled: Boolean,
+        val sendAcrossProxy: Boolean = true,
     )
 
     @Serializable
@@ -42,6 +45,7 @@ object ChattyConfig : IdofrontConfig<ChattyConfig.Data>(chattyPlugin, Data.seria
         val channelType: ChannelType,
         val permission: String = "",
         val proxy: Boolean = false,
+        val discordsrv: Boolean = true,
         val isDefaultChannel: Boolean = false,
         val format: Format,
         val channelRadius: Int = 0,
