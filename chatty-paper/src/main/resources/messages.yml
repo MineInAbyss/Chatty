@@ -20,7 +20,7 @@ other:
   messagesReloaded: "<green>Chatty messages reloaded."
   nickNameChanged: "Nickname set to <white><i>%player_displayname%</i></white>."
 
-proxy:
+proxies:
   proxyJoin: "<green>+ <white>| <aqua>%player_displayname%%player_server%)"
   proxyLeave: "<red>- <white>| <aqua>%player_displayname%"
   proxySwitchToMessage: "<gray>↑<white> ┃ <aqua>%player_displayname% <gray>left to <aqua>%player_proxy_new_server% server."

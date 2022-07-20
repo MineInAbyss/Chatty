@@ -11,6 +11,7 @@ import com.mineinabyss.idofront.plugin.getService
 import com.mineinabyss.idofront.plugin.registerEvents
 import org.bukkit.Bukkit
 import org.bukkit.plugin.java.JavaPlugin
+import kotlin.io.path.Path
 
 val chattyPlugin: ChattyPlugin by lazy { JavaPlugin.getPlugin(ChattyPlugin::class.java) }
 const val chattyProxyChannel = "chatty:proxy"
@@ -26,7 +27,7 @@ class ChattyPlugin : JavaPlugin() {
     }
 
     override fun onEnable() {
-        saveResource("messages.yml", false)
+        saveDefaultMessages()
         saveDefaultConfig()
         reloadConfig()
         ChattyConfig.load()
@@ -50,5 +51,11 @@ class ChattyPlugin : JavaPlugin() {
                 all()
             }
         }
+    }
+}
+
+private fun saveDefaultMessages() {
+    if (!Path(chattyPlugin.dataFolder.path + "/messages.yml").toFile().exists()) {
+        chattyPlugin.saveResource("messages.yml", false)
     }
 }

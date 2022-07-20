@@ -8,10 +8,6 @@ plugins {
     id("com.mineinabyss.conventions.testing")
 }
 
-repositories {
-    maven("https://repo.extendedclip.com/content/repositories/placeholderapi/")
-}
-
 dependencies {
     // MineInAbyss platform
     compileOnly(libs.kotlinx.serialization.json)
@@ -19,17 +15,4 @@ dependencies {
     compileOnly(libs.kotlinx.coroutines)
     compileOnly(libs.minecraft.mccoroutine)
     compileOnly(libs.koin.core)
-
-    // Other plugins
-    compileOnly(chattyLibs.geary.papermc.core)
-    compileOnly(chattyLibs.bondrewdlikeshisemotes)
-
-    /// Third-party plugins
-    compileOnly(chattyLibs.placeholderapi)
-
-    // Shaded
-    //implementation(project(":velocity"))
-    //implementation(project(":chatty-paper"))
-    //implementation(libs.idofront.core)
-//    compileOnly(libs.idofront.nms)
 }

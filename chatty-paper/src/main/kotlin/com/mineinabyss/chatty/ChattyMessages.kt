@@ -4,7 +4,7 @@ import com.mineinabyss.idofront.config.IdofrontConfig
 import kotlinx.serialization.Serializable
 import kotlin.io.path.div
 
-object ChattyMessages : IdofrontConfig<ChattyMessages.Messages>(chattyPlugin, Messages.serializer(), file = (chattyPlugin.dataFolder.toPath() / "config.yml")) {
+object ChattyMessages : IdofrontConfig<ChattyMessages.Messages>(chattyPlugin, Messages.serializer(), file = (chattyPlugin.dataFolder.toPath() / "messages.yml")) {
 
     @Serializable
     data class Messages(
@@ -52,6 +52,4 @@ object ChattyMessages : IdofrontConfig<ChattyMessages.Messages>(chattyPlugin, Me
         val messagesReloaded: String = "<green>Chatty messages reloaded.",
         val nickNameChanged: String = "Nickname set to <white><i>&player_displayname%</i></white>.",
     )
-
-
 }
