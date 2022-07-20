@@ -3,7 +3,8 @@ version: ${plugin_version}
 author: boy0000
 main: com.mineinabyss.chatty.ChattyPlugin
 api-version: 1.19
-depend: [ Geary, PlaceholderAPI ]
+depend: [ Geary ]
+softdepend: [ BondrewdLikesHisEmotes, PlaceholderAPI, DiscordSRV ]
 description: TODO
 
 commands:

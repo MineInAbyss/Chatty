@@ -15,7 +15,7 @@ class PlayerListener : Listener {
     fun PlayerJoinEvent.onFirstJoin() {
         if (player.toGeary().has<PlayerData>()) return
         if (chattyConfig.join.enabled && chattyConfig.join.firstJoin.enabled) {
-            joinMessage(translatePlaceholders(player, messages.joinLeave.firstJoinMessage))
+            joinMessage(translatePlaceholders(player, chattyMessages.joinLeave.firstJoinMessage))
 //            if (chattyConfig.join.firstJoin.enabled)
 //                player.sendPluginMessage(chattyPlugin, chattyProxyChannel, PlaceholderAPI.setPlaceholders(player, messages.joinLeave.joinMessage).toByteArray())
         }
@@ -26,7 +26,7 @@ class PlayerListener : Listener {
         player.verifyPlayerChannel()
         if (player.toGeary().has<HideJoinLeave>()) return
         if (chattyConfig.join.enabled)
-            joinMessage(translatePlaceholders(player, messages.joinLeave.joinMessage))
+            joinMessage(translatePlaceholders(player, chattyMessages.joinLeave.joinMessage))
 //        if (chattyConfig.join.sendAcrossProxy)
 //            player.sendPluginMessage(chattyPlugin, chattyProxyChannel, PlaceholderAPI.setPlaceholders(player, messages.proxies.proxyJoin).toByteArray())
     }
@@ -35,7 +35,7 @@ class PlayerListener : Listener {
     fun PlayerQuitEvent.onDisconnect() {
         if (player.toGeary().has<HideJoinLeave>() || player.channelIsProxyEnabled()) return
         if (chattyConfig.leave.enabled)
-            quitMessage(translatePlaceholders(player, messages.joinLeave.leaveMessage))
+            quitMessage(translatePlaceholders(player, chattyMessages.joinLeave.leaveMessage))
 //        if (chattyConfig.leave.sendAcrossProxy)
 //            Bukkit.getServer().sendPluginMessage(chattyPlugin, chattyProxyChannel, PlaceholderAPI.setPlaceholders(player, messages.proxies.proxyLeave).toByteArray())
     }

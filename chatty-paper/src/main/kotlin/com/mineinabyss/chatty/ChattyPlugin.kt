@@ -29,6 +29,7 @@ class ChattyPlugin : JavaPlugin() {
     }
 
     override fun onEnable() {
+        saveDefaultEmoteFixer()
         saveDefaultMessages()
         saveDefaultConfig()
         reloadConfig()
@@ -48,7 +49,7 @@ class ChattyPlugin : JavaPlugin() {
         server.messenger.registerIncomingPluginChannel(this, chattyProxyChannel, ChattyProxyListener())
         server.messenger.registerOutgoingPluginChannel(this, chattyProxyChannel)
 
-        DiscordSRV.api.unsubscribe(DiscordListener())
+        DiscordSRV.api.subscribe(DiscordListener())
 
         gearyAddon {
             autoscan("com.mineinabyss") {
@@ -65,5 +66,12 @@ class ChattyPlugin : JavaPlugin() {
 private fun saveDefaultMessages() {
     if (!Path(chattyPlugin.dataFolder.path + "/messages.yml").toFile().exists()) {
         chattyPlugin.saveResource("messages.yml", false)
+    }
+}
+
+
+private fun saveDefaultEmoteFixer() {
+    if (!Path(chattyPlugin.dataFolder.path + "/emotefixer.yml").toFile().exists()) {
+        chattyPlugin.saveResource("emotefixer.yml", false)
     }
 }
