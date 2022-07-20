@@ -20,7 +20,7 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
                     action {
                         val player = sender as? Player ?: return@action
                         player.playerData.disablePingSound = !player.playerData.disablePingSound
-                        player.sendFormattedMessage(messages.ping.toggledPingSound)
+                        player.sendFormattedMessage(chattyMessages.ping.toggledPingSound)
                     }
                 }
                 "sound"(desc = "Change your pingsound") {
@@ -30,17 +30,17 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
                         val player = sender as? Player ?: return@action
                         if (soundName in getAlternativePingSounds) {
                             player.playerData.pingSound = soundName
-                            player.sendFormattedMessage(messages.ping.changedPingSound)
+                            player.sendFormattedMessage(chattyMessages.ping.changedPingSound)
                         } else {
-                            player.sendFormattedMessage(messages.ping.invalidPingSound)
+                            player.sendFormattedMessage(chattyMessages.ping.invalidPingSound)
                         }
                     }
                 }
             }
             "channels"(desc = "List all channels") {
                 action {
-                    (sender as? Player)?.sendFormattedMessage(messages.channels.availableChannels)
-                        ?: sender.sendMessage(messages.channels.availableChannels)
+                    (sender as? Player)?.sendFormattedMessage(chattyMessages.channels.availableChannels)
+                        ?: sender.sendMessage(chattyMessages.channels.availableChannels)
                 }
             }
             "nickname" {
@@ -50,7 +50,7 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
                     val player = sender as? Player ?: return@action
                     if (nickname.isEmpty()) player.displayName(player.name.miniMsg())
                     else player.displayName(arguments.joinToString().replace(", ", " ").miniMsg())
-                    player.sendFormattedMessage(messages.other.nickNameChanged)
+                    player.sendFormattedMessage(chattyMessages.other.nickNameChanged)
                 }
             }
             "reload" {
@@ -58,16 +58,16 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
                     action {
                         ChattyConfig.reload()
                         ChattyConfig.load()
-                        (sender as? Player)?.sendFormattedMessage(messages.other.configReloaded)
-                            ?: sender.sendMessage(messages.other.configReloaded.miniMsg())
+                        (sender as? Player)?.sendFormattedMessage(chattyMessages.other.configReloaded)
+                            ?: sender.sendMessage(chattyMessages.other.configReloaded.miniMsg())
                     }
                 }
                 "messages" {
                     action {
                         ChattyMessages.reload()
                         ChattyMessages.load()
-                        (sender as? Player)?.sendFormattedMessage(messages.other.messagesReloaded)
-                            ?: sender.sendMessage(messages.other.messagesReloaded.miniMsg())
+                        (sender as? Player)?.sendFormattedMessage(chattyMessages.other.messagesReloaded)
+                            ?: sender.sendMessage(chattyMessages.other.messagesReloaded.miniMsg())
                     }
                 }
 
@@ -118,11 +118,11 @@ private fun Player.swapChannelCommand(channelId: String) {
     val newChannel = getChannelFromId(channelId)
 
     if (newChannel == null) {
-        sendFormattedMessage(messages.channels.noChannelWithName)
+        sendFormattedMessage(chattyMessages.channels.noChannelWithName)
     } else if (!hasPermission(newChannel.permission)) {
-        sendFormattedMessage(messages.channels.missingChannelPermission)
+        sendFormattedMessage(chattyMessages.channels.missingChannelPermission)
     } else {
         playerData.channelId = channelId
-        sendFormattedMessage(messages.channels.channelChanged)
+        sendFormattedMessage(chattyMessages.channels.channelChanged)
     }
 }
