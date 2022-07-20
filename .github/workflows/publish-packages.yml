@@ -29,14 +29,6 @@ jobs:
         run: |
           version=`gradle properties --no-daemon --console=plain -q | grep "^version:" | awk '{printf $2}'`
           echo "::set-output name=version::$version"
-      - name: Create GitHub Release
-        uses: marvinpinto/action-automatic-releases@latest
-        with:
-          repo_token: "${{ secrets.GITHUB_TOKEN }}"
-          prerelease: false
-          automatic_release_tag: v${{ steps.extract_version.outputs.version }}
-          files: |
-            chatty-velocity/build/libs/*-all.jar
 
       - name: Create GitHub Release
         uses: marvinpinto/action-automatic-releases@latest
@@ -46,3 +38,4 @@ jobs:
           automatic_release_tag: v${{ steps.extract_version.outputs.version }}
           files: |
             chatty-paper/build/libs/*-all.jar
+            chatty-velocity/build/libs/*-all.jar

@@ -2,9 +2,6 @@ val kotlinVersion: String by project
 val velocityVersion: String by project
 val coroutinesVersion: String by project
 
-group = "com.velocitypowered"
-version = "$velocityVersion+$kotlinVersion"
-
 plugins {
     kotlin("jvm")
     kotlin("kapt")
