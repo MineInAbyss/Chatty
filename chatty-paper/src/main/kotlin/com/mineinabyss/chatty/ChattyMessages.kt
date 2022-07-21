@@ -8,11 +8,26 @@ object ChattyMessages : IdofrontConfig<ChattyMessages.Messages>(chattyPlugin, Me
 
     @Serializable
     data class Messages(
+        val nicknames: Nicknames,
         val ping: Pings,
         val channels: Channels,
         val proxies: Proxies,
         val joinLeave: JoinLeave,
         val other: Other
+    )
+
+    @Serializable
+    data class Nicknames(
+        val selfSuccess: String = "<green>You changed your nickname to <i>%player_displayname%</i>!",
+        val selfDenied: String = "<red>You can't change your nickname!",
+        val selfEmpty: String = "<yellow>Removed nickname!",
+        val otherSuccess: String = "<green>You changed %player_name%'s nickname to <i>%player_displayname%</i>!",
+        val otherDenied: String = "<red>You can't change %player_name%'s nickname!",
+        val otherEmpty: String = "<yellow>Removed nickname for %player_name%!",
+        val invalidPlayer: String = "<red>That player doesn't exist!",
+        val consoleNicknameSelf: String = "<red>Sadly console cannot have cool nickname :(",
+        val disallowedStyling: String = "<red>This nickname contains formatting that are not allowed!",
+        val tooLong: String = "<red>The nickname was too long!",
     )
 
     @Serializable

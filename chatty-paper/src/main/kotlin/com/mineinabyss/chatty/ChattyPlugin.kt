@@ -49,7 +49,7 @@ class ChattyPlugin : JavaPlugin() {
         server.messenger.registerIncomingPluginChannel(this, chattyProxyChannel, ChattyProxyListener())
         server.messenger.registerOutgoingPluginChannel(this, chattyProxyChannel)
 
-        DiscordSRV.api.subscribe(DiscordListener())
+        if (Bukkit.getPluginManager().getPlugin("DiscordSRV") != null) DiscordSRV.api.subscribe(DiscordListener())
 
         gearyAddon {
             autoscan("com.mineinabyss") {
@@ -59,7 +59,7 @@ class ChattyPlugin : JavaPlugin() {
     }
 
     override fun onDisable() {
-        DiscordSRV.api.unsubscribe(DiscordListener())
+        if (Bukkit.getPluginManager().getPlugin("DiscordSRV") != null) DiscordSRV.api.unsubscribe(DiscordListener())
     }
 }
 

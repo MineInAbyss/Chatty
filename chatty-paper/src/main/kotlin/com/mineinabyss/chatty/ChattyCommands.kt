@@ -6,6 +6,7 @@ import com.mineinabyss.idofront.commands.arguments.stringArg
 import com.mineinabyss.idofront.commands.execution.IdofrontCommandExecutor
 import com.mineinabyss.idofront.commands.extensions.actions.ensureSenderIsPlayer
 import com.mineinabyss.idofront.messaging.miniMsg
+import org.bukkit.Bukkit
 import org.bukkit.command.Command
 import org.bukkit.command.CommandSender
 import org.bukkit.command.TabCompleter
@@ -44,13 +45,56 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
                 }
             }
             "nickname" {
-                val nickname by stringArg()
-                ensureSenderIsPlayer()
                 action {
-                    val player = sender as? Player ?: return@action
-                    if (nickname.isEmpty()) player.displayName(player.name.miniMsg())
-                    else player.displayName(arguments.joinToString().replace(", ", " ").miniMsg())
-                    player.sendFormattedMessage(chattyMessages.other.nickNameChanged)
+                    val nickMessage = chattyMessages.nicknames
+                    val nickConfig = chattyConfig.nicknames
+                    val nick = arguments.joinToString(" ")
+                    val player = sender as? Player
+                    val bypassFormatPerm = player?.hasPermission(nickConfig.bypassFormatPermission) == true
+
+                    when {
+                        player is Player && !player.hasPermission(nickConfig.permission) ->
+                            player.sendFormattedMessage(nickMessage.selfDenied)
+                        arguments.isEmpty() -> {
+                            // Removes players displayname or sends error if sender is console
+                            player?.displayName(player.name.miniMsg())
+                            player?.sendFormattedMessage(nickMessage.selfEmpty)
+                                ?: sender.sendConsoleMessage(nickMessage.consoleNicknameSelf)
+                        }
+                        arguments.first().startsWith(nickConfig.nickNameOtherPrefix) -> {
+                            val otherPlayer = arguments.getPlayerToNick()
+                            val otherNick = nick.removePlayerToNickFromString()
+
+                            when {
+                                player?.hasPermission(nickConfig.nickOtherPermission) == false ->
+                                    player.sendFormattedMessage(nickMessage.otherDenied, otherPlayer)
+                                !Bukkit.getOnlinePlayers().contains(otherPlayer) ->
+                                    player?.sendFormattedMessage(nickMessage.invalidPlayer, otherPlayer)
+                                otherNick.isEmpty() -> {
+                                    otherPlayer?.displayName(otherPlayer.name.miniMsg())
+                                    player?.sendFormattedMessage(nickMessage.otherEmpty, otherPlayer)
+                                }
+                                !bypassFormatPerm && !otherNick.verifyNickStyling() ->
+                                    player?.sendFormattedMessage(nickMessage.disallowedStyling)
+                                !bypassFormatPerm && !otherNick.verifyNickLength() ->
+                                    player?.sendFormattedMessage(nickMessage.tooLong)
+                                otherNick.isNotEmpty() -> {
+                                    otherPlayer?.displayName(otherNick.miniMsg())
+                                    player?.sendFormattedMessage(nickMessage.otherSuccess, otherPlayer)
+                                }
+                            }
+                        }
+                        else -> {
+                            if (!bypassFormatPerm && !nick.verifyNickStyling()) {
+                                player?.sendFormattedMessage(nickMessage.disallowedStyling)
+                            } else if (!bypassFormatPerm && !nick.verifyNickLength()) {
+                                player?.sendFormattedMessage(nickMessage.tooLong)
+                            } else {
+                                player?.displayName(nick.miniMsg())
+                                player?.sendFormattedMessage(nickMessage.selfSuccess)
+                            }
+                        }
+                    }
                 }
             }
             "reload" {
@@ -59,7 +103,7 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
                         ChattyConfig.reload()
                         ChattyConfig.load()
                         (sender as? Player)?.sendFormattedMessage(chattyMessages.other.configReloaded)
-                            ?: sender.sendMessage(chattyMessages.other.configReloaded.miniMsg())
+                            ?: sender.sendConsoleMessage(chattyMessages.other.configReloaded)
                     }
                 }
                 "messages" {
@@ -67,7 +111,7 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
                         ChattyMessages.reload()
                         ChattyMessages.load()
                         (sender as? Player)?.sendFormattedMessage(chattyMessages.other.messagesReloaded)
-                            ?: sender.sendMessage(chattyMessages.other.messagesReloaded.miniMsg())
+                            ?: sender.sendConsoleMessage(chattyMessages.other.messagesReloaded)
                     }
                 }
 
@@ -104,7 +148,11 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
         return if (command.name == "chatty") {
             when (args.size) {
                 1 -> listOf("ping", "reload", "channels", "nickname")
-                2 -> if (args[0] == "ping") listOf("toggle", "sound") else emptyList()
+                2 -> when (args[0]) {
+                    "ping" -> listOf("toggle", "sound")
+                    "reload" -> listOf("config", "messages")
+                    else -> emptyList()
+                }
                 3 ->
                     if (args[0] == "ping" && args[1] == "sound") getAlternativePingSounds
                     else emptyList()

@@ -1,6 +1,7 @@
 package com.mineinabyss.chatty
 
 import com.mineinabyss.chatty.components.ChannelType
+import com.mineinabyss.chatty.helpers.ChattyTags
 import com.mineinabyss.idofront.config.IdofrontConfig
 import kotlinx.serialization.Serializable
 
@@ -9,30 +10,39 @@ object ChattyConfig : IdofrontConfig<ChattyConfig.Data>(chattyPlugin, Data.seria
     data class Data(
         val useChattyCommandPrefix: Boolean = true,
         val playerHeadFont: String = "minecraft:chatty_heads",
-        val ping: Ping,
-        val join: Join,
-        val leave: Leave,
-        val proxy: Proxy,
-        val channels: Map<String, ChattyChannel>,
+        val nicknames: Nickname = Nickname(),
+        val ping: Ping = Ping(),
+        val join: Join = Join(),
+        val leave: Leave = Leave(),
+        val proxy: Proxy = Proxy(),
+        val channels: Map<String, ChattyChannel> = mutableMapOf("global" to ChattyChannel(ChannelType.GLOBAL)),
+    )
+
+    @Serializable
+    data class Nickname(
+        val permission: String = "chatty.nickname",
+        val nickOtherPermission: String = "chatty.nickname.other",
+        val bypassFormatPermission: String = "chatty.nickname.bypassformat",
+        val maxLength: Int = 32,
+        val countColorsInLength: Boolean = false,
+        val nickNameOtherPrefix: Char = '@',
+        val allowedTags: List<ChattyTags> = emptyList()
     )
 
     @Serializable
     data class Join(
         val enabled: Boolean = true,
-        val sendAcrossProxy: Boolean = true,
-        val firstJoin: FirstJoin,
+        val firstJoin: FirstJoin = FirstJoin(),
     )
 
     @Serializable
     data class FirstJoin(
         val enabled: Boolean = true,
-        val sendAcrossProxy: Boolean = true,
     )
 
     @Serializable
     data class Leave(
-        val enabled: Boolean,
-        val sendAcrossProxy: Boolean = true,
+        val enabled: Boolean = true,
     )
 
     @Serializable
@@ -47,7 +57,7 @@ object ChattyConfig : IdofrontConfig<ChattyConfig.Data>(chattyPlugin, Data.seria
         val proxy: Boolean = false,
         val discordsrv: Boolean = true,
         val isDefaultChannel: Boolean = false,
-        val format: Format,
+        val format: Format = Format(),
         val channelRadius: Int = 0,
         val channelAliases: List<String> = listOf(),
     )

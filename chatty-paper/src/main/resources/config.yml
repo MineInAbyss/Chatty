@@ -5,6 +5,25 @@
 playerHeadFont: "minecraft:chatty_heads"
 useChattyCommandPrefix: true
 
+nicknames:
+  permission: "chatty.nickname"
+  nickOtherPermission: "chatty.nickname.other"
+  bypassFormatPermission: "chatty.nickname.bypassformat"
+  maxLength: 32
+  countColorsInLength: false
+  nickNameOtherPrefix: '@'
+  allowedStyling:
+    - BOLD
+    - STRIKETHROUGH
+    - UNDERLINE
+    - ITALIC
+    - OBFUSCATED
+    - TEXTCOLOR
+    - HEXCOLOR
+    - RAINBOW
+    - GRADIENT
+    - HOVER
+
 join:
   enabled: true
   firstJoin:
