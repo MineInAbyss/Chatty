@@ -5,6 +5,14 @@
 playerHeadFont: "minecraft:chatty_heads"
 useChattyCommandPrefix: true
 
+privateMessages:
+  enabled: true
+  proxy: true           # Not currently supported
+  messageSendFormat: "<gold>You -> %player_displayname%: "
+  messageReceiveFormat: "<gold>%player_displayname% -> You: "
+  messageSendSound: ""      # Empty for no sound
+  messageReceiveSound: ""   # Empty for no sound
+
 nicknames:
   permission: "chatty.nickname"
   nickOtherPermission: "chatty.nickname.other"
@@ -38,16 +46,16 @@ proxy:
 ping:
   enabledChannels:          # channelIds to enable pings for
     - "global"              # "all" or "*" for all channels
-  defaultPingSound: "block.amethyst_block.place"
-  alternativePingSounds:    # "all" to let people choose any sound
-    - "block.stone.break"
-    - "block.grass.place"
   pingVolume: 1.0
   pingPitch: 1.0
   pingPrefix: "@"
   clickToReply: true
   pingReceiveFormat: "<b>"  # Default format the ping-message is marked with for pinged
   pingSendFormat: "<i>"     # Default format the ping-message is marked with for sender
+  defaultPingSound: "block.amethyst_block.place"
+  alternativePingSounds:    # "all" to let people choose any sound
+    - "block.stone.break"
+    - "block.grass.place"
 
 
 channels:

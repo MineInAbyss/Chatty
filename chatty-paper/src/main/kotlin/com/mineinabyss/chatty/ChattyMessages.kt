@@ -8,13 +8,13 @@ object ChattyMessages : IdofrontConfig<ChattyMessages.Messages>(chattyPlugin, Me
 
     @Serializable
     data class Messages(
-        val nicknames: Nicknames,
-        val privateMessages: PrivateMessages,
-        val ping: Pings,
-        val channels: Channels,
-        val proxies: Proxies,
-        val joinLeave: JoinLeave,
-        val other: Other
+        val nicknames: Nicknames = Nicknames(),
+        val privateMessages: PrivateMessages = PrivateMessages(),
+        val ping: Pings = Pings(),
+        val channels: Channels = Channels(),
+        val proxies: Proxies = Proxies(),
+        val joinLeave: JoinLeave = JoinLeave(),
+        val other: Other = Other()
     )
 
     @Serializable
