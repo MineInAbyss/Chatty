@@ -1,3 +1,15 @@
+nicknames:
+  selfSuccess: "<green>You changed your nickname to <i>%player_displayname%</i>!"
+  selfDenied: "<red>You can't change your nickname!"
+  selfEmpty: "<yellow>Removed nickname!"
+  otherSuccess: "<green>You changed %player_name%'s nickname to <i>%player_displayname%</i>!"
+  otherDenied: "<red>You can't change %player_name%'s nickname!"
+  otherEmpty: "<yellow>Removed nickname for %player_name%!"
+  invalidPlayer: "<red>That player doesn't exist!"
+  consoleNicknameSelf: "<red>Sadly console cannot have cool nickname :("
+  disallowedStyling: "<red>This nickname contains formatting that are not allowed!"
+  tooLong: "<red>The nickname was too long!"
+
 ping:
   toggledPingSound: "Ping sound is now <i>%chatty_player_ping_toggle%</i>."
   changedPingSound: "Ping sound set to <i>%chatty_player_ping_sound%</i>"

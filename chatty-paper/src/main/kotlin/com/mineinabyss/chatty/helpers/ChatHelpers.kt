@@ -1,7 +1,6 @@
 package com.mineinabyss.chatty.helpers
 
 import com.destroystokyo.paper.ClientOption
-import com.mineinabyss.chatty.ChattyConfig
 import com.mineinabyss.chatty.components.ChannelType
 import com.mineinabyss.chatty.components.playerData
 import com.mineinabyss.idofront.font.Space
@@ -13,18 +12,29 @@ import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.TextReplacementConfig
 import net.kyori.adventure.text.format.TextColor
 import net.kyori.adventure.text.minimessage.MiniMessage
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
 import org.bukkit.Bukkit
+import org.bukkit.ChatColor
 import org.bukkit.Sound
+import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
 import java.awt.Color
 import javax.imageio.ImageIO
 
+val ping = chattyConfig.ping
+val getAlternativePingSounds: List<String> =
+    if ("*" in ping.alternativePingSounds || "all" in ping.alternativePingSounds)
+        Sound.values().map { it.key.toString() }.toList() else ping.alternativePingSounds
+
+val getPingEnabledChannels: List<String> =
+    if ("*" in ping.enabledChannels || "all" in ping.enabledChannels) getAllChannelNames() else ping.enabledChannels
+
 fun String.checkForPlayerPings(channelId: String): Player? {
     val ping = chattyConfig.ping
-    if (channelId !in getPingEnabledChannels || ping.pingPrefix == "" || ping.pingPrefix !in this) return null
+    if (channelId !in getPingEnabledChannels || ping.pingPrefix.isEmpty() || ping.pingPrefix !in this) return null
     val pingedName = this.substringAfter(ping.pingPrefix).split(" ")[0]
     return Bukkit.getOnlinePlayers().firstOrNull {
-        it.name == pingedName || it.displayName().deserialize() == pingedName
+        it.name == pingedName || it.displayName().serialize() == pingedName
     }
 }
 
@@ -56,27 +66,21 @@ fun Component.handlePlayerPings(player: Player, pingedPlayer: Player) {
     player.sendMessage(pingerMessage)
 }
 
-fun getGlobalChat(): Map.Entry<String, ChattyConfig.ChattyChannel>? {
-    return chattyConfig.channels.entries.firstOrNull { it.value.channelType == ChannelType.GLOBAL }
-}
+fun getGlobalChat() =
+    chattyConfig.channels.entries.firstOrNull { it.value.channelType == ChannelType.GLOBAL }
 
-fun getDefaultChat(): Map.Entry<String, ChattyConfig.ChattyChannel> {
-    return chattyConfig.channels.entries.firstOrNull { it.value.isDefaultChannel }
+fun getDefaultChat() =
+    chattyConfig.channels.entries.firstOrNull { it.value.isDefaultChannel }
         ?: getGlobalChat()
         ?: throw IllegalStateException("No Default or Global channel found")
-}
 
-fun getChannelFromId(channelId: String) : ChattyConfig.ChattyChannel? {
-    return chattyConfig.channels.entries.firstOrNull { it.key == channelId }?.value
-}
+fun getChannelFromId(channelId: String) =
+    chattyConfig.channels.entries.firstOrNull { it.key == channelId }?.value
 
-fun Player.getChannelFromPlayer() : ChattyConfig.ChattyChannel? {
-    return chattyConfig.channels.entries.firstOrNull { it.key == this.playerData.channelId }?.value
-}
+fun Player.getChannelFromPlayer() =
+    chattyConfig.channels.entries.firstOrNull { it.key == this.playerData.channelId }?.value
 
-fun Player.channelIsProxyEnabled() : Boolean {
-    return getChannelFromPlayer()?.proxy ?: false
-}
+fun Player.channelIsProxyEnabled() = getChannelFromPlayer()?.proxy ?: false
 
 fun Player.verifyPlayerChannel() {
     if (playerData.channelId !in chattyConfig.channels)
@@ -95,7 +99,7 @@ fun translatePlaceholders(player: Player, message: String): Component {
             .match("%chatty_playerhead%")
             .replacement(player.translatePlayerHeadComponent()).build()
     )
-    return PlaceholderAPI.setPlaceholders(player, msg.deserialize()).miniMsg()
+    return PlaceholderAPI.setPlaceholders(player, msg.serialize()).serializeLegacy()
 }
 
 //TODO Convert to using BLHE
@@ -157,21 +161,49 @@ fun setAudienceForChannelType(player: Player): Set<Audience> {
     }
     return audiences
 }
-val ping = chattyConfig.ping
-val getAlternativePingSounds: List<String> =
-    if ("*" in ping.alternativePingSounds || "all" in ping.alternativePingSounds)
-        Sound.values().map { it.key.toString() }.toList() else ping.alternativePingSounds
 
-val getPingEnabledChannels: List<String> =
-    if ("*" in ping.enabledChannels || "all" in ping.enabledChannels) getAllChannelNames() else ping.enabledChannels
+fun String.serializeLegacy() = LegacyComponentSerializer.legacy('§').deserialize(this).fixLegacy()
 
+fun Component.fixLegacy() : Component =
+    this.serialize().replace("\\<", "<").replace("\\>", ">").miniMsg()
 
-fun Component.deserialize(): String {
-    return MiniMessage.builder().build().serialize(this)
+fun Component.serialize() = MiniMessage.builder().build().serialize(this)
+
+fun Component.stripTags() = MiniMessage.builder().build().stripTags(this.serialize())
+
+fun String.getTags(): List<ChattyTags> {
+    val tags = mutableListOf<ChattyTags>()
+    if (" " in this) tags.add(ChattyTags.SPACES)
+    MiniMessage.builder().build().deserializeToTree(this).toString()
+        .split("TagNode(",") {").filter { "Node" !in it && it.isNotBlank() }.toList().forEach {
+            val tag = it.replace("'", "").replace(",", "")
+            when {
+                tag in ChatColor.values().toString().lowercase() -> tags.add(ChattyTags.TEXTCOLOR)
+                tag.startsWith("gradient") -> tags.add(ChattyTags.GRADIENT)
+                tag.startsWith("#") -> tags.add(ChattyTags.HEXCOLOR)
+                tag.startsWith("i") || tag.startsWith("italic") -> tags.add(ChattyTags.ITALIC)
+                tag.startsWith("b") || tag.startsWith("bold") -> tags.add(ChattyTags.BOLD)
+                tag.startsWith("u") || tag.startsWith("underline") -> tags.add(ChattyTags.UNDERLINE)
+                tag.startsWith("st") || tag.startsWith("strikethrough") -> tags.add(ChattyTags.STRIKETHROUGH)
+                tag.startsWith("obf") || tag.startsWith("obfuscated") -> tags.add(ChattyTags.OBFUSCATED)
+                tag.startsWith("click") -> tags.add(ChattyTags.CLICK)
+                tag.startsWith("hover") -> tags.add(ChattyTags.HOVER)
+                tag.startsWith("insert") -> tags.add(ChattyTags.INSERTION)
+                tag.startsWith("rainbow") -> tags.add(ChattyTags.RAINBOW)
+                tag.startsWith("transition") -> tags.add(ChattyTags.TRANSITION)
+                tag.startsWith("reset") -> tags.add(ChattyTags.RESET)
+                tag.startsWith("font") -> tags.add(ChattyTags.FONT)
+                tag.startsWith("key") -> tags.add(ChattyTags.KEYBIND)
+                tag.startsWith("lang") -> tags.add(ChattyTags.TRANSLATABLE)
+            }
+    }
+    return tags.toList()
 }
 
-fun Component.stripTags(): String {
-    return MiniMessage.builder().build().stripTags(this.deserialize())
-}
+fun Player.sendFormattedMessage(message: String) =
+    this.sendMessage(translatePlaceholders(this, message).serialize().miniMsg())
 
-fun Player.sendFormattedMessage(message: String) = this.sendMessage(translatePlaceholders(this, message))
+fun Player.sendFormattedMessage(message: String, optionalPlayer: Player? = null) =
+    this.sendMessage(translatePlaceholders((optionalPlayer ?: this), message))
+
+fun CommandSender.sendConsoleMessage(message: String) = this.sendMessage(message.miniMsg())

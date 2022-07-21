@@ -34,7 +34,7 @@ class ChatListener : Listener {
                 .append(channel.format.messageFormat.miniMsg().append(originalMessage()))
         )
 
-        val pingedPlayer = originalMessage().deserialize().checkForPlayerPings(channelId)
+        val pingedPlayer = originalMessage().serialize().checkForPlayerPings(channelId)
         if (pingedPlayer != null && pingedPlayer != player && pingedPlayer in audiences) {
             message().handlePlayerPings(player, pingedPlayer)
             audiences.remove(pingedPlayer)
@@ -50,7 +50,7 @@ class ChatListener : Listener {
 
         if (channel.proxy) {
             //Append channel to give proxy info on what channel the message is from
-            player.sendPluginMessage(chattyPlugin, chattyProxyChannel, ("$channelId " + message().deserialize()).toByteArray())
+            player.sendPluginMessage(chattyPlugin, chattyProxyChannel, ("$channelId " + message().serialize()).toByteArray())
         }
         audiences.clear()
     }

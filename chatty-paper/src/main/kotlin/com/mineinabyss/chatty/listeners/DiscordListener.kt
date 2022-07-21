@@ -3,7 +3,6 @@ package com.mineinabyss.chatty.listeners
 import com.mineinabyss.chatty.components.playerData
 import com.mineinabyss.chatty.helpers.emoteFixer
 import com.mineinabyss.chatty.helpers.getChannelFromId
-import com.mineinabyss.idofront.messaging.broadcast
 import github.scarsz.discordsrv.api.Subscribe
 import github.scarsz.discordsrv.api.events.*
 import github.scarsz.discordsrv.dependencies.jda.api.MessageBuilder
@@ -140,7 +139,6 @@ private fun Component.deserialize(): String {
 }
 
 private fun Component.stripTags(): String {
-    broadcast(this.deserialize())
     return MiniMessage.builder().build().stripTokens(this.deserialize())
 }
 
