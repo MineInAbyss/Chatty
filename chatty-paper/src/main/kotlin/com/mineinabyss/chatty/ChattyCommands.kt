@@ -5,6 +5,7 @@ import com.mineinabyss.chatty.helpers.*
 import com.mineinabyss.idofront.commands.arguments.stringArg
 import com.mineinabyss.idofront.commands.execution.IdofrontCommandExecutor
 import com.mineinabyss.idofront.commands.extensions.actions.ensureSenderIsPlayer
+import com.mineinabyss.idofront.commands.extensions.actions.playerAction
 import com.mineinabyss.idofront.messaging.miniMsg
 import org.bukkit.Bukkit
 import org.bukkit.command.Command
@@ -15,6 +16,33 @@ import org.bukkit.entity.Player
 class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
     override val commands = commands(chattyPlugin) {
         "chatty"(desc = "Chatty commands") {
+            "msg"(desc = "Private message another player") {
+                ensureSenderIsPlayer()
+                playerAction {
+                    val sender = sender as? Player ?: return@playerAction
+                    val pmConfig = chattyConfig.privateMessages
+
+                    if (pmConfig.enabled) {
+                        sender.sendFormattedMessage(chattyMessages.privateMessages.disabled)
+                        return@playerAction
+                    }
+                    else if (arguments.first().toPlayer() == null) {
+                        sender.sendFormattedMessage(chattyMessages.privateMessages.invalidPlayer)
+                        return@playerAction
+                    }
+                    else {
+                        val msg = arguments.removeFirstArgumentOfStringList()
+                        val privateMessages = chattyConfig.privateMessages
+
+                        sender.sendFormattedPrivateMessage(privateMessages.messageSendFormat, msg, player)
+                        player.sendFormattedPrivateMessage(privateMessages.messageReceiveFormat, msg, sender)
+                        if (privateMessages.messageSendSound.isNotEmpty())
+                            sender.playSound(player.location, privateMessages.messageSendSound, 1f, 1f)
+                        if (privateMessages.messageReceivedSound.isNotEmpty())
+                            player.playSound(player.location, privateMessages.messageReceivedSound, 1f, 1f)
+                    }
+                }
+            }
             "ping"(desc = "Commands related to the chat-ping feature.") {
                 "toggle"(desc = "Toggle the ping sound.") {
                     ensureSenderIsPlayer()

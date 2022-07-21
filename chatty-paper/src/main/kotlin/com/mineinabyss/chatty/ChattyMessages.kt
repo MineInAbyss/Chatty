@@ -9,11 +9,18 @@ object ChattyMessages : IdofrontConfig<ChattyMessages.Messages>(chattyPlugin, Me
     @Serializable
     data class Messages(
         val nicknames: Nicknames,
+        val privateMessages: PrivateMessages,
         val ping: Pings,
         val channels: Channels,
         val proxies: Proxies,
         val joinLeave: JoinLeave,
         val other: Other
+    )
+
+    @Serializable
+    data class PrivateMessages(
+        val disabled: String = "<red>Private messages are disabled",
+        val invalidPlayer: String = "<red>Invalid player",
     )
 
     @Serializable

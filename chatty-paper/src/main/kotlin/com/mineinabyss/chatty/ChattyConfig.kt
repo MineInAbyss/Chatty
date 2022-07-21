@@ -15,7 +15,18 @@ object ChattyConfig : IdofrontConfig<ChattyConfig.Data>(chattyPlugin, Data.seria
         val join: Join = Join(),
         val leave: Leave = Leave(),
         val proxy: Proxy = Proxy(),
+        val privateMessages: PrivateMessages = PrivateMessages(),
         val channels: Map<String, ChattyChannel> = mutableMapOf("global" to ChattyChannel(ChannelType.GLOBAL)),
+    )
+
+    @Serializable
+    data class PrivateMessages(
+        val enabled: Boolean = true,
+        val proxy: Boolean = true,
+        val messageSendFormat: String = "<gold>You -> %player_displayname%: ",
+        val messageReceiveFormat: String = "<gold>%player_displayname% -> You: ",
+        val messageSendSound: String = "",
+        val messageReceivedSound: String = "",
     )
 
     @Serializable

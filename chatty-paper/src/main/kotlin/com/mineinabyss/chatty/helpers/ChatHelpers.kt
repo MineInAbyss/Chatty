@@ -200,10 +200,20 @@ fun String.getTags(): List<ChattyTags> {
     return tags.toList()
 }
 
+fun String.toPlayer(): Player? {
+    return Bukkit.getPlayer(this)
+}
+
 fun Player.sendFormattedMessage(message: String) =
     this.sendMessage(translatePlaceholders(this, message).serialize().miniMsg())
 
 fun Player.sendFormattedMessage(message: String, optionalPlayer: Player? = null) =
     this.sendMessage(translatePlaceholders((optionalPlayer ?: this), message))
+
+fun Player.sendFormattedPrivateMessage(messageFormat: String, message: String, receiver: Player) =
+    receiver.sendMessage((translatePlaceholders(this, messageFormat).serialize() + message).miniMsg())
+
+fun List<String>.removeFirstArgumentOfStringList(): String =
+    this.filter { it != this.first() }.joinToString(" ")
 
 fun CommandSender.sendConsoleMessage(message: String) = this.sendMessage(message.miniMsg())
