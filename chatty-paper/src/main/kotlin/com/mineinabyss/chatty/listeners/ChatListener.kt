@@ -25,7 +25,7 @@ class ChatListener : Listener {
         val displayName = if (channel.format.useDisplayName) player.displayName() else player.name.miniMsg()
         val audiences = viewers()
         val formattedMessage =
-            if (player.hasPermission(chattyConfig.chat.bypassFormatPermission)) originalMessage().fixLegacy()
+            if (player.checkPermission(chattyConfig.chat.bypassFormatPermission)) originalMessage().fixLegacy()
             else originalMessage().serialize().verifyChatStyling().miniMsg()
 
         if (audiences.isNotEmpty()) audiences.clear()

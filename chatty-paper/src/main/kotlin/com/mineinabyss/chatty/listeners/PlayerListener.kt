@@ -48,7 +48,7 @@ class PlayerListener : Listener {
     fun PlayerEditBookEvent.onBookSign() {
         val meta = newBookMeta
         val config = chattyConfig.book
-        if (player.hasPermission(chattyConfig.book.bypassFormatPermission)) {
+        if (player.checkPermission(chattyConfig.book.bypassFormatPermission)) {
             if (meta.hasAuthor() && !config.useDisplayNameForAuthor)
                 meta.author(newBookMeta.author().fixLegacy())
             else if (meta.hasAuthor() && config.useDisplayNameForAuthor)
@@ -73,7 +73,7 @@ class PlayerListener : Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     fun SignChangeEvent.onSign() {
-        if (player.hasPermission(chattyConfig.sign.bypassFormatPermission)) {
+        if (player.checkPermission(chattyConfig.sign.bypassFormatPermission)) {
             lines().forEachIndexed { index, line ->
                 line(index, line.fixLegacy())
             }

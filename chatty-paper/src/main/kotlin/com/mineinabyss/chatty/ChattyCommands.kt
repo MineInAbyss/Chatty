@@ -11,6 +11,7 @@ import com.mineinabyss.idofront.commands.extensions.actions.playerAction
 import com.mineinabyss.idofront.messaging.miniMsg
 import io.papermc.paper.chat.ChatRenderer
 import io.papermc.paper.event.player.AsyncChatEvent
+import net.kyori.adventure.text.Component
 import org.bukkit.Bukkit
 import org.bukkit.command.Command
 import org.bukkit.command.CommandSender
@@ -61,14 +62,14 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
                     val nickConfig = chattyConfig.nicknames
                     val nick = arguments.joinToString(" ")
                     val player = sender as? Player
-                    val bypassFormatPerm = player?.hasPermission(nickConfig.bypassFormatPermission) == true
+                    val bypassFormatPerm = player?.checkPermission(nickConfig.bypassFormatPermission) == true
 
                     when {
-                        player is Player && !player.hasPermission(nickConfig.permission) ->
+                        player is Player && !player.checkPermission(nickConfig.permission) ->
                             player.sendFormattedMessage(nickMessage.selfDenied)
                         arguments.isEmpty() -> {
                             // Removes players displayname or sends error if sender is console
-                            player?.displayName(player.name.miniMsg())
+                            player?.displayName(Component.empty())
                             player?.sendFormattedMessage(nickMessage.selfEmpty)
                                 ?: sender.sendConsoleMessage(nickMessage.consoleNicknameSelf)
                         }
@@ -77,12 +78,12 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
                             val otherNick = nick.removePlayerToNickFromString()
 
                             when {
-                                player?.hasPermission(nickConfig.nickOtherPermission) == false ->
+                                player?.checkPermission(nickConfig.nickOtherPermission) == false ->
                                     player.sendFormattedMessage(nickMessage.otherDenied, otherPlayer)
-                                !Bukkit.getOnlinePlayers().contains(otherPlayer) ->
+                                otherPlayer == null || otherPlayer !in Bukkit.getOnlinePlayers() ->
                                     player?.sendFormattedMessage(nickMessage.invalidPlayer, otherPlayer)
                                 otherNick.isEmpty() -> {
-                                    otherPlayer?.displayName(otherPlayer.name.miniMsg())
+                                    otherPlayer.displayName(Component.empty())
                                     player?.sendFormattedMessage(nickMessage.otherEmpty, otherPlayer)
                                 }
                                 !bypassFormatPerm && !otherNick.verifyNickStyling() ->
@@ -90,7 +91,7 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
                                 !bypassFormatPerm && !otherNick.verifyNickLength() ->
                                     player?.sendFormattedMessage(nickMessage.tooLong)
                                 otherNick.isNotEmpty() -> {
-                                    otherPlayer?.displayName(otherNick.miniMsg())
+                                    otherPlayer.displayName(otherNick.miniMsg())
                                     player?.sendFormattedMessage(nickMessage.otherSuccess, otherPlayer)
                                 }
                             }
@@ -193,7 +194,8 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
                     args[1] == "sound" -> getAlternativePingSounds
                     args[1].startsWith(chattyConfig.nicknames.nickNameOtherPrefix) ->
                         Bukkit.getOnlinePlayers().map { it.name }.filter { s ->
-                            s.replace(chattyConfig.nicknames.nickNameOtherPrefix.toString(), "").startsWith(args[1]) }
+                            s.replace(chattyConfig.nicknames.nickNameOtherPrefix.toString(), "").startsWith(args[1])
+                        }
                     else -> emptyList()
                 }
                 else -> emptyList()
@@ -206,7 +208,7 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
 
         if (newChannel == null) {
             sendFormattedMessage(chattyMessages.channels.noChannelWithName)
-        } else if (!hasPermission(newChannel.permission)) {
+        } else if (!checkPermission(newChannel.permission)) {
             sendFormattedMessage(chattyMessages.channels.missingChannelPermission)
         } else {
             playerData.channelId = channelId
@@ -221,7 +223,7 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
         val currentChannel = playerData.channelId
         val msg = arguments.joinToString(" ").miniMsg()
 
-        if (!hasPermission(channel?.value?.permission.toString()))
+        if (channel?.value?.permission?.isNotEmpty() == true && !checkPermission(channel.value.permission))
             sendFormattedMessage(chattyMessages.channels.missingChannelPermission)
         else if (channel?.key != null && arguments.isEmpty())
             swapChannelCommand(channel.key)
