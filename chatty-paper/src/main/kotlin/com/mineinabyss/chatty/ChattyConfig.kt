@@ -12,6 +12,8 @@ object ChattyConfig : IdofrontConfig<ChattyConfig.Data>(chattyPlugin, Data.seria
         val playerHeadFont: String = "minecraft:chatty_heads",
         val nicknames: Nickname = Nickname(),
         val chat: Chat = Chat(),
+        val book: Book = Book(),
+        val sign: Sign = Sign(),
         val ping: Ping = Ping(),
         val join: Join = Join(),
         val leave: Leave = Leave(),
@@ -100,5 +102,18 @@ object ChattyConfig : IdofrontConfig<ChattyConfig.Data>(chattyPlugin, Data.seria
         val clickToReply: Boolean = true,
         val pingReceiveFormat: String = "<yellow><b>",
         val pingSendFormat: String = "<i>"
+    )
+
+    @Serializable
+    data class Book(
+        val useDisplayNameForAuthor: Boolean = false,
+        val bypassFormatPermission: String = "chatty.book.bypassformat",
+        val allowedTags: List<ChattyTags> = emptyList(),
+    )
+
+    @Serializable
+    data class Sign(
+        val bypassFormatPermission: String = "chatty.sign.bypassformat",
+        val allowedTags: List<ChattyTags> = emptyList(),
     )
 }

@@ -176,7 +176,23 @@ fun Component.fixLegacy() : Component =
 // Splits <color> and <gradient:...> tags and checks if theyre allowed
 fun String.verifyChatStyling(): String {
     val finalString = this
-    this.getTags().filter { tag -> tag !in chattyConfig.nicknames.allowedTags }.forEach { tag ->
+    this.getTags().filter { tag -> tag !in chattyConfig.chat.allowedTags }.forEach { tag ->
+        finalString.replace(tag.toString().lowercase(), "\\<${tag.toString().lowercase()}")
+    }
+    return finalString
+}
+
+fun String.verifyBookStyling(): String {
+    val finalString = this
+    this.getTags().filter { tag -> tag !in chattyConfig.book.allowedTags }.forEach { tag ->
+        finalString.replace(tag.toString().lowercase(), "\\<${tag.toString().lowercase()}")
+    }
+    return finalString
+}
+
+fun String.verifySignStyling(): String {
+    val finalString = this
+    this.getTags().filter { tag -> tag !in chattyConfig.sign.allowedTags }.forEach { tag ->
         finalString.replace(tag.toString().lowercase(), "\\<${tag.toString().lowercase()}")
     }
     return finalString
