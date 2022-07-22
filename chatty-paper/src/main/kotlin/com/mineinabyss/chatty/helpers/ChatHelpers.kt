@@ -173,6 +173,15 @@ fun String.serializeLegacy() = LegacyComponentSerializer.legacy('§').deserializ
 fun Component.fixLegacy() : Component =
     this.serialize().replace("\\<", "<").replace("\\>", ">").miniMsg()
 
+// Splits <color> and <gradient:...> tags and checks if theyre allowed
+fun String.verifyChatStyling(): String {
+    val finalString = this
+    this.getTags().filter { tag -> tag !in chattyConfig.nicknames.allowedTags }.forEach { tag ->
+        finalString.replace(tag.toString().lowercase(), "\\<${tag.toString().lowercase()}")
+    }
+    return finalString
+}
+
 fun Component.serialize() = MiniMessage.builder().build().serialize(this)
 
 fun Component.stripTags() = MiniMessage.builder().build().stripTags(this.serialize())

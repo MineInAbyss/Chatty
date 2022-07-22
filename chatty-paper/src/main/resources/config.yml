@@ -13,6 +13,20 @@ privateMessages:
   messageSendSound: ""      # Empty for no sound
   messageReceiveSound: ""   # Empty for no sound
 
+chat:
+  bypassFormatPermission: "chatty.chat.bypassformat"
+  allowedTags: # Available formats are:
+    - BOLD                    # [TEXTCOLOR, HEXCOLOR, GRADIENT, RAINBOW, UNDERLINE, STRIKETHROUGH, BOLD, ITALIC, OBFUSCATED]
+    - STRIKETHROUGH           # [HOVER, CLICK, FONT, SPACES, INSERTION, RESET, TRANSITION, KEYBIND, TRANSLATABLE]
+    - UNDERLINE               # https://docs.adventure.kyori.net/minimessage/format.html
+    - ITALIC
+    - OBFUSCATED
+    - TEXTCOLOR
+    - HEXCOLOR
+    - RAINBOW
+    - GRADIENT
+    - HOVER
+
 nicknames:
   permission: "chatty.nickname"
   nickOtherPermission: "chatty.nickname.other"
@@ -23,6 +37,7 @@ nicknames:
   allowedTags:                # Available formats are:
     - BOLD                    # [TEXTCOLOR, HEXCOLOR, GRADIENT, RAINBOW, UNDERLINE, STRIKETHROUGH, BOLD, ITALIC, OBFUSCATED]
     - STRIKETHROUGH           # [HOVER, CLICK, FONT, SPACES, INSERTION, RESET, TRANSITION, KEYBIND, TRANSLATABLE]
+    - UNDERLINE               # https://docs.adventure.kyori.net/minimessage/format.html
     - UNDERLINE
     - ITALIC
     - OBFUSCATED

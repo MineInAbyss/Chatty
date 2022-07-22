@@ -24,14 +24,19 @@ class ChatListener : Listener {
         val channel = getChannelFromId(channelId) ?: return
         val displayName = if (channel.format.useDisplayName) player.displayName() else player.name.miniMsg()
         val audiences = viewers()
+        val formattedMessage =
+            if (player.hasPermission(chattyConfig.chat.bypassFormatPermission)) originalMessage().fixLegacy()
+            else originalMessage().serialize().verifyChatStyling().miniMsg()
 
         if (audiences.isNotEmpty()) audiences.clear()
         audiences.addAll(setAudienceForChannelType(player))
-        message("<reset>".miniMsg()
+        message(
+            "<reset>".miniMsg()
                 .append(translatePlaceholders(player, channel.format.prefix))
                 .append(displayName)
                 .append(translatePlaceholders(player, channel.format.suffix))
-                .append(channel.format.messageFormat.miniMsg().append(originalMessage()))
+                .append(channel.format.messageFormat.miniMsg())
+                .append(formattedMessage)
         )
 
         val pingedPlayer = originalMessage().serialize().checkForPlayerPings(channelId)
@@ -50,7 +55,11 @@ class ChatListener : Listener {
 
         if (channel.proxy) {
             //Append channel to give proxy info on what channel the message is from
-            player.sendPluginMessage(chattyPlugin, chattyProxyChannel, ("$channelId " + message().serialize()).toByteArray())
+            player.sendPluginMessage(
+                chattyPlugin,
+                chattyProxyChannel,
+                ("$channelId " + message().serialize()).toByteArray()
+            )
         }
         audiences.clear()
     }

@@ -11,12 +11,19 @@ object ChattyConfig : IdofrontConfig<ChattyConfig.Data>(chattyPlugin, Data.seria
         val useChattyCommandPrefix: Boolean = true,
         val playerHeadFont: String = "minecraft:chatty_heads",
         val nicknames: Nickname = Nickname(),
+        val chat: Chat = Chat(),
         val ping: Ping = Ping(),
         val join: Join = Join(),
         val leave: Leave = Leave(),
         val proxy: Proxy = Proxy(),
         val privateMessages: PrivateMessages = PrivateMessages(),
         val channels: Map<String, ChattyChannel> = mutableMapOf("global" to ChattyChannel(ChannelType.GLOBAL)),
+    )
+
+    @Serializable
+    data class Chat(
+        val bypassFormatPermission: String = "chatty.chat.bypassformat",
+        val allowedTags: List<ChattyTags> = emptyList(),
     )
 
     @Serializable
