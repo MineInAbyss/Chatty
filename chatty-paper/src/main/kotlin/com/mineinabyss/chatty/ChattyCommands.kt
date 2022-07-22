@@ -23,26 +23,7 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
             ("message" / "msg")(desc = "Private message another player") {
                 ensureSenderIsPlayer()
                 playerAction {
-                    val sender = sender as? Player ?: return@playerAction
-                    val pmConfig = chattyConfig.privateMessages
-
-                    if (!pmConfig.enabled) {
-                        sender.sendFormattedMessage(chattyMessages.privateMessages.disabled)
-                        return@playerAction
-                    } else if (arguments.first().toPlayer() == null) {
-                        sender.sendFormattedMessage(chattyMessages.privateMessages.invalidPlayer)
-                        return@playerAction
-                    } else {
-                        val msg = arguments.removeFirstArgumentOfStringList()
-                        val privateMessages = chattyConfig.privateMessages
-
-                        sender.sendFormattedPrivateMessage(privateMessages.messageSendFormat, msg, player)
-                        player.sendFormattedPrivateMessage(privateMessages.messageReceiveFormat, msg, sender)
-                        if (privateMessages.messageSendSound.isNotEmpty())
-                            sender.playSound(player.location, privateMessages.messageSendSound, 1f, 1f)
-                        if (privateMessages.messageReceivedSound.isNotEmpty())
-                            player.playSound(player.location, privateMessages.messageReceivedSound, 1f, 1f)
-                    }
+                    (sender as? Player)?.handlePrivateMessage(player, arguments)
                 }
             }
             "ping"(desc = "Commands related to the chat-ping feature.") {
@@ -185,6 +166,12 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
                 (sender as? Player)?.shortcutCommand(getAdminChannel(), arguments)
             }
         }
+        ("message" / "msg")(desc = "Private message another player") {
+            ensureSenderIsPlayer()
+            playerAction {
+                (sender as? Player)?.handlePrivateMessage(player, arguments)
+            }
+        }
     }
 
     override fun onTabComplete(
@@ -246,6 +233,24 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
                 ).callEvent()
                 playerData.channelId = currentChannel
             }
+        }
+    }
+
+    private fun Player.handlePrivateMessage(player: Player, arguments: List<String>) {
+        if (!chattyConfig.privateMessages.enabled) {
+            this.sendFormattedMessage(chattyMessages.privateMessages.disabled)
+        } else if (arguments.first().toPlayer() == null) {
+            this.sendFormattedMessage(chattyMessages.privateMessages.invalidPlayer)
+        } else {
+            val msg = arguments.removeFirstArgumentOfStringList()
+            val privateMessages = chattyConfig.privateMessages
+
+            this.sendFormattedPrivateMessage(privateMessages.messageSendFormat, msg, player)
+            player.sendFormattedPrivateMessage(privateMessages.messageReceiveFormat, msg, this)
+            if (privateMessages.messageSendSound.isNotEmpty())
+                this.playSound(player.location, privateMessages.messageSendSound, 1f, 1f)
+            if (privateMessages.messageReceivedSound.isNotEmpty())
+                player.playSound(player.location, privateMessages.messageReceivedSound, 1f, 1f)
         }
     }
 }

@@ -24,3 +24,7 @@ commands:
     permission: "chatty.admin"
     aliases:
       - a
+  message:
+    permission: "chatty.message"
+    aliases:
+      - msg
