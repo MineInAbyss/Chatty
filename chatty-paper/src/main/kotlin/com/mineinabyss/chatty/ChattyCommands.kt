@@ -1,5 +1,7 @@
 package com.mineinabyss.chatty
 
+import com.github.shynixn.mccoroutine.bukkit.asyncDispatcher
+import com.github.shynixn.mccoroutine.bukkit.launch
 import com.mineinabyss.chatty.components.playerData
 import com.mineinabyss.chatty.helpers.*
 import com.mineinabyss.idofront.commands.arguments.stringArg
@@ -7,6 +9,8 @@ import com.mineinabyss.idofront.commands.execution.IdofrontCommandExecutor
 import com.mineinabyss.idofront.commands.extensions.actions.ensureSenderIsPlayer
 import com.mineinabyss.idofront.commands.extensions.actions.playerAction
 import com.mineinabyss.idofront.messaging.miniMsg
+import io.papermc.paper.chat.ChatRenderer
+import io.papermc.paper.event.player.AsyncChatEvent
 import org.bukkit.Bukkit
 import org.bukkit.command.Command
 import org.bukkit.command.CommandSender
@@ -16,21 +20,19 @@ import org.bukkit.entity.Player
 class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
     override val commands = commands(chattyPlugin) {
         "chatty"(desc = "Chatty commands") {
-            "msg"(desc = "Private message another player") {
+            ("message" / "msg")(desc = "Private message another player") {
                 ensureSenderIsPlayer()
                 playerAction {
                     val sender = sender as? Player ?: return@playerAction
                     val pmConfig = chattyConfig.privateMessages
 
-                    if (pmConfig.enabled) {
+                    if (!pmConfig.enabled) {
                         sender.sendFormattedMessage(chattyMessages.privateMessages.disabled)
                         return@playerAction
-                    }
-                    else if (arguments.first().toPlayer() == null) {
+                    } else if (arguments.first().toPlayer() == null) {
                         sender.sendFormattedMessage(chattyMessages.privateMessages.invalidPlayer)
                         return@playerAction
-                    }
-                    else {
+                    } else {
                         val msg = arguments.removeFirstArgumentOfStringList()
                         val privateMessages = chattyConfig.privateMessages
 
@@ -66,13 +68,13 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
                     }
                 }
             }
-            "channels"(desc = "List all channels") {
+            ("channels" / "ch")(desc = "List all channels") {
                 action {
                     (sender as? Player)?.sendFormattedMessage(chattyMessages.channels.availableChannels)
                         ?: sender.sendMessage(chattyMessages.channels.availableChannels)
                 }
             }
-            "nickname" {
+            ("nickname" / "nick") {
                 action {
                     val nickMessage = chattyMessages.nicknames
                     val nickConfig = chattyConfig.nicknames
@@ -125,7 +127,7 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
                     }
                 }
             }
-            "reload" {
+            ("reload" / "rl") {
                 "config" {
                     action {
                         ChattyConfig.reload()
@@ -165,6 +167,24 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
                 }
             }
         }
+        ("global" / "g") {
+            ensureSenderIsPlayer()
+            action {
+                (sender as? Player)?.shortcutCommand(getGlobalChat(), arguments)
+            }
+        }
+        ("local" / "l") {
+            ensureSenderIsPlayer()
+            action {
+                (sender as? Player)?.shortcutCommand(getRadiusChannel(), arguments)
+            }
+        }
+        ("admin" / "a") {
+            ensureSenderIsPlayer()
+            action {
+                (sender as? Player)?.shortcutCommand(getAdminChannel(), arguments)
+            }
+        }
     }
 
     override fun onTabComplete(
@@ -175,30 +195,57 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
     ): List<String> {
         return if (command.name == "chatty") {
             when (args.size) {
-                1 -> listOf("ping", "reload", "channels", "nickname")
+                1 -> listOf("message", "ping", "reload", "channels", "nickname")
                 2 -> when (args[0]) {
                     "ping" -> listOf("toggle", "sound")
-                    "reload" -> listOf("config", "messages")
+                    "reload", "rl" -> listOf("config", "messages")
+                    "message", "msg" -> Bukkit.getOnlinePlayers().map { it.name }.filter { s -> s.startsWith(args[1]) }
                     else -> emptyList()
                 }
-                3 ->
-                    if (args[0] == "ping" && args[1] == "sound") getAlternativePingSounds
-                    else emptyList()
+                3 -> when {
+                    args[1] == "sound" -> getAlternativePingSounds
+                    args[1].startsWith(chattyConfig.nicknames.nickNameOtherPrefix) ->
+                        Bukkit.getOnlinePlayers().map { it.name }.filter { s ->
+                            s.replace(chattyConfig.nicknames.nickNameOtherPrefix.toString(), "").startsWith(args[1]) }
+                    else -> emptyList()
+                }
                 else -> emptyList()
             }
         } else emptyList()
     }
-}
 
-private fun Player.swapChannelCommand(channelId: String) {
-    val newChannel = getChannelFromId(channelId)
+    private fun Player.swapChannelCommand(channelId: String) {
+        val newChannel = getChannelFromId(channelId)
 
-    if (newChannel == null) {
-        sendFormattedMessage(chattyMessages.channels.noChannelWithName)
-    } else if (!hasPermission(newChannel.permission)) {
-        sendFormattedMessage(chattyMessages.channels.missingChannelPermission)
-    } else {
-        playerData.channelId = channelId
-        sendFormattedMessage(chattyMessages.channels.channelChanged)
+        if (newChannel == null) {
+            sendFormattedMessage(chattyMessages.channels.noChannelWithName)
+        } else if (!hasPermission(newChannel.permission)) {
+            sendFormattedMessage(chattyMessages.channels.missingChannelPermission)
+        } else {
+            playerData.channelId = channelId
+            sendFormattedMessage(chattyMessages.channels.channelChanged)
+        }
+    }
+
+    private fun Player.shortcutCommand(
+        channel: Map.Entry<String, ChattyConfig.ChattyChannel>?,
+        arguments: List<String>
+    ) {
+        val currentChannel = playerData.channelId
+        val msg = arguments.joinToString(" ").miniMsg()
+
+        if (!hasPermission(channel?.value?.permission.toString()))
+            sendFormattedMessage(chattyMessages.channels.missingChannelPermission)
+        else if (channel?.key != null && arguments.isEmpty())
+            swapChannelCommand(channel.key)
+        else if (channel?.key != null && arguments.isNotEmpty()) {
+            playerData.channelId = channel.key
+            chattyPlugin.launch(chattyPlugin.asyncDispatcher) {
+                AsyncChatEvent(
+                    true, this@shortcutCommand, mutableSetOf(), ChatRenderer.defaultRenderer(), msg, msg
+                ).callEvent()
+                playerData.channelId = currentChannel
+            }
+        }
     }
 }

@@ -68,6 +68,7 @@ object ChattyConfig : IdofrontConfig<ChattyConfig.Data>(chattyPlugin, Data.seria
         val proxy: Boolean = false,
         val discordsrv: Boolean = true,
         val isDefaultChannel: Boolean = false,
+        val isStaffChannel: Boolean = false,
         val format: Format = Format(),
         val channelRadius: Int = 0,
         val channelAliases: List<String> = listOf(),

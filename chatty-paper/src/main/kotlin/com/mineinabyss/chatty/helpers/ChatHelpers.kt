@@ -69,6 +69,12 @@ fun Component.handlePlayerPings(player: Player, pingedPlayer: Player) {
 fun getGlobalChat() =
     chattyConfig.channels.entries.firstOrNull { it.value.channelType == ChannelType.GLOBAL }
 
+fun getRadiusChannel() =
+    chattyConfig.channels.entries.firstOrNull { it.value.channelType == ChannelType.RADIUS }
+
+fun getAdminChannel() =
+    chattyConfig.channels.entries.firstOrNull { it.value.isStaffChannel }
+
 fun getDefaultChat() =
     chattyConfig.channels.entries.firstOrNull { it.value.isDefaultChannel }
         ?: getGlobalChat()

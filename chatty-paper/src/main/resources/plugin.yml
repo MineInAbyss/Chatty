@@ -9,3 +9,18 @@ description: TODO
 
 commands:
   chatty:
+    aliases:
+      - chat
+    description: "Chatty is a plugin that allows you to chat in a more friendly way."
+  global:
+    permission: "chatty.global"
+    aliases:
+      - g
+  local:
+    permission: "chatty.local"
+    aliases:
+      - l
+  admin:
+    permission: "chatty.admin"
+    aliases:
+      - a
