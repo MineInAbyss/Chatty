@@ -2,10 +2,29 @@ name: chatty
 version: ${plugin_version}
 author: boy0000
 main: com.mineinabyss.chatty.ChattyPlugin
-api-version: 1.19
+api-version: 1.18
 depend: [ Geary ]
 softdepend: [ BondrewdLikesHisEmotes, PlaceholderAPI, DiscordSRV ]
 description: TODO
 
 commands:
   chatty:
+    aliases:
+      - chat
+    description: "Chatty is a plugin that allows you to chat in a more friendly way."
+  global:
+    permission: "chatty.global"
+    aliases:
+      - g
+  local:
+    permission: "chatty.local"
+    aliases:
+      - l
+  admin:
+    permission: "chatty.admin"
+    aliases:
+      - a
+  message:
+    permission: "chatty.message"
+    aliases:
+      - msg

@@ -69,6 +69,12 @@ fun Component.handlePlayerPings(player: Player, pingedPlayer: Player) {
 fun getGlobalChat() =
     chattyConfig.channels.entries.firstOrNull { it.value.channelType == ChannelType.GLOBAL }
 
+fun getRadiusChannel() =
+    chattyConfig.channels.entries.firstOrNull { it.value.channelType == ChannelType.RADIUS }
+
+fun getAdminChannel() =
+    chattyConfig.channels.entries.firstOrNull { it.value.isStaffChannel }
+
 fun getDefaultChat() =
     chattyConfig.channels.entries.firstOrNull { it.value.isDefaultChannel }
         ?: getGlobalChat()
@@ -200,10 +206,20 @@ fun String.getTags(): List<ChattyTags> {
     return tags.toList()
 }
 
+fun String.toPlayer(): Player? {
+    return Bukkit.getPlayer(this)
+}
+
 fun Player.sendFormattedMessage(message: String) =
     this.sendMessage(translatePlaceholders(this, message).serialize().miniMsg())
 
 fun Player.sendFormattedMessage(message: String, optionalPlayer: Player? = null) =
     this.sendMessage(translatePlaceholders((optionalPlayer ?: this), message))
+
+fun Player.sendFormattedPrivateMessage(messageFormat: String, message: String, receiver: Player) =
+    receiver.sendMessage((translatePlaceholders(this, messageFormat).serialize() + message).miniMsg())
+
+fun List<String>.removeFirstArgumentOfStringList(): String =
+    this.filter { it != this.first() }.joinToString(" ")
 
 fun CommandSender.sendConsoleMessage(message: String) = this.sendMessage(message.miniMsg())

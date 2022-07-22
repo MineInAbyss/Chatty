@@ -24,9 +24,9 @@ class ChatListener : Listener {
         val channel = getChannelFromId(channelId) ?: return
         val displayName = if (channel.format.useDisplayName) player.displayName() else player.name.miniMsg()
         val audiences = viewers()
-        audiences.clear()
-        audiences.addAll(setAudienceForChannelType(player))
 
+        if (audiences.isNotEmpty()) audiences.clear()
+        audiences.addAll(setAudienceForChannelType(player))
         message("<reset>".miniMsg()
                 .append(translatePlaceholders(player, channel.format.prefix))
                 .append(displayName)

@@ -10,6 +10,10 @@ nicknames:
   disallowedStyling: "<red>This nickname contains formatting that are not allowed!"
   tooLong: "<red>The nickname was too long!"
 
+privateMessages:
+  disabled: "<red>Private messages are disabled"
+  invalidPlayer: "<red>This player is not online or does not exist"
+
 ping:
   toggledPingSound: "Ping sound is now <i>%chatty_player_ping_toggle%</i>."
   changedPingSound: "Ping sound set to <i>%chatty_player_ping_sound%</i>"
