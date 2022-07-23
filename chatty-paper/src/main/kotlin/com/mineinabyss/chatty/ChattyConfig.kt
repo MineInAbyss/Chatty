@@ -8,7 +8,6 @@ import kotlinx.serialization.Serializable
 object ChattyConfig : IdofrontConfig<ChattyConfig.Data>(chatty, Data.serializer()) {
     @Serializable
     data class Data(
-        val useChattyCommandPrefix: Boolean = true,
         val playerHeadFont: String = "minecraft:chatty_heads",
         val nicknames: Nickname = Nickname(),
         val chat: Chat = Chat(),

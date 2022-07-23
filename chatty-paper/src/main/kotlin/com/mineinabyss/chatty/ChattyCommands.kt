@@ -97,6 +97,7 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
                                 !bypassFormatPerm && !otherNick.verifyNickLength() ->
                                     player?.sendFormattedMessage(nickMessage.tooLong)
                                 otherNick.isNotEmpty() -> {
+                                    otherPlayer.playerData.nickName = otherNick
                                     otherPlayer.displayName(otherNick.miniMsg())
                                     player?.sendFormattedMessage(nickMessage.otherSuccess, otherPlayer)
                                 }
@@ -109,6 +110,7 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
                                 player?.sendFormattedMessage(nickMessage.tooLong)
                             } else {
                                 player?.displayName(nick.miniMsg())
+                                player?.playerData?.nickName = nick
                                 player?.sendFormattedMessage(nickMessage.selfSuccess)
                             }
                         }

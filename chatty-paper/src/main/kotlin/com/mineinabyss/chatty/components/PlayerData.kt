@@ -12,6 +12,7 @@ class PlayerData(
     var channelId: String = getDefaultChat().key,
     var disablePingSound: Boolean = false,
     var pingSound: String? = null,
+    var nickName: String? = null,
 )
 
 val Player.playerData get() = toGeary().getOrSetPersisting { PlayerData() }

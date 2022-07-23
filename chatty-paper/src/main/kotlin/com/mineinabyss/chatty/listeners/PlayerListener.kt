@@ -2,6 +2,7 @@ package com.mineinabyss.chatty.listeners
 
 import com.mineinabyss.chatty.components.HideJoinLeave
 import com.mineinabyss.chatty.components.PlayerData
+import com.mineinabyss.chatty.components.playerData
 import com.mineinabyss.chatty.helpers.*
 import com.mineinabyss.geary.papermc.access.toGeary
 import com.mineinabyss.idofront.messaging.miniMsg
@@ -28,8 +29,9 @@ class PlayerListener : Listener {
     @EventHandler
     fun PlayerJoinEvent.onJoin() {
         player.verifyPlayerChannel()
-        if (player.toGeary().has<HideJoinLeave>()) return
-        if (chattyConfig.join.enabled)
+        if (player.playerData.nickName != null)
+            player.displayName(player.playerData.nickName?.miniMsg())
+        if (chattyConfig.join.enabled && !player.toGeary().has<HideJoinLeave>())
             joinMessage(translatePlaceholders(player, chattyMessages.joinLeave.joinMessage))
 //        if (chattyConfig.join.sendAcrossProxy)
 //            player.sendPluginMessage(chatty, chattyProxyChannel, PlaceholderAPI.setPlaceholders(player, messages.proxies.proxyJoin).toByteArray())
@@ -37,8 +39,9 @@ class PlayerListener : Listener {
 
     @EventHandler
     fun PlayerQuitEvent.onDisconnect() {
-        if (player.toGeary().has<HideJoinLeave>() || player.channelIsProxyEnabled()) return
-        if (chattyConfig.leave.enabled)
+        if (player.displayName() != player.name())
+            player.playerData.nickName = player.displayName().serialize()
+        if (chattyConfig.leave.enabled && !player.toGeary().has<HideJoinLeave>())
             quitMessage(translatePlaceholders(player, chattyMessages.joinLeave.leaveMessage))
 //        if (chattyConfig.leave.sendAcrossProxy)
 //            Bukkit.getServer().sendPluginMessage(chatty, chattyProxyChannel, PlaceholderAPI.setPlaceholders(player, messages.proxies.proxyLeave).toByteArray())
@@ -57,8 +60,7 @@ class PlayerListener : Listener {
                 meta.title(newBookMeta.title().fixLegacy())
             if (meta.hasPages())
                 meta.pages(newBookMeta.pages().map { it.fixLegacy() })
-        }
-        else {
+        } else {
             if (meta.hasAuthor() && !config.useDisplayNameForAuthor)
                 meta.author(newBookMeta.author().serialize().verifyBookStyling().miniMsg())
             else if (meta.hasAuthor() && config.useDisplayNameForAuthor)
@@ -77,8 +79,7 @@ class PlayerListener : Listener {
             lines().forEachIndexed { index, line ->
                 line(index, line.fixLegacy())
             }
-        }
-        else {
+        } else {
             lines().forEachIndexed { index, line ->
                 line(index, line.serialize().verifySignStyling().miniMsg())
             }
