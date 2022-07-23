@@ -28,9 +28,11 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
                     (sender as? Player)?.handlePrivateMessage(player, arguments)
                 }
             }
+            permission("chatty.ping")
             "ping"(desc = "Commands related to the chat-ping feature.") {
                 "toggle"(desc = "Toggle the ping sound.") {
                     ensureSenderIsPlayer()
+                    permission("chatty.ping.toggle")
                     action {
                         val player = sender as? Player ?: return@action
                         player.playerData.disablePingSound = !player.playerData.disablePingSound
@@ -40,6 +42,7 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
                 "sound"(desc = "Change your pingsound") {
                     val soundName by stringArg()
                     ensureSenderIsPlayer()
+                    permission("chatty.ping.sound")
                     action {
                         val player = sender as? Player ?: return@action
                         if (soundName in getAlternativePingSounds) {
@@ -52,12 +55,14 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
                 }
             }
             ("channels" / "ch")(desc = "List all channels") {
+                permission("")
                 action {
                     (sender as? Player)?.sendFormattedMessage(chattyMessages.channels.availableChannels)
                         ?: sender.sendMessage(chattyMessages.channels.availableChannels)
                 }
             }
             ("nickname" / "nick") {
+                permission("chatty.nickname")
                 action {
                     val nickMessage = chattyMessages.nicknames
                     val nickConfig = chattyConfig.nicknames
@@ -111,7 +116,9 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
                 }
             }
             ("reload" / "rl") {
+                permission("chatty.reload")
                 "config" {
+                    permission("chatty.reload.config")
                     action {
                         ChattyConfig.reload()
                         ChattyConfig.load()
@@ -120,6 +127,7 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
                     }
                 }
                 "messages" {
+                    permission("chatty.reload.messages")
                     action {
                         ChattyMessages.reload()
                         ChattyMessages.load()
@@ -130,6 +138,7 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
 
             }
             "spy" {
+                permission("chatty.spy")
                 playerAction {
                     val player = sender as? Player ?: return@playerAction
                     val spy = player.toGeary().has<SpyOnLocal>()

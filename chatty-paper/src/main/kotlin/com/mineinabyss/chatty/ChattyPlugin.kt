@@ -13,8 +13,6 @@ import github.scarsz.discordsrv.DiscordSRV
 import org.bukkit.plugin.java.JavaPlugin
 import kotlin.io.path.Path
 
-const val chattyProxyChannel = "chatty:proxy"
-
 class ChattyPlugin : JavaPlugin() {
     override fun onLoad() {
         IdofrontPlatforms.load(this, "mineinabyss")

@@ -17,7 +17,7 @@ import org.bukkit.event.Listener
 
 class ChatListener : Listener {
 
-    @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     fun AsyncChatEvent.onPlayerChat() {
         player.verifyPlayerChannel()
         val channelId = player.playerData.channelId
