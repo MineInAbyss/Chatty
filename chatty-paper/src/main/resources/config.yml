@@ -9,8 +9,8 @@ privateMessages:
   enabled: true
   proxy: true                       # Not currently supported
   messageReplyTime: 5m              # t: Ticks, s: Seconds, m: Minutes, h: Hours, d: Days, w: Weeks, mo: Months
-  messageSendFormat: "<gold>You -> %player_displayname%: "
-  messageReceiveFormat: "<gold>%player_displayname% -> You: "
+  messageSendFormat: "<gold>You -> %chatty_player_displayname%: "
+  messageReceiveFormat: "<gold>%chatty_player_displayname% -> You: "
   messageSendSound: ""              # Empty for no sound
   messageReceiveSound: ""           # Empty for no sound
 
