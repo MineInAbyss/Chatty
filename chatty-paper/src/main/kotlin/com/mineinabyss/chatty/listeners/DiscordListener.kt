@@ -5,6 +5,7 @@ import com.mineinabyss.chatty.helpers.emoteFixer
 import com.mineinabyss.chatty.helpers.getChannelFromId
 import com.mineinabyss.chatty.helpers.serializeLegacy
 import com.mineinabyss.chatty.helpers.stripTags
+import github.scarsz.discordsrv.api.ListenerPriority
 import github.scarsz.discordsrv.api.Subscribe
 import github.scarsz.discordsrv.api.events.*
 import github.scarsz.discordsrv.dependencies.jda.api.MessageBuilder
@@ -16,7 +17,7 @@ import github.scarsz.discordsrv.dependencies.kyori.adventure.text.minimessage.Mi
 
 class DiscordListener {
 
-    @Subscribe
+    @Subscribe(priority = ListenerPriority.NORMAL)
     fun GameChatMessagePreProcessEvent.onChat() {
         val channel = getChannelFromId(player.chattyData.channelId) ?: return
         if (!channel.discordsrv) {
@@ -26,7 +27,7 @@ class DiscordListener {
         else messageComponent = messageComponent.translateEmoteIDsToComponent()
     }
 
-    @Subscribe
+    @Subscribe(priority = ListenerPriority.NORMAL)
     fun VentureChatMessagePreProcessEvent.onProxyChat() {
         val channelId = messageComponent.deserialize().substringBefore(" ")
         val channel = getChannelFromId(channelId) ?: return

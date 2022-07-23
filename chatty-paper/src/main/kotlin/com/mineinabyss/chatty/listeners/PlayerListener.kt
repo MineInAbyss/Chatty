@@ -16,7 +16,7 @@ import org.bukkit.event.player.PlayerQuitEvent
 
 class PlayerListener : Listener {
     //TODO Disable if proxy should handle this
-    @EventHandler
+    @EventHandler(priority = EventPriority.LOWEST)
     fun PlayerJoinEvent.onFirstJoin() {
         if (player.toGeary().has<ChannelData>()) return
         if (chattyConfig.join.enabled && chattyConfig.join.firstJoin.enabled) {
@@ -26,7 +26,7 @@ class PlayerListener : Listener {
         }
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.NORMAL)
     fun PlayerJoinEvent.onJoin() {
         player.verifyPlayerChannel()
         if (player.chattyData.nickName != null)
