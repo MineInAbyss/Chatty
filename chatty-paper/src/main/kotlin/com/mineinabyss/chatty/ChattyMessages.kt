@@ -21,6 +21,7 @@ object ChattyMessages : IdofrontConfig<ChattyMessages.Messages>(chatty, Messages
     data class PrivateMessages(
         val disabled: String = "<red>Private messages are disabled",
         val invalidPlayer: String = "<red>Invalid player",
+        val emptyReply: String = "<red>You have noone to reply to"
     )
 
     @Serializable

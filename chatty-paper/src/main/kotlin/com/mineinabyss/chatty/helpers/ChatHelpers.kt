@@ -237,6 +237,8 @@ fun String.getTags(): List<ChattyTags> {
     return tags.toList()
 }
 
+fun List<String>.toSentence() = this.joinToString(" ")
+
 fun String.toPlayer(): Player? {
     return Bukkit.getPlayer(this)
 }
@@ -251,6 +253,6 @@ fun Player.sendFormattedPrivateMessage(messageFormat: String, message: String, r
     this.sendMessage((translatePlaceholders(receiver, messageFormat).serialize() + message).miniMsg())
 
 fun List<String>.removeFirstArgumentOfStringList(): String =
-    this.filter { it != this.first() }.joinToString(" ")
+    this.filter { it != this.first() }.toSentence()
 
 fun CommandSender.sendConsoleMessage(message: String) = this.sendMessage(message.miniMsg())

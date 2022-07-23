@@ -24,3 +24,6 @@ commands:
   message:
     aliases:
       - msg
+  reply:
+    aliases:
+      - r

@@ -13,6 +13,7 @@ nicknames:
 privateMessages:
   disabled: "<red>Private messages are disabled"
   invalidPlayer: "<red>This player is not online or does not exist"
+  emptyReply: "<red>You have noone to reply to"
 
 ping:
   toggledPingSound: "Ping sound is now <i>%chatty_player_ping_toggle%</i>."

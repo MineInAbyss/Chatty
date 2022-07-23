@@ -13,6 +13,7 @@ class PlayerData(
     var disablePingSound: Boolean = false,
     var pingSound: String? = null,
     var nickName: String? = null,
+    var lastMessager: Player? = null,
 )
 
 val Player.playerData get() = toGeary().getOrSetPersisting { PlayerData() }

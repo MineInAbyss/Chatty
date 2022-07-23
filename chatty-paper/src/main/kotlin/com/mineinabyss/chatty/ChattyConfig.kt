@@ -3,7 +3,10 @@ package com.mineinabyss.chatty
 import com.mineinabyss.chatty.components.ChannelType
 import com.mineinabyss.chatty.helpers.ChattyTags
 import com.mineinabyss.idofront.config.IdofrontConfig
+import com.mineinabyss.idofront.serialization.DurationSerializer
 import kotlinx.serialization.Serializable
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.minutes
 
 object ChattyConfig : IdofrontConfig<ChattyConfig.Data>(chatty, Data.serializer()) {
     @Serializable
@@ -31,6 +34,7 @@ object ChattyConfig : IdofrontConfig<ChattyConfig.Data>(chatty, Data.serializer(
     data class PrivateMessages(
         val enabled: Boolean = true,
         val proxy: Boolean = true,
+        val messageReplyTime: @Serializable(with = DurationSerializer::class) Duration = 5.minutes,
         val messageSendFormat: String = "<gold>You -> %player_displayname%: ",
         val messageReceiveFormat: String = "<gold>%player_displayname% -> You: ",
         val messageSendSound: String = "",

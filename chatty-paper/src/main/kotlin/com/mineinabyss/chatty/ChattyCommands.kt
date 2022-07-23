@@ -13,6 +13,8 @@ import com.mineinabyss.idofront.commands.extensions.actions.playerAction
 import com.mineinabyss.idofront.messaging.miniMsg
 import io.papermc.paper.chat.ChatRenderer
 import io.papermc.paper.event.player.AsyncChatEvent
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import org.bukkit.Bukkit
 import org.bukkit.command.Command
 import org.bukkit.command.CommandSender
@@ -24,8 +26,17 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
         "chatty"(desc = "Chatty commands") {
             ("message" / "msg")(desc = "Private message another player") {
                 ensureSenderIsPlayer()
-                playerAction {
-                    (sender as? Player)?.handlePrivateMessage(player, arguments)
+                val player by stringArg()
+                action {
+                    (sender as? Player)?.handleSendingPrivateMessage(player.toPlayer() ?: return@action, arguments, false)
+                }
+            }
+            ("reply" / "r")(desc = "Reply to your previous private message") {
+                ensureSenderIsPlayer()
+                action {
+                    val player = sender as? Player ?: return@action
+                    player.playerData.lastMessager?.let { player.handleSendingPrivateMessage(it, arguments, true) } ?:
+                    player.sendFormattedMessage(chattyMessages.privateMessages.emptyReply)
                 }
             }
             permission("chatty.ping")
@@ -194,8 +205,17 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
         }
         ("message" / "msg")(desc = "Private message another player") {
             ensureSenderIsPlayer()
-            playerAction {
-                (sender as? Player)?.handlePrivateMessage(player, arguments)
+            val player by stringArg()
+            action {
+                (sender as? Player)?.handleSendingPrivateMessage(player.toPlayer() ?: return@action, arguments, false)
+            }
+        }
+        ("reply" / "r")(desc = "Reply to your previous private message") {
+            ensureSenderIsPlayer()
+            action {
+                val player = sender as? Player ?: return@action
+                player.playerData.lastMessager?.let { player.handleSendingPrivateMessage(it, arguments, true) } ?:
+                player.sendFormattedMessage(chattyMessages.privateMessages.emptyReply)
             }
         }
     }
@@ -263,22 +283,39 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
         }
     }
 
-    private fun Player.handlePrivateMessage(player: Player, arguments: List<String>) {
+    private val replyMap = mutableMapOf<Player, Job>()
+
+    private fun Player.handleReplyTimer(): Job {
+        if (this in replyMap) return replyMap[this]!!
+        replyMap[this]?.cancel()
+        return chatty.launch(chatty.asyncDispatcher) {
+            delay(chattyConfig.privateMessages.messageReplyTime)
+            replyMap[this@handleReplyTimer]?.cancel()
+            replyMap.remove(this@handleReplyTimer)
+            this@handleReplyTimer.playerData.lastMessager = null
+        }
+    }
+
+    private fun Player.handleSendingPrivateMessage(player: Player, arguments: List<String>, isReply: Boolean = false) {
         if (!chattyConfig.privateMessages.enabled) {
             this.sendFormattedMessage(chattyMessages.privateMessages.disabled)
-        } else if (arguments.first().toPlayer() == null) {
+        } else if (isReply && this.playerData.lastMessager == null) {
+            this.sendFormattedMessage(chattyMessages.privateMessages.emptyReply)
+        } else if (arguments.first().toPlayer() == null && !isReply) {
             this.sendFormattedMessage(chattyMessages.privateMessages.invalidPlayer)
         } else {
-            val msg = arguments.removeFirstArgumentOfStringList()
-            val privateMessages = chattyConfig.privateMessages
-            if (msg.isEmpty()) return
+            val msg = if (isReply) arguments.toSentence() else arguments.removeFirstArgumentOfStringList()
+            if (msg.isEmpty() || this == player) return
 
-            this.sendFormattedPrivateMessage(privateMessages.messageSendFormat, msg, player)
-            player.sendFormattedPrivateMessage(privateMessages.messageReceiveFormat, msg, this)
-            if (privateMessages.messageSendSound.isNotEmpty())
-                this.playSound(player.location, privateMessages.messageSendSound, 1f, 1f)
-            if (privateMessages.messageReceivedSound.isNotEmpty())
-                player.playSound(player.location, privateMessages.messageReceivedSound, 1f, 1f)
+            replyMap[player] = player.handleReplyTimer()
+
+            this.sendFormattedPrivateMessage(chattyConfig.privateMessages.messageSendFormat, msg, player)
+            player.sendFormattedPrivateMessage(chattyConfig.privateMessages.messageReceiveFormat, msg, this)
+            player.playerData.lastMessager = this
+            if (chattyConfig.privateMessages.messageSendSound.isNotEmpty())
+                this.playSound(player.location, chattyConfig.privateMessages.messageSendSound, 1f, 1f)
+            if (chattyConfig.privateMessages.messageReceivedSound.isNotEmpty())
+                player.playSound(player.location, chattyConfig.privateMessages.messageReceivedSound, 1f, 1f)
         }
     }
 }
