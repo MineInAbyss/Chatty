@@ -21,7 +21,7 @@ class PlayerListener : Listener {
         if (chattyConfig.join.enabled && chattyConfig.join.firstJoin.enabled) {
             joinMessage(translatePlaceholders(player, chattyMessages.joinLeave.firstJoinMessage))
 //            if (chattyConfig.join.firstJoin.enabled)
-//                player.sendPluginMessage(chattyPlugin, chattyProxyChannel, PlaceholderAPI.setPlaceholders(player, messages.joinLeave.joinMessage).toByteArray())
+//                player.sendPluginMessage(chatty, chattyProxyChannel, PlaceholderAPI.setPlaceholders(player, messages.joinLeave.joinMessage).toByteArray())
         }
     }
 
@@ -32,7 +32,7 @@ class PlayerListener : Listener {
         if (chattyConfig.join.enabled)
             joinMessage(translatePlaceholders(player, chattyMessages.joinLeave.joinMessage))
 //        if (chattyConfig.join.sendAcrossProxy)
-//            player.sendPluginMessage(chattyPlugin, chattyProxyChannel, PlaceholderAPI.setPlaceholders(player, messages.proxies.proxyJoin).toByteArray())
+//            player.sendPluginMessage(chatty, chattyProxyChannel, PlaceholderAPI.setPlaceholders(player, messages.proxies.proxyJoin).toByteArray())
     }
 
     @EventHandler
@@ -41,7 +41,7 @@ class PlayerListener : Listener {
         if (chattyConfig.leave.enabled)
             quitMessage(translatePlaceholders(player, chattyMessages.joinLeave.leaveMessage))
 //        if (chattyConfig.leave.sendAcrossProxy)
-//            Bukkit.getServer().sendPluginMessage(chattyPlugin, chattyProxyChannel, PlaceholderAPI.setPlaceholders(player, messages.proxies.proxyLeave).toByteArray())
+//            Bukkit.getServer().sendPluginMessage(chatty, chattyProxyChannel, PlaceholderAPI.setPlaceholders(player, messages.proxies.proxyLeave).toByteArray())
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)

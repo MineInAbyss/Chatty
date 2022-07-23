@@ -1,6 +1,6 @@
 package com.mineinabyss.chatty.listeners
 
-import com.mineinabyss.chatty.chattyPlugin
+import com.mineinabyss.chatty.chatty
 import com.mineinabyss.chatty.chattyProxyChannel
 import com.mineinabyss.chatty.components.playerData
 import com.mineinabyss.chatty.helpers.*
@@ -55,11 +55,8 @@ class ChatListener : Listener {
 
         if (channel.proxy) {
             //Append channel to give proxy info on what channel the message is from
-            player.sendPluginMessage(
-                chattyPlugin,
-                chattyProxyChannel,
-                ("$channelId " + message().serialize()).toByteArray()
-            )
+            val proxyMessage = ("$channelId ".miniMsg().append(message())).serialize().toByteArray()
+            player.sendPluginMessage(chatty, chattyProxyChannel, proxyMessage)
         }
         audiences.clear()
     }

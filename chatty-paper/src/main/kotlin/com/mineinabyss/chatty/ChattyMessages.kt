@@ -4,7 +4,7 @@ import com.mineinabyss.idofront.config.IdofrontConfig
 import kotlinx.serialization.Serializable
 import kotlin.io.path.div
 
-object ChattyMessages : IdofrontConfig<ChattyMessages.Messages>(chattyPlugin, Messages.serializer(), file = (chattyPlugin.dataFolder.toPath() / "messages.yml")) {
+object ChattyMessages : IdofrontConfig<ChattyMessages.Messages>(chatty, Messages.serializer(), file = (chatty.dataFolder.toPath() / "messages.yml")) {
 
     @Serializable
     data class Messages(

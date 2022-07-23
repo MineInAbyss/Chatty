@@ -5,7 +5,7 @@ import com.mineinabyss.chatty.helpers.ChattyTags
 import com.mineinabyss.idofront.config.IdofrontConfig
 import kotlinx.serialization.Serializable
 
-object ChattyConfig : IdofrontConfig<ChattyConfig.Data>(chattyPlugin, Data.serializer()) {
+object ChattyConfig : IdofrontConfig<ChattyConfig.Data>(chatty, Data.serializer()) {
     @Serializable
     data class Data(
         val useChattyCommandPrefix: Boolean = true,

@@ -13,7 +13,7 @@ import com.velocitypowered.api.proxy.messages.MinecraftChannelIdentifier
 import org.slf4j.Logger
 
 @Plugin(id = "chatty", name = "chatty", version = "0.1")
-class ChattyPlugin @Inject constructor(
+class chatty @Inject constructor(
     private val server: ProxyServer,
     private val logger: Logger,
     private val eventManager: EventManager,

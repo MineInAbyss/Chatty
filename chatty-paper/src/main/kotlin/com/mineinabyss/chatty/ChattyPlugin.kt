@@ -8,20 +8,12 @@ import com.mineinabyss.chatty.placeholderapi.PlaceholderHook
 import com.mineinabyss.geary.addon.autoscan
 import com.mineinabyss.geary.papermc.dsl.gearyAddon
 import com.mineinabyss.idofront.platforms.IdofrontPlatforms
-import com.mineinabyss.idofront.plugin.getService
 import com.mineinabyss.idofront.plugin.registerEvents
 import github.scarsz.discordsrv.DiscordSRV
-import org.bukkit.Bukkit
 import org.bukkit.plugin.java.JavaPlugin
 import kotlin.io.path.Path
 
-val chattyPlugin: ChattyPlugin by lazy { JavaPlugin.getPlugin(ChattyPlugin::class.java) }
 const val chattyProxyChannel = "chatty:proxy"
-
-interface ChattyContext {
-    companion object : ChattyContext by getService()
-
-}
 
 class ChattyPlugin : JavaPlugin() {
     override fun onLoad() {
@@ -36,9 +28,6 @@ class ChattyPlugin : JavaPlugin() {
         ChattyConfig.load()
 
         ChattyCommands()
-        if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null) {
-            PlaceholderHook().register()
-        }
 
         registerEvents(
             ChatListener(),
@@ -49,7 +38,11 @@ class ChattyPlugin : JavaPlugin() {
         server.messenger.registerIncomingPluginChannel(this, chattyProxyChannel, ChattyProxyListener())
         server.messenger.registerOutgoingPluginChannel(this, chattyProxyChannel)
 
-        if (Bukkit.getPluginManager().getPlugin("DiscordSRV") != null) DiscordSRV.api.subscribe(DiscordListener())
+        if (ChattyContext.isPlaceholderApiLoaded)
+            PlaceholderHook().register()
+
+        if (ChattyContext.isDiscordSRVLoaded)
+            DiscordSRV.api.subscribe(DiscordListener())
 
         gearyAddon {
             autoscan("com.mineinabyss") {
@@ -59,19 +52,20 @@ class ChattyPlugin : JavaPlugin() {
     }
 
     override fun onDisable() {
-        if (Bukkit.getPluginManager().getPlugin("DiscordSRV") != null) DiscordSRV.api.unsubscribe(DiscordListener())
+        if (ChattyContext.isDiscordSRVLoaded)
+            DiscordSRV.api.unsubscribe(DiscordListener())
     }
 }
 
 private fun saveDefaultMessages() {
-    if (!Path(chattyPlugin.dataFolder.path + "/messages.yml").toFile().exists()) {
-        chattyPlugin.saveResource("messages.yml", false)
+    if (!Path(chatty.dataFolder.path + "/messages.yml").toFile().exists()) {
+        chatty.saveResource("messages.yml", false)
     }
 }
 
 
 private fun saveDefaultEmoteFixer() {
-    if (!Path(chattyPlugin.dataFolder.path + "/emotefixer.yml").toFile().exists()) {
-        chattyPlugin.saveResource("emotefixer.yml", false)
+    if (!Path(chatty.dataFolder.path + "/emotefixer.yml").toFile().exists()) {
+        chatty.saveResource("emotefixer.yml", false)
     }
 }

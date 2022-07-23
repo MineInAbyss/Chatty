@@ -3,6 +3,8 @@ package com.mineinabyss.chatty.listeners
 import com.mineinabyss.chatty.components.playerData
 import com.mineinabyss.chatty.helpers.emoteFixer
 import com.mineinabyss.chatty.helpers.getChannelFromId
+import com.mineinabyss.chatty.helpers.serializeLegacy
+import com.mineinabyss.chatty.helpers.stripTags
 import github.scarsz.discordsrv.api.Subscribe
 import github.scarsz.discordsrv.api.events.*
 import github.scarsz.discordsrv.dependencies.jda.api.MessageBuilder
@@ -95,7 +97,8 @@ private fun Component.cleanUpHackyFix() =
     this.replaceText(TextReplacementConfig.builder().match("<<").replacement("<").build())
 
 
-private fun String.cleanUpHackyFix() = this.replace("<<", "<")
+private fun String.cleanUpHackyFix() =
+    this.replace("<<", "<").serializeLegacy().stripTags()
 
 private fun String.translateEmoteIDs(): String {
     var translated = this

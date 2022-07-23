@@ -20,7 +20,7 @@ import org.bukkit.command.TabCompleter
 import org.bukkit.entity.Player
 
 class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
-    override val commands = commands(chattyPlugin) {
+    override val commands = commands(chatty) {
         "chatty"(desc = "Chatty commands") {
             ("message" / "msg")(desc = "Private message another player") {
                 ensureSenderIsPlayer()
@@ -243,7 +243,7 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
             swapChannelCommand(channel.key)
         else if (channel?.key != null && arguments.isNotEmpty()) {
             playerData.channelId = channel.key
-            chattyPlugin.launch(chattyPlugin.asyncDispatcher) {
+            chatty.launch(chatty.asyncDispatcher) {
                 AsyncChatEvent(
                     true, this@shortcutCommand, mutableSetOf(), ChatRenderer.defaultRenderer(), msg, msg
                 ).callEvent()
