@@ -248,7 +248,7 @@ fun Player.sendFormattedMessage(message: String, optionalPlayer: Player? = null)
     this.sendMessage(translatePlaceholders((optionalPlayer ?: this), message))
 
 fun Player.sendFormattedPrivateMessage(messageFormat: String, message: String, receiver: Player) =
-    receiver.sendMessage((translatePlaceholders(this, messageFormat).serialize() + message).miniMsg())
+    this.sendMessage((translatePlaceholders(receiver, messageFormat).serialize() + message).miniMsg())
 
 fun List<String>.removeFirstArgumentOfStringList(): String =
     this.filter { it != this.first() }.joinToString(" ")
