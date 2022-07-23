@@ -2,8 +2,10 @@ package com.mineinabyss.chatty
 
 import com.github.shynixn.mccoroutine.bukkit.asyncDispatcher
 import com.github.shynixn.mccoroutine.bukkit.launch
+import com.mineinabyss.chatty.components.SpyOnLocal
 import com.mineinabyss.chatty.components.playerData
 import com.mineinabyss.chatty.helpers.*
+import com.mineinabyss.geary.papermc.access.toGeary
 import com.mineinabyss.idofront.commands.arguments.stringArg
 import com.mineinabyss.idofront.commands.execution.IdofrontCommandExecutor
 import com.mineinabyss.idofront.commands.extensions.actions.ensureSenderIsPlayer
@@ -11,7 +13,6 @@ import com.mineinabyss.idofront.commands.extensions.actions.playerAction
 import com.mineinabyss.idofront.messaging.miniMsg
 import io.papermc.paper.chat.ChatRenderer
 import io.papermc.paper.event.player.AsyncChatEvent
-import net.kyori.adventure.text.Component
 import org.bukkit.Bukkit
 import org.bukkit.command.Command
 import org.bukkit.command.CommandSender
@@ -69,7 +70,7 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
                             player.sendFormattedMessage(nickMessage.selfDenied)
                         arguments.isEmpty() -> {
                             // Removes players displayname or sends error if sender is console
-                            player?.displayName(Component.empty())
+                            player?.displayName(player.name.miniMsg())
                             player?.sendFormattedMessage(nickMessage.selfEmpty)
                                 ?: sender.sendConsoleMessage(nickMessage.consoleNicknameSelf)
                         }
@@ -83,7 +84,7 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
                                 otherPlayer == null || otherPlayer !in Bukkit.getOnlinePlayers() ->
                                     player?.sendFormattedMessage(nickMessage.invalidPlayer, otherPlayer)
                                 otherNick.isEmpty() -> {
-                                    otherPlayer.displayName(Component.empty())
+                                    otherPlayer.displayName(player?.name?.miniMsg())
                                     player?.sendFormattedMessage(nickMessage.otherEmpty, otherPlayer)
                                 }
                                 !bypassFormatPerm && !otherNick.verifyNickStyling() ->
@@ -127,6 +128,19 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
                     }
                 }
 
+            }
+            "spy" {
+                playerAction {
+                    val player = sender as? Player ?: return@playerAction
+                    val spy = player.toGeary().has<SpyOnLocal>()
+                    if (spy) {
+                        player.toGeary().remove<SpyOnLocal>()
+                        player.sendFormattedMessage("<gold>You are no longer spying on chat.")
+                    } else {
+                        player.toGeary().setPersisting(SpyOnLocal())
+                        player.sendFormattedMessage("<gold>You are no longer spying on chat.")
+                    }
+                }
             }
             getAllChannelNames().forEach { channelName ->
                 channelName {
@@ -183,7 +197,7 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
     ): List<String> {
         return if (command.name == "chatty") {
             when (args.size) {
-                1 -> listOf("message", "ping", "reload", "channels", "nickname")
+                1 -> listOf("message", "ping", "reload", "channels", "nickname", "spy")
                 2 -> when (args[0]) {
                     "ping" -> listOf("toggle", "sound")
                     "reload", "rl" -> listOf("config", "messages")

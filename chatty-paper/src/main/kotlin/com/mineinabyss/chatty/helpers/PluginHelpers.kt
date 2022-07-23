@@ -10,7 +10,7 @@ val chattyMessages = ChattyMessages.data
 val emoteFixer = DiscordEmoteFixer.data
 
 fun Player.checkPermission(perm: String): Boolean {
-    return if (perm.isNotEmpty()) true
+    return if (perm.isEmpty()) true
     else this.hasPermission(perm)
 }
 

@@ -2,7 +2,9 @@ package com.mineinabyss.chatty.helpers
 
 import com.destroystokyo.paper.ClientOption
 import com.mineinabyss.chatty.components.ChannelType
+import com.mineinabyss.chatty.components.SpyOnLocal
 import com.mineinabyss.chatty.components.playerData
+import com.mineinabyss.geary.papermc.access.toGeary
 import com.mineinabyss.idofront.font.Space
 import com.mineinabyss.idofront.messaging.miniMsg
 import me.clip.placeholderapi.PlaceholderAPI
@@ -151,6 +153,7 @@ fun setAudienceForChannelType(player: Player): Set<Audience> {
         ChannelType.RADIUS -> {
             if (channel.channelRadius <= 0) audiences.addAll(onlinePlayers)
             else audiences.addAll(onlinePlayers.filter { p ->
+                p.toGeary().has<SpyOnLocal>() ||
                 (p.location.distanceSquared(player.location) <= channel.channelRadius)
             })
         }
