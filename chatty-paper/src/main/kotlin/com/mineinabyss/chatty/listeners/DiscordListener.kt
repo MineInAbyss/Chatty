@@ -20,6 +20,7 @@ class DiscordListener {
     @Subscribe(priority = ListenerPriority.NORMAL)
     fun GameChatMessagePreProcessEvent.onChat() {
         val channel = getChannelFromId(player.chattyData.channelId) ?: return
+        if (isCancelled) return
         if (!channel.discordsrv) {
             isCancelled = true
             return
@@ -31,6 +32,7 @@ class DiscordListener {
     fun VentureChatMessagePreProcessEvent.onProxyChat() {
         val channelId = messageComponent.deserialize().substringBefore(" ")
         val channel = getChannelFromId(channelId) ?: return
+        if (isCancelled) return
         if (!channel.discordsrv) {
             isCancelled = true
             return
