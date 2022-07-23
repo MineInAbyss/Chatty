@@ -15,6 +15,7 @@ import net.kyori.adventure.text.TextReplacementConfig
 import net.kyori.adventure.text.format.TextColor
 import net.kyori.adventure.text.minimessage.MiniMessage
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer
 import org.bukkit.Bukkit
 import org.bukkit.ChatColor
 import org.bukkit.Sound
@@ -36,7 +37,7 @@ fun String.checkForPlayerPings(channelId: String): Player? {
     if (channelId !in getPingEnabledChannels || ping.pingPrefix.isEmpty() || ping.pingPrefix !in this) return null
     val pingedName = this.substringAfter(ping.pingPrefix).split(" ")[0]
     return Bukkit.getOnlinePlayers().firstOrNull {
-        it.name == pingedName || it.displayName().serialize() == pingedName
+        it.name == pingedName || it.displayName().toPlainText() == pingedName
     }
 }
 
@@ -202,6 +203,8 @@ fun String.verifySignStyling(): String {
 }
 
 fun Component.serialize() = MiniMessage.builder().build().serialize(this)
+
+fun Component.toPlainText() = PlainTextComponentSerializer.builder().build().serialize(this)
 
 fun Component.stripTags() = MiniMessage.builder().build().stripTags(this.serialize())
 

@@ -260,6 +260,7 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
         } else {
             val msg = arguments.removeFirstArgumentOfStringList()
             val privateMessages = chattyConfig.privateMessages
+            if (msg.isEmpty()) return
 
             this.sendFormattedPrivateMessage(privateMessages.messageSendFormat, msg, player)
             player.sendFormattedPrivateMessage(privateMessages.messageReceiveFormat, msg, this)
