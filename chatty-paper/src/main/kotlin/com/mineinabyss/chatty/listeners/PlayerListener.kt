@@ -1,8 +1,8 @@
 package com.mineinabyss.chatty.listeners
 
+import com.mineinabyss.chatty.components.ChannelData
 import com.mineinabyss.chatty.components.HideJoinLeave
-import com.mineinabyss.chatty.components.PlayerData
-import com.mineinabyss.chatty.components.playerData
+import com.mineinabyss.chatty.components.chattyData
 import com.mineinabyss.chatty.helpers.*
 import com.mineinabyss.geary.papermc.access.toGeary
 import com.mineinabyss.idofront.messaging.miniMsg
@@ -18,7 +18,7 @@ class PlayerListener : Listener {
     //TODO Disable if proxy should handle this
     @EventHandler
     fun PlayerJoinEvent.onFirstJoin() {
-        if (player.toGeary().has<PlayerData>()) return
+        if (player.toGeary().has<ChannelData>()) return
         if (chattyConfig.join.enabled && chattyConfig.join.firstJoin.enabled) {
             joinMessage(translatePlaceholders(player, chattyMessages.joinLeave.firstJoinMessage))
 //            if (chattyConfig.join.firstJoin.enabled)
@@ -29,8 +29,8 @@ class PlayerListener : Listener {
     @EventHandler
     fun PlayerJoinEvent.onJoin() {
         player.verifyPlayerChannel()
-        if (player.playerData.nickName != null)
-            player.displayName(player.playerData.nickName?.miniMsg())
+        if (player.chattyData.nickName != null)
+            player.displayName(player.chattyData.nickName?.miniMsg())
         if (chattyConfig.join.enabled && !player.toGeary().has<HideJoinLeave>())
             joinMessage(translatePlaceholders(player, chattyMessages.joinLeave.joinMessage))
 //        if (chattyConfig.join.sendAcrossProxy)
@@ -40,7 +40,7 @@ class PlayerListener : Listener {
     @EventHandler
     fun PlayerQuitEvent.onDisconnect() {
         if (player.displayName() != player.name())
-            player.playerData.nickName = player.displayName().serialize()
+            player.chattyData.nickName = player.displayName().serialize()
         if (chattyConfig.leave.enabled && !player.toGeary().has<HideJoinLeave>())
             quitMessage(translatePlaceholders(player, chattyMessages.joinLeave.leaveMessage))
 //        if (chattyConfig.leave.sendAcrossProxy)

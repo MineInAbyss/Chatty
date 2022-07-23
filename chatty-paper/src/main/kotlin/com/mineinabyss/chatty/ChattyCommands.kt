@@ -3,7 +3,7 @@ package com.mineinabyss.chatty
 import com.github.shynixn.mccoroutine.bukkit.asyncDispatcher
 import com.github.shynixn.mccoroutine.bukkit.launch
 import com.mineinabyss.chatty.components.SpyOnLocal
-import com.mineinabyss.chatty.components.playerData
+import com.mineinabyss.chatty.components.chattyData
 import com.mineinabyss.chatty.helpers.*
 import com.mineinabyss.geary.papermc.access.toGeary
 import com.mineinabyss.idofront.commands.arguments.stringArg
@@ -35,7 +35,7 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
                 ensureSenderIsPlayer()
                 action {
                     val player = sender as? Player ?: return@action
-                    player.playerData.lastMessager?.let { player.handleSendingPrivateMessage(it, arguments, true) } ?:
+                    player.chattyData.lastMessager?.let { player.handleSendingPrivateMessage(it, arguments, true) } ?:
                     player.sendFormattedMessage(chattyMessages.privateMessages.emptyReply)
                 }
             }
@@ -46,7 +46,7 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
                     permission("chatty.ping.toggle")
                     action {
                         val player = sender as? Player ?: return@action
-                        player.playerData.disablePingSound = !player.playerData.disablePingSound
+                        player.chattyData.disablePingSound = !player.chattyData.disablePingSound
                         player.sendFormattedMessage(chattyMessages.ping.toggledPingSound)
                     }
                 }
@@ -57,7 +57,7 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
                     action {
                         val player = sender as? Player ?: return@action
                         if (soundName in getAlternativePingSounds) {
-                            player.playerData.pingSound = soundName
+                            player.chattyData.pingSound = soundName
                             player.sendFormattedMessage(chattyMessages.ping.changedPingSound)
                         } else {
                             player.sendFormattedMessage(chattyMessages.ping.invalidPingSound)
@@ -108,7 +108,7 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
                                 !bypassFormatPerm && !otherNick.verifyNickLength() ->
                                     player?.sendFormattedMessage(nickMessage.tooLong)
                                 otherNick.isNotEmpty() -> {
-                                    otherPlayer.playerData.nickName = otherNick
+                                    otherPlayer.chattyData.nickName = otherNick
                                     otherPlayer.displayName(otherNick.miniMsg())
                                     player?.sendFormattedMessage(nickMessage.otherSuccess, otherPlayer)
                                 }
@@ -121,7 +121,7 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
                                 player?.sendFormattedMessage(nickMessage.tooLong)
                             } else {
                                 player?.displayName(nick.miniMsg())
-                                player?.playerData?.nickName = nick
+                                player?.chattyData?.nickName = nick
                                 player?.sendFormattedMessage(nickMessage.selfSuccess)
                             }
                         }
@@ -214,7 +214,7 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
             ensureSenderIsPlayer()
             action {
                 val player = sender as? Player ?: return@action
-                player.playerData.lastMessager?.let { player.handleSendingPrivateMessage(it, arguments, true) } ?:
+                player.chattyData.lastMessager?.let { player.handleSendingPrivateMessage(it, arguments, true) } ?:
                 player.sendFormattedMessage(chattyMessages.privateMessages.emptyReply)
             }
         }
@@ -256,7 +256,7 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
         } else if (!checkPermission(newChannel.permission)) {
             sendFormattedMessage(chattyMessages.channels.missingChannelPermission)
         } else {
-            playerData.channelId = channelId
+            chattyData.channelId = channelId
             sendFormattedMessage(chattyMessages.channels.channelChanged)
         }
     }
@@ -265,7 +265,7 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
         channel: Map.Entry<String, ChattyConfig.ChattyChannel>?,
         arguments: List<String>
     ) {
-        val currentChannel = playerData.channelId
+        val currentChannel = chattyData.channelId
         val msg = arguments.joinToString(" ").miniMsg()
 
         if (channel?.value?.permission?.isNotEmpty() == true && !checkPermission(channel.value.permission))
@@ -273,12 +273,12 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
         else if (channel?.key != null && arguments.isEmpty())
             swapChannelCommand(channel.key)
         else if (channel?.key != null && arguments.isNotEmpty()) {
-            playerData.channelId = channel.key
+            chattyData.channelId = channel.key
             chatty.launch(chatty.asyncDispatcher) {
                 AsyncChatEvent(
                     true, this@shortcutCommand, mutableSetOf(), ChatRenderer.defaultRenderer(), msg, msg
                 ).callEvent()
-                playerData.channelId = currentChannel
+                chattyData.channelId = currentChannel
             }
         }
     }
@@ -292,14 +292,14 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
             delay(chattyConfig.privateMessages.messageReplyTime)
             replyMap[this@handleReplyTimer]?.cancel()
             replyMap.remove(this@handleReplyTimer)
-            this@handleReplyTimer.playerData.lastMessager = null
+            this@handleReplyTimer.chattyData.lastMessager = null
         }
     }
 
     private fun Player.handleSendingPrivateMessage(player: Player, arguments: List<String>, isReply: Boolean = false) {
         if (!chattyConfig.privateMessages.enabled) {
             this.sendFormattedMessage(chattyMessages.privateMessages.disabled)
-        } else if (isReply && this.playerData.lastMessager == null) {
+        } else if (isReply && this.chattyData.lastMessager == null) {
             this.sendFormattedMessage(chattyMessages.privateMessages.emptyReply)
         } else if (arguments.first().toPlayer() == null && !isReply) {
             this.sendFormattedMessage(chattyMessages.privateMessages.invalidPlayer)
@@ -311,7 +311,7 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
 
             this.sendFormattedPrivateMessage(chattyConfig.privateMessages.messageSendFormat, msg, player)
             player.sendFormattedPrivateMessage(chattyConfig.privateMessages.messageReceiveFormat, msg, this)
-            player.playerData.lastMessager = this
+            player.chattyData.lastMessager = this
             if (chattyConfig.privateMessages.messageSendSound.isNotEmpty())
                 this.playSound(player.location, chattyConfig.privateMessages.messageSendSound, 1f, 1f)
             if (chattyConfig.privateMessages.messageReceivedSound.isNotEmpty())

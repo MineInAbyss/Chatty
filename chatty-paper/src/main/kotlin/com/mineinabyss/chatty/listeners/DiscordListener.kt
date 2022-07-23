@@ -1,6 +1,6 @@
 package com.mineinabyss.chatty.listeners
 
-import com.mineinabyss.chatty.components.playerData
+import com.mineinabyss.chatty.components.chattyData
 import com.mineinabyss.chatty.helpers.emoteFixer
 import com.mineinabyss.chatty.helpers.getChannelFromId
 import com.mineinabyss.chatty.helpers.serializeLegacy
@@ -18,24 +18,32 @@ class DiscordListener {
 
     @Subscribe
     fun GameChatMessagePreProcessEvent.onChat() {
-        val channel = getChannelFromId(player.playerData.channelId) ?: return
-        if (!channel.discordsrv) isCancelled = true
-        messageComponent = messageComponent.translateEmoteIDsToComponent()
+        val channel = getChannelFromId(player.chattyData.channelId) ?: return
+        if (!channel.discordsrv) {
+            isCancelled = true
+            return
+        }
+        else messageComponent = messageComponent.translateEmoteIDsToComponent()
     }
 
     @Subscribe
     fun VentureChatMessagePreProcessEvent.onProxyChat() {
         val channelId = messageComponent.deserialize().substringBefore(" ")
         val channel = getChannelFromId(channelId) ?: return
-        if (!channel.discordsrv) isCancelled = true
-        else messageComponent =
-            messageComponent.removeAttachedChannel(channelId).translateEmoteIDsToComponent()
+        if (!channel.discordsrv) {
+            isCancelled = true
+            return
+        }
+        else messageComponent = messageComponent.removeAttachedChannel(channelId).translateEmoteIDsToComponent()
     }
 
     @Subscribe
     fun DeathMessagePreProcessEvent.onDeath() {
-        val channel = getChannelFromId(player.playerData.channelId) ?: return
-        if (!channel.discordsrv) isCancelled = true
+        val channel = getChannelFromId(player.chattyData.channelId) ?: return
+        /*if (!channel.discordsrv) {
+            isCancelled = true
+            return
+        }*/
         deathMessage = deathMessage.translateEmoteIDs()
     }
 

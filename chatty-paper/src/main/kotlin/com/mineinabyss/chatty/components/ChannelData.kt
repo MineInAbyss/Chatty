@@ -8,7 +8,7 @@ import org.bukkit.entity.Player
 
 @Serializable
 @SerialName("chatty:player_data")
-class PlayerData(
+class ChannelData(
     var channelId: String = getDefaultChat().key,
     var disablePingSound: Boolean = false,
     var pingSound: String? = null,
@@ -16,7 +16,7 @@ class PlayerData(
     var lastMessager: Player? = null,
 )
 
-val Player.playerData get() = toGeary().getOrSetPersisting { PlayerData() }
+val Player.chattyData get() = toGeary().getOrSetPersisting { ChannelData() }
 enum class ChannelType {
     GLOBAL,
     RADIUS,

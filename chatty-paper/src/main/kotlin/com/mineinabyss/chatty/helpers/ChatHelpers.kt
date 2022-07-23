@@ -3,7 +3,7 @@ package com.mineinabyss.chatty.helpers
 import com.destroystokyo.paper.ClientOption
 import com.mineinabyss.chatty.components.ChannelType
 import com.mineinabyss.chatty.components.SpyOnLocal
-import com.mineinabyss.chatty.components.playerData
+import com.mineinabyss.chatty.components.chattyData
 import com.mineinabyss.geary.papermc.access.toGeary
 import com.mineinabyss.idofront.font.Space
 import com.mineinabyss.idofront.messaging.miniMsg
@@ -42,9 +42,9 @@ fun String.checkForPlayerPings(channelId: String): Player? {
 }
 
 fun Component.handlePlayerPings(player: Player, pingedPlayer: Player) {
-    val channel = getChannelFromId(player.playerData.channelId) ?: return
+    val channel = getChannelFromId(player.chattyData.channelId) ?: return
     val ping = chattyConfig.ping
-    val pingSound = pingedPlayer.playerData.pingSound ?: ping.defaultPingSound
+    val pingSound = pingedPlayer.chattyData.pingSound ?: ping.defaultPingSound
     val displayName = if (channel.format.useDisplayName) pingedPlayer.displayName().stripTags() else pingedPlayer.name
     val clickToReply =
         if (ping.clickToReply) "<insert:@${
@@ -57,7 +57,7 @@ fun Component.handlePlayerPings(player: Player, pingedPlayer: Player) {
             .replacement((ping.pingReceiveFormat + clickToReply + ping.pingPrefix + displayName).miniMsg()).build()
     )
 
-    if (!pingedPlayer.playerData.disablePingSound)
+    if (!pingedPlayer.chattyData.disablePingSound)
         pingedPlayer.playSound(pingedPlayer.location, pingSound, ping.pingVolume, ping.pingPitch)
     pingedPlayer.sendMessage(pingMessage)
 
@@ -87,13 +87,13 @@ fun getChannelFromId(channelId: String) =
     chattyConfig.channels.entries.firstOrNull { it.key == channelId }?.value
 
 fun Player.getChannelFromPlayer() =
-    chattyConfig.channels.entries.firstOrNull { it.key == this.playerData.channelId }?.value
+    chattyConfig.channels.entries.firstOrNull { it.key == this.chattyData.channelId }?.value
 
 fun Player.channelIsProxyEnabled() = getChannelFromPlayer()?.proxy ?: false
 
 fun Player.verifyPlayerChannel() {
-    if (playerData.channelId !in chattyConfig.channels)
-        playerData.channelId = getDefaultChat().key
+    if (chattyData.channelId !in chattyConfig.channels)
+        chattyData.channelId = getDefaultChat().key
 }
 
 fun getAllChannelNames(): List<String> {
@@ -144,7 +144,7 @@ fun Player.translatePlayerHeadComponent(): Component {
 
 fun setAudienceForChannelType(player: Player): Set<Audience> {
     val onlinePlayers = Bukkit.getOnlinePlayers()
-    val channel = getChannelFromId(player.playerData.channelId) ?: return emptySet()
+    val channel = getChannelFromId(player.chattyData.channelId) ?: return emptySet()
     val audiences = mutableSetOf<Audience>()
 
     when (channel.channelType) {
@@ -165,7 +165,7 @@ fun setAudienceForChannelType(player: Player): Set<Audience> {
         ChannelType.PRIVATE -> {
             audiences.addAll(
                 onlinePlayers.filter { p ->
-                    p.playerData.channelId == player.playerData.channelId
+                    p.chattyData.channelId == player.chattyData.channelId
                 })
         }
     }

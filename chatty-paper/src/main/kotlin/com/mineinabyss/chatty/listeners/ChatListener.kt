@@ -2,7 +2,7 @@ package com.mineinabyss.chatty.listeners
 
 import com.mineinabyss.chatty.chatty
 import com.mineinabyss.chatty.chattyProxyChannel
-import com.mineinabyss.chatty.components.playerData
+import com.mineinabyss.chatty.components.chattyData
 import com.mineinabyss.chatty.helpers.*
 import com.mineinabyss.idofront.messaging.miniMsg
 import io.papermc.paper.chat.ChatRenderer
@@ -20,7 +20,7 @@ class ChatListener : Listener {
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     fun AsyncChatEvent.onPlayerChat() {
         player.verifyPlayerChannel()
-        val channelId = player.playerData.channelId
+        val channelId = player.chattyData.channelId
         val channel = getChannelFromId(channelId) ?: return
         val displayName = if (channel.format.useDisplayName) player.displayName() else player.name.miniMsg()
         val audiences = viewers()
