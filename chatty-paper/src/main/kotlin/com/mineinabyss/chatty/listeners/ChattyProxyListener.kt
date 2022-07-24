@@ -36,7 +36,7 @@ class ChattyProxyListener : PluginMessageListener {
             ChannelType.PRIVATE -> emptyList() //TODO Implement this when PRIVATE is more clear
         }.forEach { it.sendMessage(proxyMessage.miniMsg()) }
 
-        if (!ChattyContext.isDiscordSRVLoaded) return
+        if (!ChattyContext.isDiscordSRVLoaded || !channel.discordsrv) return
         val dsrv = DiscordSRV.getPlugin()
         var discordMessage = proxyMessage.replaceFirst(channelFormat, "")
         val reserializer = DiscordSRV.config().getBoolean("Experiment_MCDiscordReserializer_ToDiscord")
