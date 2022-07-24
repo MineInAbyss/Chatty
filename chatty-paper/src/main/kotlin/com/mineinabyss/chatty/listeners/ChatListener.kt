@@ -29,7 +29,7 @@ class ChatListener : Listener {
 
         if (audiences.isNotEmpty()) audiences.clear()
         audiences.addAll(setAudienceForChannelType(player))
-        message("<reset>".miniMsg().append(translatePlaceholders(player, channel.format)).append(formattedMessage))
+        message("<reset>".miniMsg().append(translatePlaceholders(player, channel.format + formattedMessage.serialize())))
 
         val pingedPlayer = originalMessage().serialize().checkForPlayerPings(channelId)
         if (pingedPlayer != null && pingedPlayer != player && pingedPlayer in audiences) {

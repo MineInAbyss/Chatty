@@ -41,15 +41,13 @@ class DiscordListener {
     @Subscribe
     fun DeathMessagePreProcessEvent.onDeath() {
         val channel = getChannelFromId(player.chattyData.channelId) ?: return
-        /*if (!channel.discordsrv) {
-            isCancelled = true
-            return
-        }*/
+        if (isCancelled) return
         deathMessage = deathMessage.translateEmoteIDs()
     }
 
     @Subscribe
     fun AchievementMessagePreProcessEvent.onAchievement() {
+        if (isCancelled) return
         achievementName = achievementName.translateEmoteIDs()
         val format = messageFormat
         if (format.content != null)
@@ -70,6 +68,7 @@ class DiscordListener {
 
     @Subscribe
     fun AchievementMessagePostProcessEvent.onAchievement() {
+        if (isCancelled) return
         val message = discordMessage
         val embeds = mutableListOf<MessageEmbed>()
 

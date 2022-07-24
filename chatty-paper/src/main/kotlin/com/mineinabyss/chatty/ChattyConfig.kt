@@ -37,8 +37,8 @@ object ChattyConfig : IdofrontConfig<ChattyConfig.Data>(chatty, Data.serializer(
         val enabled: Boolean = true,
         val proxy: Boolean = true,
         val messageReplyTime: @Serializable(with = DurationSerializer::class) Duration = 5.minutes,
-        val messageSendFormat: String = "<gold>You -> %player_displayname%: ",
-        val messageReceiveFormat: String = "<gold>%player_displayname% -> You: ",
+        val messageSendFormat: String = "<gold>You -> %%chatty_player_displayname%: ",
+        val messageReceiveFormat: String = "<gold>%%chatty_player_displayname% -> You: ",
         val messageSendSound: String = "",
         val messageReceivedSound: String = "",
     )

@@ -26,10 +26,10 @@ object ChattyMessages : IdofrontConfig<ChattyMessages.Messages>(chatty, Messages
 
     @Serializable
     data class Nicknames(
-        val selfSuccess: String = "<green>You changed your nickname to <i>%player_displayname%</i>!",
+        val selfSuccess: String = "<green>You changed your nickname to <i>%%chatty_player_displayname%!",
         val selfDenied: String = "<red>You can't change your nickname!",
         val selfEmpty: String = "<yellow>Removed nickname!",
-        val otherSuccess: String = "<green>You changed %player_name%'s nickname to <i>%player_displayname%</i>!",
+        val otherSuccess: String = "<green>You changed %player_name%'s nickname to <i>%%chatty_player_displayname%!",
         val otherDenied: String = "<red>You can't change %player_name%'s nickname!",
         val otherEmpty: String = "<yellow>Removed nickname for %player_name%!",
         val invalidPlayer: String = "<red>That player doesn't exist!",
@@ -40,8 +40,8 @@ object ChattyMessages : IdofrontConfig<ChattyMessages.Messages>(chatty, Messages
 
     @Serializable
     data class Pings(
-        val toggledPingSound: String = "Ping sound is now <i>%chatty_player_ping_toggle%</i>.",
-        val changedPingSound: String = "Ping sound set to <i>%chatty_ping_sound%</i>",
+        val toggledPingSound: String = "Ping sound is now <i>%chatty_player_ping_toggle%.",
+        val changedPingSound: String = "Ping sound set to <i>%chatty_ping_sound%",
         val invalidPingSound: String = "<red>You must specify a valid sound to play.",
     )
 
@@ -56,10 +56,10 @@ object ChattyMessages : IdofrontConfig<ChattyMessages.Messages>(chatty, Messages
 
     @Serializable
     data class Proxies(
-        val proxyJoin: String = "<green>+ <white>| <aqua>%player_displayname%",
-        val proxyLeave: String = "<red>- <white>| <aqua>%player_displayname%",
-        val proxySwitchToMessage: String = "<gray>↑<white> ┃ <aqua>%player_displayname% <gray>left to <aqua>%player_proxy_new_server% server.",
-        val proxySwitchFromMessage: String = "<gray>↑<white> ┃ <aqua>%player_displayname% <gray>left to <aqua>%player_proxy_new_server% server.",
+        val proxyJoin: String = "<green>+ <white>| <aqua>%%chatty_player_displayname%",
+        val proxyLeave: String = "<red>- <white>| <aqua>%%chatty_player_displayname%",
+        val proxySwitchToMessage: String = "<gray>↑<white> ┃ <aqua>%%chatty_player_displayname% <gray>left to <aqua>%player_proxy_new_server% server.",
+        val proxySwitchFromMessage: String = "<gray>↑<white> ┃ <aqua>%%chatty_player_displayname% <gray>left to <aqua>%player_proxy_new_server% server.",
     )
 
     @Serializable
@@ -73,6 +73,6 @@ object ChattyMessages : IdofrontConfig<ChattyMessages.Messages>(chatty, Messages
     data class Other(
         val configReloaded: String = "<green>Chatty config reloaded.",
         val messagesReloaded: String = "<green>Chatty messages reloaded.",
-        val nickNameChanged: String = "Nickname set to <white><i>&player_displayname%</i></white>.",
+        val nickNameChanged: String = "Nickname set to <white><i>&%chatty_player_displayname%.",
     )
 }

@@ -108,34 +108,25 @@ channels:
     channelType: GLOBAL       # GLOBAL, LOCAL, PRIVATE (Currently does nothing), PERMISSION
     isDefaultChannel: true
     discordsrv: true
-    format:
-      usePlayerDisplayName: true
-      prefix: ":survival:"
-      suffix: ": "
-      messageFormat: ""
+    format: ":survival: %luckperms_prefix%%%chatty_player_displayname%: "
     channelAliases:         # Shortcut commandalias to switch
       - "g"
 
+  # %chatty_player_head% will be replaced with the playerhead of the player who sent the message
+  # Keep in mind it is performance heavy so use sparingly.
+  # Format of the message itself. Can change color and font for example
   playerhead:
     channelType: GLOBAL
     isDefaultChannel: true
     discordsrv: true
-    format:
-      usePlayerDisplayName: true
-      prefix: "%chatty_player_head%"  # %chatty_player_head% will be replaced with the playerhead of the player who sent the message
-      suffix: ": "                    # Keep in mind it is performance heavy so use sparingly.
-      messageFormat: ""               # Format of the message itself. Can change color and font for example
+    format: "%chatty_player_head% %luckperms_prefix% %%chatty_player_displayname%: "
     channelAliases:
       - "head"
 
   local:
     channelType: RADIUS
     isDefaultChannel: false
-    format:
-      usePlayerDisplayName: true
-      prefix: "<yellow>[Local]"
-      suffix: ": "
-      messageFormat: "<yellow>"
+    format: "<yellow>[Local] %%chatty_player_displayname%:<yellow> "
     channelRadius: 500
     channelAliases:
       - "l"
@@ -146,10 +137,6 @@ channels:
     requireEffectivePermission: false
     isDefaultChannel: false
     isStaffChannel: true
-    format:
-      usePlayerDisplayName: true
-      prefix: "<red>[Staff]"
-      suffix: ": "
-      messageFormat: "<red>"
+    format: "<red>[Staff] %%chatty_player_displayname%:<red> "
     channelAliases:
-      - "s"
+      - "a"

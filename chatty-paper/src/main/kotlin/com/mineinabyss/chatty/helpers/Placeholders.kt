@@ -1,14 +1,14 @@
 package com.mineinabyss.chatty.helpers
 
 import com.mineinabyss.chatty.components.chattyData
-import com.mineinabyss.idofront.messaging.miniMsg
+import com.mineinabyss.idofront.font.Space
 import org.bukkit.entity.Player
 
 fun chattyPlaceholders(player: Player, string: String) : Map<String, String> {
     val data = player.chattyData
     val ping = chattyConfig.ping
     val channel = player.getChannelFromPlayer()
-    val shift = Integer.parseInt(string.substringAfter("%shift_", "0"))
+    val shift = Integer.parseInt(string.substringAfter("shift_", "0"))
 
     return mapOf(
         "available_channels" to getAllChannelNames().joinToString(),
@@ -31,8 +31,8 @@ fun chattyPlaceholders(player: Player, string: String) : Map<String, String> {
         "player_ping_sound" to data.pingSound.toString(),
         "player_ping_toggle" to (!data.disablePingSound).toString(),
 
-        "player_displayname" to (player.chattyData.displayName?.miniMsg()?.stripTags() ?: player.name),
+        "player_displayname" to (player.chattyData.displayName ?: player.name)+"<reset>",
         "player_head" to player.translatePlayerHeadComponent().serialize(),
-        "shift_$shift" to shift.toString()
+        "shift_$shift" to Space.of(shift)
     )
 }
