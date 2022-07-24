@@ -21,7 +21,9 @@ object ChattyConfig : IdofrontConfig<ChattyConfig.Data>(chatty, Data.serializer(
         val leave: Leave = Leave(),
         val proxy: Proxy = Proxy(),
         val privateMessages: PrivateMessages = PrivateMessages(),
-        val channels: Map<String, ChattyChannel> = mutableMapOf("global" to ChattyChannel(ChannelType.GLOBAL)),
+        // Mutable so other plugins can add channels on their end
+        // Might be a safer way to do this but 3AM so first solution is best solution
+        val channels: MutableMap<String, ChattyChannel> = mutableMapOf("global" to ChattyChannel(ChannelType.GLOBAL)),
     )
 
     @Serializable

@@ -248,19 +248,6 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
         } else emptyList()
     }
 
-    private fun Player.swapChannelCommand(channelId: String) {
-        val newChannel = getChannelFromId(channelId)
-
-        if (newChannel == null) {
-            sendFormattedMessage(chattyMessages.channels.noChannelWithName)
-        } else if (!checkPermission(newChannel.permission)) {
-            sendFormattedMessage(chattyMessages.channels.missingChannelPermission)
-        } else {
-            chattyData.channelId = channelId
-            sendFormattedMessage(chattyMessages.channels.channelChanged)
-        }
-    }
-
     private fun Player.shortcutCommand(
         channel: Map.Entry<String, ChattyConfig.ChattyChannel>?,
         arguments: List<String>

@@ -83,6 +83,19 @@ fun getDefaultChat() =
         ?: getGlobalChat()
         ?: throw IllegalStateException("No Default or Global channel found")
 
+fun Player.swapChannelCommand(channelId: String) {
+    val newChannel = getChannelFromId(channelId)
+
+    if (newChannel == null) {
+        sendFormattedMessage(chattyMessages.channels.noChannelWithName)
+    } else if (!checkPermission(newChannel.permission)) {
+        sendFormattedMessage(chattyMessages.channels.missingChannelPermission)
+    } else {
+        chattyData.channelId = channelId
+        sendFormattedMessage(chattyMessages.channels.channelChanged)
+    }
+}
+
 fun getChannelFromId(channelId: String) =
     chattyConfig.channels.entries.firstOrNull { it.key == channelId }?.value
 
