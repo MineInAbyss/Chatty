@@ -12,7 +12,7 @@ class ChannelData(
     var channelId: String = getDefaultChat().key,
     var disablePingSound: Boolean = false,
     var pingSound: String? = null,
-    var displayName: String? = "",
+    var displayName: String? = null,
     var lastMessager: Player? = null,
 )
 

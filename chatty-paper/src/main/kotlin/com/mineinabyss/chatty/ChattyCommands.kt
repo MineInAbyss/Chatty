@@ -86,6 +86,7 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
                             player.sendFormattedMessage(nickMessage.selfDenied)
                         arguments.isEmpty() -> {
                             // Removes players displayname or sends error if sender is console
+                            player?.chattyData?.displayName = null
                             player?.displayName(player.name.miniMsg())
                             player?.sendFormattedMessage(nickMessage.selfEmpty)
                                 ?: sender.sendConsoleMessage(nickMessage.consoleNicknameSelf)
@@ -100,7 +101,9 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
                                 otherPlayer == null || otherPlayer !in Bukkit.getOnlinePlayers() ->
                                     player?.sendFormattedMessage(nickMessage.invalidPlayer, otherPlayer)
                                 otherNick.isEmpty() -> {
+                                    otherPlayer.chattyData.displayName = null
                                     otherPlayer.displayName(player?.name?.miniMsg())
+                                    otherPlayer.sendFormattedMessage(nickMessage.selfEmpty)
                                     player?.sendFormattedMessage(nickMessage.otherEmpty, otherPlayer)
                                 }
                                 !bypassFormatPerm && !otherNick.verifyNickStyling() ->
@@ -120,6 +123,7 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
                             } else if (!bypassFormatPerm && !nick.verifyNickLength()) {
                                 player?.sendFormattedMessage(nickMessage.tooLong)
                             } else {
+                                player?.chattyData?.displayName = nick
                                 player?.displayName(nick.miniMsg())
                                 player?.chattyData?.displayName = nick
                                 player?.sendFormattedMessage(nickMessage.selfSuccess)
