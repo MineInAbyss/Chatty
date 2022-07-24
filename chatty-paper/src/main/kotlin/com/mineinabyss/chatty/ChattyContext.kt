@@ -9,4 +9,5 @@ object ChattyContext {
         get() = chatty.server.pluginManager.isPluginEnabled("PlaceholderAPI")
     val isDiscordSRVLoaded: Boolean
         get() = chatty.server.pluginManager.isPluginEnabled("DiscordSRV")
+
 }

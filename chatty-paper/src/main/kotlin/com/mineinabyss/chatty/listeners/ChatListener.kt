@@ -5,6 +5,7 @@ import com.mineinabyss.chatty.chattyProxyChannel
 import com.mineinabyss.chatty.components.chattyData
 import com.mineinabyss.chatty.helpers.*
 import com.mineinabyss.idofront.messaging.miniMsg
+import com.mineinabyss.idofront.messaging.serialize
 import io.papermc.paper.chat.ChatRenderer
 import io.papermc.paper.event.player.AsyncChatEvent
 import net.kyori.adventure.audience.Audience
@@ -29,7 +30,9 @@ class ChatListener : Listener {
 
         if (audiences.isNotEmpty()) audiences.clear()
         audiences.addAll(setAudienceForChannelType(player))
-        message("<reset>".miniMsg().append(translatePlaceholders(player, channel.format + formattedMessage.serialize())))
+        message(
+            "<reset>".miniMsg().append(translatePlaceholders(player, channel.format + formattedMessage.serialize()))
+        )
 
         val pingedPlayer = originalMessage().serialize().checkForPlayerPings(channelId)
         if (pingedPlayer != null && pingedPlayer != player && pingedPlayer in audiences) {
@@ -47,7 +50,12 @@ class ChatListener : Listener {
 
         if (channel.proxy) {
             //Append channel to give proxy info on what channel the message is from
-            val proxyMessage = ("$channelId ".miniMsg().append(message())).serialize().toByteArray()
+            val proxyMessage = ("${player.name}$ZERO_WIDTH$channelId$ZERO_WIDTH${
+                translatePlaceholders(
+                    player,
+                    channel.format
+                ).serialize()
+            }$ZERO_WIDTH ".miniMsg().append(message())).serialize().toByteArray()
             player.sendPluginMessage(chatty, chattyProxyChannel, proxyMessage)
         }
         audiences.clear()

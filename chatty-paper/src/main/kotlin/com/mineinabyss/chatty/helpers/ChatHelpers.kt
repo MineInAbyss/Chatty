@@ -24,6 +24,7 @@ import org.bukkit.entity.Player
 import java.awt.Color
 import javax.imageio.ImageIO
 
+val ZERO_WIDTH = "\u200B"
 val ping = chattyConfig.ping
 val getAlternativePingSounds: List<String> =
     if ("*" in ping.alternativePingSounds || "all" in ping.alternativePingSounds)
@@ -42,7 +43,7 @@ fun String.checkForPlayerPings(channelId: String): Player? {
 }
 
 fun Component.handlePlayerPings(player: Player, pingedPlayer: Player) {
-    val channel = getChannelFromId(player.chattyData.channelId) ?: return
+    getChannelFromId(player.chattyData.channelId) ?: return
     val ping = chattyConfig.ping
     val pingSound = pingedPlayer.chattyData.pingSound ?: ping.defaultPingSound
     val clickToReply =
@@ -100,8 +101,6 @@ fun getChannelFromId(channelId: String) =
 
 fun Player.getChannelFromPlayer() =
     chattyConfig.channels.entries.firstOrNull { it.key == this.chattyData.channelId }?.value
-
-fun Player.channelIsProxyEnabled() = getChannelFromPlayer()?.proxy ?: false
 
 fun Player.verifyPlayerChannel() {
     if (chattyData.channelId !in chattyConfig.channels)

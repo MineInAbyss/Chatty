@@ -1,18 +1,20 @@
 package com.mineinabyss.chatty.listeners
 
 import com.mineinabyss.chatty.components.chattyData
-import com.mineinabyss.chatty.helpers.emoteFixer
-import com.mineinabyss.chatty.helpers.getChannelFromId
-import com.mineinabyss.chatty.helpers.serializeLegacy
-import com.mineinabyss.chatty.helpers.stripTags
+import com.mineinabyss.chatty.helpers.*
+import com.mineinabyss.idofront.messaging.miniMsg
 import github.scarsz.discordsrv.api.ListenerPriority
 import github.scarsz.discordsrv.api.Subscribe
-import github.scarsz.discordsrv.api.events.*
+import github.scarsz.discordsrv.api.events.AchievementMessagePostProcessEvent
+import github.scarsz.discordsrv.api.events.AchievementMessagePreProcessEvent
+import github.scarsz.discordsrv.api.events.DeathMessagePreProcessEvent
+import github.scarsz.discordsrv.api.events.GameChatMessagePreProcessEvent
 import github.scarsz.discordsrv.dependencies.jda.api.MessageBuilder
 import github.scarsz.discordsrv.dependencies.jda.api.entities.MessageEmbed
 import github.scarsz.discordsrv.dependencies.kyori.adventure.text.Component
 import github.scarsz.discordsrv.dependencies.kyori.adventure.text.TextReplacementConfig
 import github.scarsz.discordsrv.dependencies.kyori.adventure.text.minimessage.MiniMessage
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer
 
 
 class DiscordListener {
@@ -20,27 +22,19 @@ class DiscordListener {
     @Subscribe(priority = ListenerPriority.NORMAL)
     fun GameChatMessagePreProcessEvent.onChat() {
         val channel = getChannelFromId(player.chattyData.channelId) ?: return
-        if (!channel.discordsrv || isCancelled) {
-            isCancelled = true
-            return
+        if (isCancelled) return
+        else if (!channel.discordsrv) isCancelled = true
+        else {
+            val plain = PlainTextComponentSerializer.builder().build()
+            val format = plain.serialize(translatePlaceholders(player, player.getChannelFromPlayer()?.format.toString()))
+            val msg = plain.serialize(messageComponent.serialize().miniMsg()).replace(format, "")
+            messageComponent = msg.miniMessage().translateEmoteIDsToComponent()
         }
-        else messageComponent = messageComponent.translateEmoteIDsToComponent()
-    }
-
-    @Subscribe(priority = ListenerPriority.NORMAL)
-    fun VentureChatMessagePreProcessEvent.onProxyChat() {
-        val channelId = messageComponent.deserialize().substringBefore(" ")
-        val channel = getChannelFromId(channelId) ?: return
-        if (!channel.discordsrv || isCancelled) {
-            isCancelled = true
-            return
-        }
-        else messageComponent = messageComponent.removeAttachedChannel(channelId).translateEmoteIDsToComponent()
     }
 
     @Subscribe
     fun DeathMessagePreProcessEvent.onDeath() {
-        val channel = getChannelFromId(player.chattyData.channelId) ?: return
+        getChannelFromId(player.chattyData.channelId) ?: return
         if (isCancelled) return
         deathMessage = deathMessage.translateEmoteIDs()
     }
@@ -98,9 +92,6 @@ class DiscordListener {
     }
 }
 
-private fun Component.removeAttachedChannel(id: String) =
-    this.replaceText(TextReplacementConfig.builder().match(id).replacement("").build())
-
 private fun Component.cleanUpHackyFix() =
     this.replaceText(TextReplacementConfig.builder().match("<<").replacement("<").build())
 
@@ -119,22 +110,11 @@ private fun String.translateEmoteIDs(): String {
     return translated.cleanUpHackyFix()
 }
 
-private fun String.translateEmoteIDsToComponent(): Component {
-    var translated = this
-    emoteFixer.emotes.entries.forEach { (emoteId, replacement) ->
-        val id = ":$emoteId:"
-        if (id in this) {
-            translated = translated.replace(id, "<$replacement")
-        }
-    }
-    return translated.miniMessage().cleanUpHackyFix()
-}
-
 private fun Component.translateEmoteIDsToComponent(): Component {
     var translated = this
     emoteFixer.emotes.entries.forEach { (emoteId, replacement) ->
         val id = ":$emoteId:"
-        if (id in translated.deserialize()) {
+        if (id in translated.serialize()) {
             translated = translated.replaceText(
                 TextReplacementConfig.builder().match(id)
                     .replacement("<$replacement".miniMessage()).build()
@@ -144,13 +124,9 @@ private fun Component.translateEmoteIDsToComponent(): Component {
     return translated.cleanUpHackyFix()
 }
 
-private fun Component.deserialize(): String {
+private fun Component.serialize(): String {
     return MiniMessage.builder().build()
         .serialize(this)
-}
-
-private fun Component.stripTags(): String {
-    return MiniMessage.builder().build().stripTokens(this.deserialize())
 }
 
 private fun String.miniMessage(): Component {
