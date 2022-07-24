@@ -17,9 +17,7 @@ fun chattyPlaceholders(player: Player, string: String) : Map<String, String> {
         "player_channel_isdefault" to channel?.isDefaultChannel.toString(),
         "player_channel_type" to channel?.channelType.toString(),
         "player_channel_radius" to channel?.channelRadius.toString(),
-        "player_channel_format_prefix" to channel?.format?.prefix.toString(),
-        "player_channel_format_suffix" to channel?.format?.suffix.toString(),
-        "player_channel_format_message" to channel?.format?.messageFormat.toString(),
+        "player_channel_format" to channel?.format.toString(),
         "player_channel_aliases" to channel?.channelAliases.toString(),
         "player_channel_proxy_enabled" to channel?.proxy.toString(),
 
@@ -33,7 +31,7 @@ fun chattyPlaceholders(player: Player, string: String) : Map<String, String> {
         "player_ping_sound" to data.pingSound.toString(),
         "player_ping_toggle" to (!data.disablePingSound).toString(),
 
-        "player_displayname" to (player.chattyData.nickName?.miniMsg()?.stripTags() ?: player.name),
+        "player_displayname" to (player.chattyData.displayName?.miniMsg()?.stripTags() ?: player.name),
         "player_head" to player.translatePlayerHeadComponent().serialize(),
         "shift_$shift" to shift.toString()
     )

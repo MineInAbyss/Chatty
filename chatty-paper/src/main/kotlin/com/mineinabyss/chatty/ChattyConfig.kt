@@ -83,17 +83,9 @@ object ChattyConfig : IdofrontConfig<ChattyConfig.Data>(chatty, Data.serializer(
         val discordsrv: Boolean = true,
         val isDefaultChannel: Boolean = false,
         val isStaffChannel: Boolean = false,
-        val format: Format = Format(),
+        val format: String = "",
         val channelRadius: Int = 0,
         val channelAliases: List<String> = listOf(),
-    )
-
-    @Serializable
-    data class Format(
-        val useDisplayName: Boolean = true,
-        val prefix: String = "",
-        val suffix: String = "",
-        val messageFormat: String = "",
     )
 
     @Serializable

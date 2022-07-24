@@ -22,7 +22,6 @@ class ChatListener : Listener {
         player.verifyPlayerChannel()
         val channelId = player.chattyData.channelId
         val channel = getChannelFromId(channelId) ?: return
-        val displayName = if (channel.format.useDisplayName) player.displayName() else player.name.miniMsg()
         val audiences = viewers()
         val formattedMessage =
             if (player.checkPermission(chattyConfig.chat.bypassFormatPermission)) originalMessage().fixLegacy()
@@ -30,14 +29,7 @@ class ChatListener : Listener {
 
         if (audiences.isNotEmpty()) audiences.clear()
         audiences.addAll(setAudienceForChannelType(player))
-        message(
-            "<reset>".miniMsg()
-                .append(translatePlaceholders(player, channel.format.prefix))
-                .append(displayName)
-                .append(translatePlaceholders(player, channel.format.suffix))
-                .append(channel.format.messageFormat.miniMsg())
-                .append(formattedMessage)
-        )
+        message("<reset>".miniMsg().append(translatePlaceholders(player, channel.format)).append(formattedMessage))
 
         val pingedPlayer = originalMessage().serialize().checkForPlayerPings(channelId)
         if (pingedPlayer != null && pingedPlayer != player && pingedPlayer in audiences) {
@@ -50,7 +42,7 @@ class ChatListener : Listener {
             isCancelled = true
             player.sendFormattedMessage(chattyMessages.channels.emptyChannelMessage)
         } else audiences.forEach { audience ->
-            RendererExtension().render(player, displayName, message(), audience)
+            RendererExtension().render(player, player.displayName(), message(), audience)
         }
 
         if (channel.proxy) {

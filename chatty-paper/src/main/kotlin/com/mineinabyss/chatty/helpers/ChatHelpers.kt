@@ -45,7 +45,6 @@ fun Component.handlePlayerPings(player: Player, pingedPlayer: Player) {
     val channel = getChannelFromId(player.chattyData.channelId) ?: return
     val ping = chattyConfig.ping
     val pingSound = pingedPlayer.chattyData.pingSound ?: ping.defaultPingSound
-    val displayName = if (channel.format.useDisplayName) pingedPlayer.displayName().stripTags() else pingedPlayer.name
     val clickToReply =
         if (ping.clickToReply) "<insert:@${
             player.displayName().stripTags()
@@ -53,8 +52,8 @@ fun Component.handlePlayerPings(player: Player, pingedPlayer: Player) {
         else ""
     val pingMessage = this.replaceText(
         TextReplacementConfig.builder()
-            .match(ping.pingPrefix + displayName)
-            .replacement((ping.pingReceiveFormat + clickToReply + ping.pingPrefix + displayName).miniMsg()).build()
+            .match(ping.pingPrefix + player.chattyData.displayName)
+            .replacement((ping.pingReceiveFormat + clickToReply + ping.pingPrefix + player.chattyData.displayName).miniMsg()).build()
     )
 
     if (!pingedPlayer.chattyData.disablePingSound)
@@ -63,8 +62,8 @@ fun Component.handlePlayerPings(player: Player, pingedPlayer: Player) {
 
     val pingerMessage = this.replaceText(
         TextReplacementConfig.builder()
-            .match(ping.pingPrefix + displayName)
-            .replacement((ping.pingSendFormat + clickToReply + ping.pingPrefix + displayName).miniMsg()).build()
+            .match(ping.pingPrefix + player.chattyData.displayName)
+            .replacement((ping.pingSendFormat + clickToReply + ping.pingPrefix + player.chattyData.displayName).miniMsg()).build()
     )
     player.sendMessage(pingerMessage)
 }

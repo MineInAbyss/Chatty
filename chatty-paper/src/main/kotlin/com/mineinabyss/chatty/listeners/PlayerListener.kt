@@ -29,8 +29,8 @@ class PlayerListener : Listener {
     @EventHandler(priority = EventPriority.NORMAL)
     fun PlayerJoinEvent.onJoin() {
         player.verifyPlayerChannel()
-        if (player.chattyData.nickName != null)
-            player.displayName(player.chattyData.nickName?.miniMsg())
+        if (player.chattyData.displayName != null)
+            player.displayName(player.chattyData.displayName?.miniMsg())
         if (chattyConfig.join.enabled && !player.toGeary().has<HideJoinLeave>())
             joinMessage(translatePlaceholders(player, chattyMessages.joinLeave.joinMessage))
 //        if (chattyConfig.join.sendAcrossProxy)
@@ -40,7 +40,7 @@ class PlayerListener : Listener {
     @EventHandler
     fun PlayerQuitEvent.onDisconnect() {
         if (player.displayName() != player.name())
-            player.chattyData.nickName = player.displayName().serialize()
+            player.chattyData.displayName = player.displayName().serialize()
         if (chattyConfig.leave.enabled && !player.toGeary().has<HideJoinLeave>())
             quitMessage(translatePlaceholders(player, chattyMessages.joinLeave.leaveMessage))
 //        if (chattyConfig.leave.sendAcrossProxy)
