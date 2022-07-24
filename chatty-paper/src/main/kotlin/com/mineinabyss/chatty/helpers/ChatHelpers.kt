@@ -166,7 +166,7 @@ fun setAudienceForChannelType(player: Player): Set<Audience> {
             if (channel.channelRadius <= 0) audiences.addAll(onlinePlayers)
             else audiences.addAll(onlinePlayers.filter { p ->
                 p.toGeary().has<SpyOnLocal>() ||
-                (p.location.distanceSquared(player.location) <= channel.channelRadius)
+                (player.world == p.world && p.location.distanceSquared(player.location) <= channel.channelRadius)
             })
         }
         ChannelType.PERMISSION -> {
