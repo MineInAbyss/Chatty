@@ -262,7 +262,10 @@ fun Player.sendFormattedMessage(message: String) =
     this.sendMessage(translatePlaceholders(this, message).serialize().miniMsg())
 
 fun Player.sendFormattedMessage(message: String, optionalPlayer: Player? = null) =
-    this.sendMessage(translatePlaceholders((optionalPlayer ?: this), message))
+    this.sendMessage(translatePlaceholders((optionalPlayer ?: this), message).serialize().miniMsg())
+
+fun Player.sendFormattedMessage(vararg message: String, optionalPlayer: Player? = null) =
+    this.sendMessage(translatePlaceholders((optionalPlayer ?: this), message.joinToString(" ")))
 
 fun Player.sendFormattedPrivateMessage(messageFormat: String, message: String, receiver: Player) =
     this.sendMessage((translatePlaceholders(receiver, messageFormat).serialize() + message).miniMsg())

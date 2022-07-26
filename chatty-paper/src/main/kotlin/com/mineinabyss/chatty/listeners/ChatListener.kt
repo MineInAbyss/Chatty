@@ -2,8 +2,10 @@ package com.mineinabyss.chatty.listeners
 
 import com.mineinabyss.chatty.chatty
 import com.mineinabyss.chatty.chattyProxyChannel
+import com.mineinabyss.chatty.components.CommandSpy
 import com.mineinabyss.chatty.components.chattyData
 import com.mineinabyss.chatty.helpers.*
+import com.mineinabyss.geary.papermc.access.toGeary
 import com.mineinabyss.idofront.messaging.miniMsg
 import com.mineinabyss.idofront.messaging.serialize
 import io.papermc.paper.chat.ChatRenderer
@@ -15,8 +17,16 @@ import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
+import org.bukkit.event.player.PlayerCommandPreprocessEvent
 
 class ChatListener : Listener {
+
+    @EventHandler
+    fun PlayerCommandPreprocessEvent.onPlayerCommand() {
+        Bukkit.getOnlinePlayers().filter { it.toGeary().has<CommandSpy>() }.forEach { p ->
+            p.sendFormattedMessage(chattyConfig.chat.commandSpyFormat, message, optionalPlayer = player)
+        }
+    }
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     fun AsyncChatEvent.onPlayerChat() {
@@ -24,15 +34,13 @@ class ChatListener : Listener {
         val channelId = player.chattyData.channelId
         val channel = getChannelFromId(channelId) ?: return
         val audiences = viewers()
-        val formattedMessage =
+        val formatted =
             if (player.checkPermission(chattyConfig.chat.bypassFormatPermission)) originalMessage().fixLegacy()
             else originalMessage().serialize().verifyChatStyling().miniMsg()
 
         if (audiences.isNotEmpty()) audiences.clear()
         audiences.addAll(setAudienceForChannelType(player))
-        message(
-            "<reset>".miniMsg().append(translatePlaceholders(player, channel.format + formattedMessage.serialize()))
-        )
+        message("<reset>".miniMsg().append(translatePlaceholders(player, channel.format + formatted.serialize())))
 
         val pingedPlayer = originalMessage().serialize().checkForPlayerPings(channelId)
         if (pingedPlayer != null && pingedPlayer != player && pingedPlayer in audiences) {

@@ -2,6 +2,7 @@ package com.mineinabyss.chatty
 
 import com.github.shynixn.mccoroutine.bukkit.asyncDispatcher
 import com.github.shynixn.mccoroutine.bukkit.launch
+import com.mineinabyss.chatty.components.CommandSpy
 import com.mineinabyss.chatty.components.SpyOnChannels
 import com.mineinabyss.chatty.components.chattyData
 import com.mineinabyss.chatty.helpers.*
@@ -43,11 +44,9 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
                         ?: player.sendFormattedMessage(chattyMessages.privateMessages.emptyReply)
                 }
             }
-            permission("chatty.ping")
             "ping"(desc = "Commands related to the chat-ping feature.") {
                 "toggle"(desc = "Toggle the ping sound.") {
                     ensureSenderIsPlayer()
-                    permission("chatty.ping.toggle")
                     action {
                         val player = sender as? Player ?: return@action
                         player.chattyData.disablePingSound = !player.chattyData.disablePingSound
@@ -57,7 +56,6 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
                 "sound"(desc = "Change your pingsound") {
                     val soundName by stringArg()
                     ensureSenderIsPlayer()
-                    permission("chatty.ping.sound")
                     action {
                         val player = sender as? Player ?: return@action
                         if (soundName in getAlternativePingSounds) {
@@ -70,14 +68,12 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
                 }
             }
             ("channels" / "ch")(desc = "List all channels") {
-                permission("")
                 action {
                     (sender as? Player)?.sendFormattedMessage(chattyMessages.channels.availableChannels)
                         ?: sender.sendMessage(chattyMessages.channels.availableChannels)
                 }
             }
             ("nickname" / "nick") {
-                permission("chatty.nickname")
                 action {
                     val nickMessage = chattyMessages.nicknames
                     val nickConfig = chattyConfig.nicknames
@@ -145,9 +141,7 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
                 }
             }
             ("reload" / "rl") {
-                permission("chatty.reload")
                 "config" {
-                    permission("chatty.reload.config")
                     action {
                         ChattyConfig.reload()
                         ChattyConfig.load()
@@ -156,7 +150,6 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
                     }
                 }
                 "messages" {
-                    permission("chatty.reload.messages")
                     action {
                         ChattyMessages.reload()
                         ChattyMessages.load()
@@ -166,8 +159,19 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
                 }
 
             }
+            "commandspy" {
+                playerAction {
+                    val player = sender as? Player ?: return@playerAction
+                    if (player.toGeary().has<CommandSpy>()) {
+                        player.toGeary().remove<CommandSpy>()
+                        player.sendFormattedMessage(chattyMessages.spying.commandSpyOff)
+                    } else {
+                        player.toGeary().getOrSetPersisting { CommandSpy() }
+                        player.sendFormattedMessage(chattyMessages.spying.commandSpyOn)
+                    }
+                }
+            }
             "spy" {
-                permission("chatty.spy")
                 val channel by stringArg()
                 playerAction {
                     val player = sender as? Player ?: return@playerAction
@@ -253,7 +257,7 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
         val otherPrefix = chattyConfig.nicknames.nickNameOtherPrefix
         return if (command.name == "chatty") {
             when (args.size) {
-                1 -> listOf("message", "ping", "reload", "channels", "nickname", "spy").filter { s -> s.startsWith(args[0]) }
+                1 -> listOf("message", "ping", "reload", "channels", "nickname", "spy", "commandspy").filter { s -> s.startsWith(args[0]) }
                 2 -> when (args[0]) {
                     "ping" -> listOf("toggle", "sound").filter { s -> s.startsWith(args[1]) }
                     "reload", "rl" -> listOf("config", "messages").filter { s -> s.startsWith(args[1]) }

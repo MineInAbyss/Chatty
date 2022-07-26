@@ -10,6 +10,7 @@ object ChattyMessages : IdofrontConfig<ChattyMessages.Messages>(chatty, Messages
     data class Messages(
         val nicknames: Nicknames = Nicknames(),
         val privateMessages: PrivateMessages = PrivateMessages(),
+        val spying: Spying = Spying(),
         val ping: Pings = Pings(),
         val channels: Channels = Channels(),
         val proxies: Proxies = Proxies(),
@@ -22,6 +23,15 @@ object ChattyMessages : IdofrontConfig<ChattyMessages.Messages>(chatty, Messages
         val disabled: String = "<red>Private messages are disabled",
         val invalidPlayer: String = "<red>Invalid player",
         val emptyReply: String = "<red>You have noone to reply to"
+    )
+
+    @Serializable
+    data class Spying(
+        val commandSpyOn: String = "",
+        val commandSpyOff: String = "",
+        val startSpyingOnChannel: String = "<gold>Started spying on <italic>%chatty_player_spy_last%",
+        val stopSpyingOnChannel: String = "<gold>Stopped spying on <italic>%chatty_player_spy_last%",
+        val noChannelWithName: String = "No channel by this name exists."
     )
 
     @Serializable
