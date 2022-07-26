@@ -10,10 +10,13 @@ import github.scarsz.discordsrv.api.events.AchievementMessagePreProcessEvent
 import github.scarsz.discordsrv.api.events.DeathMessagePreProcessEvent
 import github.scarsz.discordsrv.api.events.GameChatMessagePreProcessEvent
 import github.scarsz.discordsrv.dependencies.jda.api.MessageBuilder
+import github.scarsz.discordsrv.dependencies.jda.api.entities.Message
 import github.scarsz.discordsrv.dependencies.jda.api.entities.MessageEmbed
+import github.scarsz.discordsrv.dependencies.jda.api.entities.MessageEmbed.Field
 import github.scarsz.discordsrv.dependencies.kyori.adventure.text.Component
 import github.scarsz.discordsrv.dependencies.kyori.adventure.text.TextReplacementConfig
 import github.scarsz.discordsrv.dependencies.kyori.adventure.text.minimessage.MiniMessage
+import github.scarsz.discordsrv.objects.MessageFormat
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer
 
 
@@ -34,62 +37,63 @@ class DiscordListener {
 
     @Subscribe
     fun DeathMessagePreProcessEvent.onDeath() {
-        getChannelFromId(player.chattyData.channelId) ?: return
         if (isCancelled) return
+        messageFormat = messageFormat.translatePreFormat()
         deathMessage = deathMessage.translateEmoteIDs()
     }
 
     @Subscribe
     fun AchievementMessagePreProcessEvent.onAchievement() {
         if (isCancelled) return
+        messageFormat = messageFormat.translatePreFormat()
         achievementName = achievementName.translateEmoteIDs()
-        val format = messageFormat
-        if (format.content != null)
-            format.content = format.content.translateEmoteIDs()
-        if (format.description != null)
-            format.description = format.description.translateEmoteIDs()
-        if (format.title != null)
-            format.title = format.title.translateEmoteIDs()
-        if (format.fields != null) {
-            val fields: MutableList<MessageEmbed.Field> = ArrayList()
-            format.fields.forEach { f ->
-                fields.add(MessageEmbed.Field(f.name?.translateEmoteIDs(), f.value?.translateEmoteIDs(), f.isInline))
-            }
-            format.fields = fields
-        }
-        messageFormat = format
     }
 
     @Subscribe
     fun AchievementMessagePostProcessEvent.onAchievement() {
         if (isCancelled) return
-        val message = discordMessage
-        val embeds = mutableListOf<MessageEmbed>()
-
-        message.embeds.forEach { embed ->
-            val fields = mutableListOf<MessageEmbed.Field>()
-            if (embed.fields.isNotEmpty())
-                embed.fields.forEach { field ->
-                    fields.add(
-                        MessageEmbed.Field(
-                            field.name?.translateEmoteIDs(),
-                            field.value?.translateEmoteIDs(),
-                            field.isInline
-                        )
-                    )
-                }
-            embeds.add(
-                MessageEmbed(
-                    embed.url, embed.title?.translateEmoteIDs(), embed.description?.translateEmoteIDs(),
-                    embed.type, embed.timestamp, embed.colorRaw, embed.thumbnail, embed.siteProvider,
-                    embed.author, embed.videoInfo, embed.footer, embed.image, fields
-                )
-            )
-        }
-        val builder = MessageBuilder(message)
-        if (embeds.isNotEmpty()) builder.setEmbeds(embeds)
-        discordMessage = builder.build()
+        discordMessage = discordMessage.translatePostFormat()
     }
+}
+
+private fun Message.translatePostFormat(): Message {
+    val message = this
+    val embeds = mutableListOf<MessageEmbed>()
+    val fields = mutableListOf<Field>()
+
+    message.embeds.forEach { embed ->
+        if (embed.fields.isNotEmpty())
+            embed.fields.forEach { field ->
+                fields.add(Field(field.name?.translateEmoteIDs(), field.value?.translateEmoteIDs(), field.isInline))
+            }
+        embeds.add(
+            MessageEmbed(
+                embed.url, embed.title?.translateEmoteIDs(), embed.description?.translateEmoteIDs(),
+                embed.type, embed.timestamp, embed.colorRaw, embed.thumbnail, embed.siteProvider,
+                embed.author, embed.videoInfo, embed.footer, embed.image, fields
+            )
+        )
+    }
+    var builder = MessageBuilder(message)
+    if (embeds.isNotEmpty()) builder = builder.setEmbeds(embeds)
+    return builder.build()
+}
+
+private fun MessageFormat.translatePreFormat(): MessageFormat {
+    val fields = mutableListOf<Field>()
+    val format = this
+    if (content != null)
+        format.content = content.translateEmoteIDs()
+    if (title != null)
+        format.title = title.translateEmoteIDs()
+    if (description != null)
+        format.description = description.translateEmoteIDs()
+    if (format.fields != null)
+        format.fields.forEach { f ->
+            fields.add(Field(f.name?.translateEmoteIDs(), f.value?.translateEmoteIDs(), f.isInline))
+        }
+    format.fields = fields
+    return format
 }
 
 private fun Component.cleanUpHackyFix() =
@@ -97,7 +101,7 @@ private fun Component.cleanUpHackyFix() =
 
 
 private fun String.cleanUpHackyFix() =
-    this.replace("<<", "<").serializeLegacy().stripTags()
+    this.serializeLegacy().stripTags().replace("\\<", "<").replace("<<", "<")
 
 private fun String.translateEmoteIDs(): String {
     var translated = this
