@@ -16,6 +16,7 @@ privateMessages:
 
 chat:
   bypassFormatPermission: "chatty.chat.bypassformat"
+  commandSpyFormat: "<gold>%chatty_player_displayname%: "
   allowedTags: # Available formats are:
     - BOLD                    # [TEXTCOLOR, HEXCOLOR, GRADIENT, RAINBOW, UNDERLINE, STRIKETHROUGH, BOLD, ITALIC, OBFUSCATED]
     - STRIKETHROUGH           # [HOVER, CLICK, FONT, SPACES, INSERTION, RESET, TRANSITION, KEYBIND, TRANSLATABLE]

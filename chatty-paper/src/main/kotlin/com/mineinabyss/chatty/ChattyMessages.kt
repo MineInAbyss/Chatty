@@ -27,8 +27,8 @@ object ChattyMessages : IdofrontConfig<ChattyMessages.Messages>(chatty, Messages
 
     @Serializable
     data class Spying(
-        val commandSpyOn: String = "",
-        val commandSpyOff: String = "",
+        val commandSpyOn: String = "<green>You are now spying on commands",
+        val commandSpyOff: String = "<red>You are no longer spying on commands",
         val startSpyingOnChannel: String = "<gold>Started spying on <italic>%chatty_player_spy_last%",
         val stopSpyingOnChannel: String = "<gold>Stopped spying on <italic>%chatty_player_spy_last%",
         val noChannelWithName: String = "No channel by this name exists."
