@@ -1,4 +1,4 @@
-<div align="center">
+<div style="text-align: center">
 
 # Chatty
 [![Java CI with Gradle](https://github.com/MineInAbyss/Chatty/actions/workflows/gradle-ci.yml/badge.svg)](https://github.com/MineInAbyss/Chatty/actions/workflows/gradle-ci.yml)
@@ -26,7 +26,7 @@ __Small featurelist:__
 
 It also includes options for MiniMessage support in books and on signs.  
 
-It also includes an "emotefixer" to translate emojis from MC-Chat to Discord.  
+It also includes an "emotefixer" to translate emojis from Minecraft Chat to Discord.  
 This feature essentially relies on DiscordSRV and is built around BondrewdLikesHisEmotes
 
 
@@ -38,4 +38,4 @@ This feature essentially relies on DiscordSRV and is built around BondrewdLikesH
 ## Recommended addons
 - [BondrewdLikesHisEmotes](https://github.com/MineInAbyss/BondrewdLikesHisEmotes) - Emojis/GIFs & everything else with unicodes  
 - [PlaceholderAPI](https://github.com/PlaceholderAPI/PlaceholderAPI) - For common placeholders (Recommend devbuild [5.0.1](https://ci.dmulloy2.net/job/ProtocolLib/lastSuccessfulBuild/artifact/target/ProtocolLib.jar))
-- [DiscordSRV](https://github.com/DiscordSRV/DiscordSRV) - Send messages from Minecarft Chat to a Discord Server
+- [DiscordSRV](https://github.com/DiscordSRV/DiscordSRV) - Send messages from Minecraft Chat to a Discord Server
