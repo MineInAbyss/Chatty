@@ -48,8 +48,6 @@ class ChattyProxyListener @Inject constructor(
         if (identifier != MinecraftChannelIdentifier.create("chatty", "proxy")) return
         //Hacky way of knowing what the old server was, prob a better way lol
         server.allServers.filter { (it.serverInfo.name !in this.source.toString()) }.forEach {
-            logger.info(identifier.toString())
-            logger.info(source.toString())
             it.sendPluginMessage(identifier, this.data)
         }
     }

@@ -52,6 +52,8 @@ object ChattyMessages : IdofrontConfig<ChattyMessages.Messages>(chatty, Messages
         val noChannelWithName: String = "No channel by this name exists.",
         val missingChannelPermission: String = "You do not have permission to join this channel.",
         val emptyChannelMessage: String = "<red>There is no-one to read your message",
+        val startSpyingOnChannel: String = "<gold>Started spying on <italic>%chatty_player_spy_last%",
+        val stopSpyingOnChannel: String = "<gold>Stopped spying on <italic>%chatty_player_spy_last%"
     )
 
     @Serializable

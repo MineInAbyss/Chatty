@@ -2,7 +2,7 @@ package com.mineinabyss.chatty.helpers
 
 import com.destroystokyo.paper.ClientOption
 import com.mineinabyss.chatty.components.ChannelType
-import com.mineinabyss.chatty.components.SpyOnLocal
+import com.mineinabyss.chatty.components.SpyOnChannels
 import com.mineinabyss.chatty.components.chattyData
 import com.mineinabyss.geary.papermc.access.toGeary
 import com.mineinabyss.idofront.font.Space
@@ -165,7 +165,7 @@ fun setAudienceForChannelType(player: Player): Set<Audience> {
         ChannelType.RADIUS -> {
             if (channel.channelRadius <= 0) audiences.addAll(onlinePlayers)
             else audiences.addAll(onlinePlayers.filter { p ->
-                p.toGeary().has<SpyOnLocal>() ||
+                p.toGeary().has<SpyOnChannels>() ||
                 (player.world == p.world && p.location.distanceSquared(player.location) <= channel.channelRadius)
             })
         }
@@ -174,12 +174,16 @@ fun setAudienceForChannelType(player: Player): Set<Audience> {
         }
         // Intended for Guilds etc, wanna consider finding a non-permission way for this
         ChannelType.PRIVATE -> {
-            audiences.addAll(
-                onlinePlayers.filter { p ->
-                    p.chattyData.channelId == player.chattyData.channelId
-                })
+            audiences.addAll(onlinePlayers.filter { p ->
+                p.chattyData.channelId == player.chattyData.channelId
+            })
         }
     }
+
+    audiences.addAll(onlinePlayers.filter {
+        it !in audiences && it.toGeary().get<SpyOnChannels>()?.channels?.contains(player.chattyData.channelId) == true
+    })
+
     return audiences
 }
 

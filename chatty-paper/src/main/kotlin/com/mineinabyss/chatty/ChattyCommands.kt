@@ -2,7 +2,7 @@ package com.mineinabyss.chatty
 
 import com.github.shynixn.mccoroutine.bukkit.asyncDispatcher
 import com.github.shynixn.mccoroutine.bukkit.launch
-import com.mineinabyss.chatty.components.SpyOnLocal
+import com.mineinabyss.chatty.components.SpyOnChannels
 import com.mineinabyss.chatty.components.chattyData
 import com.mineinabyss.chatty.helpers.*
 import com.mineinabyss.geary.papermc.access.toGeary
@@ -28,15 +28,19 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
                 ensureSenderIsPlayer()
                 val player by stringArg()
                 action {
-                    (sender as? Player)?.handleSendingPrivateMessage(player.toPlayer() ?: return@action, arguments, false)
+                    (sender as? Player)?.handleSendingPrivateMessage(
+                        player.toPlayer() ?: return@action,
+                        arguments,
+                        false
+                    )
                 }
             }
             ("reply" / "r")(desc = "Reply to your previous private message") {
                 ensureSenderIsPlayer()
                 action {
                     val player = sender as? Player ?: return@action
-                    player.chattyData.lastMessager?.let { player.handleSendingPrivateMessage(it, arguments, true) } ?:
-                    player.sendFormattedMessage(chattyMessages.privateMessages.emptyReply)
+                    player.chattyData.lastMessager?.let { player.handleSendingPrivateMessage(it, arguments, true) }
+                        ?: player.sendFormattedMessage(chattyMessages.privateMessages.emptyReply)
                 }
             }
             permission("chatty.ping")
@@ -84,6 +88,7 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
                     when {
                         player is Player && !player.checkPermission(nickConfig.permission) ->
                             player.sendFormattedMessage(nickMessage.selfDenied)
+
                         arguments.isEmpty() -> {
                             // Removes players displayname or sends error if sender is console
                             player?.chattyData?.displayName = null
@@ -91,6 +96,7 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
                             player?.sendFormattedMessage(nickMessage.selfEmpty)
                                 ?: sender.sendConsoleMessage(nickMessage.consoleNicknameSelf)
                         }
+
                         arguments.first().startsWith(nickConfig.nickNameOtherPrefix) -> {
                             val otherPlayer = arguments.getPlayerToNick()
                             val otherNick = nick.removePlayerToNickFromString()
@@ -98,18 +104,23 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
                             when {
                                 player?.checkPermission(nickConfig.nickOtherPermission) == false ->
                                     player.sendFormattedMessage(nickMessage.otherDenied, otherPlayer)
+
                                 otherPlayer == null || otherPlayer !in Bukkit.getOnlinePlayers() ->
                                     player?.sendFormattedMessage(nickMessage.invalidPlayer, otherPlayer)
+
                                 otherNick.isEmpty() -> {
                                     otherPlayer.chattyData.displayName = null
                                     otherPlayer.displayName(player?.name?.miniMsg())
                                     otherPlayer.sendFormattedMessage(nickMessage.selfEmpty)
                                     player?.sendFormattedMessage(nickMessage.otherEmpty, otherPlayer)
                                 }
+
                                 !bypassFormatPerm && !otherNick.verifyNickStyling() ->
                                     player?.sendFormattedMessage(nickMessage.disallowedStyling)
+
                                 !bypassFormatPerm && !otherNick.verifyNickLength() ->
                                     player?.sendFormattedMessage(nickMessage.tooLong)
+
                                 otherNick.isNotEmpty() -> {
                                     otherPlayer.chattyData.displayName = otherNick
                                     otherPlayer.displayName(otherNick.miniMsg())
@@ -117,6 +128,7 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
                                 }
                             }
                         }
+
                         else -> {
                             if (!bypassFormatPerm && !nick.verifyNickStyling()) {
                                 player?.sendFormattedMessage(nickMessage.disallowedStyling)
@@ -156,15 +168,22 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
             }
             "spy" {
                 permission("chatty.spy")
+                val channel by stringArg()
                 playerAction {
                     val player = sender as? Player ?: return@playerAction
-                    val spy = player.toGeary().has<SpyOnLocal>()
-                    if (spy) {
-                        player.toGeary().remove<SpyOnLocal>()
-                        player.sendFormattedMessage("<gold>You are no longer spying on chat.")
-                    } else {
-                        player.toGeary().setPersisting(SpyOnLocal())
-                        player.sendFormattedMessage("<gold>You are no longer spying on chat.")
+                    val spy = player.toGeary().getOrSetPersisting { SpyOnChannels() }
+
+                    when (channel) {
+                        in chattyConfig.channels.keys ->
+                            player.sendFormattedMessage(chattyMessages.channels.noChannelWithName)
+                        in spy.channels -> {
+                            player.sendFormattedMessage(chattyMessages.channels.stopSpyingOnChannel)
+                            spy.channels.remove(channel)
+                        }
+                        else -> {
+                            spy.channels.add(channel)
+                            player.sendFormattedMessage(chattyMessages.channels.startSpyingOnChannel)
+                        }
                     }
                 }
             }
@@ -218,8 +237,8 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
             ensureSenderIsPlayer()
             action {
                 val player = sender as? Player ?: return@action
-                player.chattyData.lastMessager?.let { player.handleSendingPrivateMessage(it, arguments, true) } ?:
-                player.sendFormattedMessage(chattyMessages.privateMessages.emptyReply)
+                player.chattyData.lastMessager?.let { player.handleSendingPrivateMessage(it, arguments, true) }
+                    ?: player.sendFormattedMessage(chattyMessages.privateMessages.emptyReply)
             }
         }
     }
@@ -230,20 +249,22 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
         alias: String,
         args: Array<out String>
     ): List<String> {
+        val onlinePlayers = Bukkit.getOnlinePlayers().map { it.name }
+        val otherPrefix = chattyConfig.nicknames.nickNameOtherPrefix
         return if (command.name == "chatty") {
             when (args.size) {
-                1 -> listOf("message", "ping", "reload", "channels", "nickname", "spy")
+                1 -> listOf("message", "ping", "reload", "channels", "nickname", "spy").filter { s -> s.startsWith(args[0]) }
                 2 -> when (args[0]) {
-                    "ping" -> listOf("toggle", "sound")
-                    "reload", "rl" -> listOf("config", "messages")
-                    "message", "msg" -> Bukkit.getOnlinePlayers().map { it.name }.filter { s -> s.startsWith(args[1]) }
+                    "ping" -> listOf("toggle", "sound").filter { s -> s.startsWith(args[1]) }
+                    "reload", "rl" -> listOf("config", "messages").filter { s -> s.startsWith(args[1]) }
+                    "message", "msg" -> onlinePlayers.filter { s -> s.startsWith(args[1], true) }
+                    "spy" -> chattyConfig.channels.keys.toList().filter { s -> s.startsWith(args[1], true) }
                     else -> emptyList()
                 }
                 3 -> when {
-                    args[1] == "sound" -> getAlternativePingSounds
-                    args[1].startsWith(chattyConfig.nicknames.nickNameOtherPrefix) ->
-                        Bukkit.getOnlinePlayers().map { it.name }.filter { s ->
-                            s.replace(chattyConfig.nicknames.nickNameOtherPrefix.toString(), "").startsWith(args[1])
+                    args[1] == "sound" -> getAlternativePingSounds.filter { s -> s.startsWith(args[2], true) }
+                    args[1].startsWith(otherPrefix) -> onlinePlayers.filter { s ->
+                            s.replace(otherPrefix.toString(), "").startsWith(args[2], true)
                         }
                     else -> emptyList()
                 }

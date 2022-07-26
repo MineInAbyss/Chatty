@@ -26,6 +26,8 @@ channels:
   noChannelWithName: "No channel by this name exists."
   missingChannelPermission: "You do not have permission to join this channel."
   emptyChannelMessage: "<red>There is no-one to read your message"
+  startSpyingOnChannel: "<gold>Started spying on <italic>%chatty_player_spy_last%"
+  stopSpyingOnChannel: "<gold>Stopped spying on <italic>%chatty_player_spy_last%"
 
 joinLeave:
   firstJoinMessage: "<gradient:#058330:#ff9200>Welcome %player_name% to %server_name%</gradient>"

@@ -4,6 +4,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-@SerialName("chatty:spy_on_local")
-class SpyOnLocal {
-}
+@SerialName("chatty:spy_on_channels")
+class SpyOnChannels(
+    val channels: MutableList<String> = mutableListOf()
+)
