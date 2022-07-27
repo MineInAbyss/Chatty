@@ -12,7 +12,6 @@ object ChattyConfig : IdofrontConfig<ChattyConfig.Data>(chatty, Data.serializer(
     @Serializable
     data class Data(
         val playerHeadFont: String = "minecraft:chatty_heads",
-        val enableChatPreviews: Boolean = true,
         val nicknames: Nickname = Nickname(),
         val chat: Chat = Chat(),
         val book: Book = Book(),
@@ -31,7 +30,14 @@ object ChattyConfig : IdofrontConfig<ChattyConfig.Data>(chatty, Data.serializer(
     data class Chat(
         val bypassFormatPermission: String = "chatty.chat.bypassformat",
         val commandSpyFormat: String = "<gold>%chatty_player_displayname%: ",
+        val chatPreview: ChatPreview = ChatPreview(),
         val allowedTags: List<ChattyTags> = emptyList(),
+    )
+
+    @Serializable
+    data class ChatPreview(
+        val enabled: Boolean = false,
+        val includeFormatInPreview: Boolean = true,
     )
 
     @Serializable

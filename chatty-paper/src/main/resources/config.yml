@@ -9,20 +9,12 @@ playerHeadFont: "minecraft:chatty_heads"
 # that the server can read all their messages before they are sent.
 # Chatty does not do anything with it outside the [ChatPreview.kt] file.
 #This feature requires ProtocolLib 5.0.0 or higher.
-enableChatPreviews: false
-
-privateMessages:
-  enabled: true
-  proxy: true                       # Not currently supported
-  messageReplyTime: 5m              # t: Ticks, s: Seconds, m: Minutes, h: Hours, d: Days, w: Weeks, mo: Months
-  messageSendFormat: "<gold>You -> %chatty_player_displayname%: "
-  messageReceiveFormat: "<gold>%chatty_player_displayname% -> You: "
-  messageSendSound: ""              # Empty for no sound
-  messageReceiveSound: ""           # Empty for no sound
-
 chat:
   bypassFormatPermission: "chatty.chat.bypassformat"
   commandSpyFormat: "<gold>%chatty_player_displayname%: "
+  chatPreview:
+    enabled: false
+    includeFormatInPreview: true
   allowedTags: # Available formats are:
     - BOLD                    # [TEXTCOLOR, HEXCOLOR, GRADIENT, RAINBOW, UNDERLINE, STRIKETHROUGH, BOLD, ITALIC, OBFUSCATED]
     - STRIKETHROUGH           # [HOVER, CLICK, FONT, SPACES, INSERTION, RESET, TRANSITION, KEYBIND, TRANSLATABLE]
@@ -34,6 +26,16 @@ chat:
     - RAINBOW
     - GRADIENT
     - HOVER
+
+
+privateMessages:
+  enabled: true
+  proxy: true                       # Not currently supported
+  messageReplyTime: 5m              # t: Ticks, s: Seconds, m: Minutes, h: Hours, d: Days, w: Weeks, mo: Months
+  messageSendFormat: "<gold>You -> %chatty_player_displayname%: "
+  messageReceiveFormat: "<gold>%chatty_player_displayname% -> You: "
+  messageSendSound: ""              # Empty for no sound
+  messageReceiveSound: ""           # Empty for no sound
 
 book:
   useDisplayNameForAuthor: false

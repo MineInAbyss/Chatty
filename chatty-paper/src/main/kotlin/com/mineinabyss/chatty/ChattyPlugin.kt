@@ -42,7 +42,7 @@ class ChattyPlugin : JavaPlugin() {
         if (ChattyContext.isDiscordSRVLoaded)
             DiscordSRV.api.subscribe(DiscordListener())
 
-        if (chattyConfig.enableChatPreviews && ChattyContext.isProtocolLibLoaded)
+        if (chattyConfig.chat.chatPreview.enabled && ChattyContext.isProtocolLibLoaded)
             protocolManager.addPacketListener(ChatPreviewPacketAdapter())
 
         gearyAddon {
