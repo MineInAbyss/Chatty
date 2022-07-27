@@ -10,4 +10,7 @@ object ChattyContext {
     val isDiscordSRVLoaded: Boolean
         get() = chatty.server.pluginManager.isPluginEnabled("DiscordSRV")
 
+    val isProtocolLibLoaded: Boolean
+        get() = chatty.server.pluginManager.isPluginEnabled("ProtocolLib")
+
 }

@@ -1,9 +1,8 @@
 package com.mineinabyss.chatty
 
-import com.mineinabyss.chatty.listeners.ChatListener
-import com.mineinabyss.chatty.listeners.ChattyProxyListener
-import com.mineinabyss.chatty.listeners.DiscordListener
-import com.mineinabyss.chatty.listeners.PlayerListener
+import com.mineinabyss.chatty.helpers.chattyConfig
+import com.mineinabyss.chatty.helpers.protocolManager
+import com.mineinabyss.chatty.listeners.*
 import com.mineinabyss.chatty.placeholderapi.PlaceholderHook
 import com.mineinabyss.geary.addon.autoscan
 import com.mineinabyss.geary.papermc.dsl.gearyAddon
@@ -12,6 +11,7 @@ import com.mineinabyss.idofront.plugin.registerEvents
 import github.scarsz.discordsrv.DiscordSRV
 import org.bukkit.plugin.java.JavaPlugin
 import kotlin.io.path.Path
+
 
 class ChattyPlugin : JavaPlugin() {
     override fun onLoad() {
@@ -42,6 +42,9 @@ class ChattyPlugin : JavaPlugin() {
         if (ChattyContext.isDiscordSRVLoaded)
             DiscordSRV.api.subscribe(DiscordListener())
 
+        if (chattyConfig.enableChatPreviews && ChattyContext.isProtocolLibLoaded)
+            protocolManager.addPacketListener(ChatPreviewPacketAdapter())
+
         gearyAddon {
             autoscan("com.mineinabyss") {
                 all()
@@ -52,6 +55,12 @@ class ChattyPlugin : JavaPlugin() {
     override fun onDisable() {
         if (ChattyContext.isDiscordSRVLoaded)
             DiscordSRV.api.unsubscribe(DiscordListener())
+
+        if (ChattyContext.isPlaceholderApiLoaded)
+            PlaceholderHook().unregister()
+
+        if (ChatPreviewPacketAdapter() in protocolManager.packetListeners && ChattyContext.isProtocolLibLoaded)
+            protocolManager.removePacketListener(ChatPreviewPacketAdapter())
     }
 }
 

@@ -12,6 +12,7 @@ object ChattyConfig : IdofrontConfig<ChattyConfig.Data>(chatty, Data.serializer(
     @Serializable
     data class Data(
         val playerHeadFont: String = "minecraft:chatty_heads",
+        val enableChatPreviews: Boolean = true,
         val nicknames: Nickname = Nickname(),
         val chat: Chat = Chat(),
         val book: Book = Book(),

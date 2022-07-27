@@ -8,6 +8,7 @@ plugins {
 }
 
 repositories {
+    maven("https://repo.dmulloy2.net/repository/public/") // ProtocolLib
     maven("https://repo.extendedclip.com/content/repositories/placeholderapi/")
     maven("https://nexus.scarsz.me/content/groups/public/") // DiscordSRV
     maven("https://m2.dv8tion.net/releases") // DiscordSRV
@@ -28,6 +29,7 @@ dependencies {
     /// Third-party plugins
     compileOnly(chattyLibs.placeholderapi)
     compileOnly(chattyLibs.discordsrv)
+    compileOnly(libs.minecraft.plugin.protocollib)
 
     // Shaded
     implementation(libs.idofront.core)

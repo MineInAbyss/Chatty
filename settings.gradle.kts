@@ -11,7 +11,6 @@ pluginManagement {
     }
 
     plugins {
-
         kotlin("jvm") version kotlinVersion
         kotlin("kapt") version kotlinVersion
         kotlin("plugin.serialization") version kotlinVersion
@@ -33,6 +32,7 @@ dependencyResolutionManagement {
     val idofrontVersion: String by settings
 
     repositories {
+        mavenLocal()
         maven("https://repo.mineinabyss.com/releases")
     }
 

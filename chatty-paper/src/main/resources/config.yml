@@ -3,7 +3,13 @@
 # %chatty_playerhead% will be replaced with the playerhead of the player who sent the message
 # Please note: This is not the most performance friendly feature so use the placeholder sparingly.
 playerHeadFont: "minecraft:chatty_heads"
-useChattyCommandPrefix: true
+
+# Keep in mind this needs to also be enabled in your [server.properties] file
+# It will warn all your players when they first join
+# that the server can read all their messages before they are sent.
+# Chatty does not do anything with it outside the [ChatPreview.kt] file.
+#This feature requires ProtocolLib 5.0.0 or higher.
+enableChatPreviews: false
 
 privateMessages:
   enabled: true

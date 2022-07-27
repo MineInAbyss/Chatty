@@ -6,7 +6,6 @@ velocity = "3.1.1"
 discordsrv = "1.25.1"
 
 [libraries]
-protocolburrito = "com.mineinabyss:protocolburrito:0.3.32"
 geary-papermc-core = { module = "com.mineinabyss:geary-papermc-core", version.ref = "geary" }
 guiy = { module = "com.mineinabyss:guiy-compose", version.ref = "guiy" }
 bondrewdlikeshisemotes = { module = "io.github.bananapuncher714:bondrewdlikeshisemotes", version.ref = "bondrewdlikeshisemotes" }
