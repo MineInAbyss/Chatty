@@ -92,6 +92,7 @@ fun Player.swapChannelCommand(channelId: String) {
         sendFormattedMessage(chattyMessages.channels.missingChannelPermission)
     } else {
         chattyData.channelId = channelId
+        chattyData.lastChannelUsed = channelId
         sendFormattedMessage(chattyMessages.channels.channelChanged)
     }
 }

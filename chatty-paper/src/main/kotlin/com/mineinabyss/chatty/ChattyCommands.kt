@@ -297,6 +297,7 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
             swapChannelCommand(channel.key)
         else if (channel?.key != null && arguments.isNotEmpty()) {
             chattyData.channelId = channel.key
+            chattyData.lastChannelUsed = channel.key
             chatty.launch(chatty.asyncDispatcher) {
                 AsyncChatEvent(
                     true, this@shortcutCommand, mutableSetOf(), ChatRenderer.defaultRenderer(), msg, msg

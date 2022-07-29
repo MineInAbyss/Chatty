@@ -10,6 +10,7 @@ import org.bukkit.entity.Player
 @SerialName("chatty:chatty_data")
 class ChannelData(
     var channelId: String = getDefaultChat().key,
+    var lastChannelUsed: String = channelId,
     var disablePingSound: Boolean = false,
     var pingSound: String? = null,
     var displayName: String? = null,

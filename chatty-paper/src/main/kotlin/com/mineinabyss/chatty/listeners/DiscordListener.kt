@@ -25,8 +25,10 @@ class DiscordListener {
     @Subscribe(priority = ListenerPriority.NORMAL)
     fun GameChatMessagePreProcessEvent.onChat() {
         val channel = getChannelFromId(player.chattyData.channelId) ?: return
+        val lastUsedChannel = getChannelFromId(player.chattyData.lastChannelUsed) ?: return
         if (isCancelled) return
-        else if (!channel.discordsrv) isCancelled = true
+        else if (!channel.discordsrv || (channel != lastUsedChannel && !lastUsedChannel.discordsrv))
+            isCancelled = true
         else {
             val plain = PlainTextComponentSerializer.builder().build()
             val format = plain.serialize(translatePlaceholders(player, player.getChannelFromPlayer()?.format.toString()))
