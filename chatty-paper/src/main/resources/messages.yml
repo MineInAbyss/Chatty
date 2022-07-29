@@ -20,6 +20,7 @@ spying:
   commandSpyOff: "<red>You are no longer spying on commands"
   startSpyingOnChannel: "<gold>Started spying on <italic>%chatty_player_spy_last%"
   stopSpyingOnChannel: "<gold>Stopped spying on <italic>%chatty_player_spy_last%"
+  cannotSpyOnChannel: "<red>You cannot spy on <italic>%chatty_player_spy_last%"
   noChannelWithName: "<red>No channel by this name exists."
 
 ping:
@@ -33,8 +34,6 @@ channels:
   noChannelWithName: "No channel by this name exists."
   missingChannelPermission: "You do not have permission to join this channel."
   emptyChannelMessage: "<red>There is no-one to read your message"
-  startSpyingOnChannel: "<gold>Started spying on <italic>%chatty_player_spy_last%"
-  stopSpyingOnChannel: "<gold>Stopped spying on <italic>%chatty_player_spy_last%"
 
 joinLeave:
   firstJoinMessage: "<gradient:#058330:#ff9200>Welcome %player_name% to %server_name%</gradient>"

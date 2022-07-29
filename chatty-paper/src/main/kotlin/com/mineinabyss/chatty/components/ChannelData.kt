@@ -7,7 +7,7 @@ import kotlinx.serialization.Serializable
 import org.bukkit.entity.Player
 
 @Serializable
-@SerialName("chatty:player_data")
+@SerialName("chatty:chatty_data")
 class ChannelData(
     var channelId: String = getDefaultChat().key,
     var disablePingSound: Boolean = false,

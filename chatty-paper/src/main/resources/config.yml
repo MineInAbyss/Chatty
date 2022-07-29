@@ -11,7 +11,7 @@ playerHeadFont: "minecraft:chatty_heads"
 #This feature requires ProtocolLib 5.0.0 or higher.
 chat:
   bypassFormatPermission: "chatty.chat.bypassformat"
-  commandSpyFormat: "<gold>%chatty_player_displayname%: "
+  commandSpyFormat: "<gold>%chatty_player_displayname%</gold><yellow>: "
   chatPreview:
     enabled: false
     includeFormatInPreview: true
@@ -20,12 +20,10 @@ chat:
     - STRIKETHROUGH           # [HOVER, CLICK, FONT, SPACES, INSERTION, RESET, TRANSITION, KEYBIND, TRANSLATABLE]
     - UNDERLINE               # https://docs.adventure.kyori.net/minimessage/format.html
     - ITALIC
-    - OBFUSCATED
     - TEXTCOLOR
     - HEXCOLOR
     - RAINBOW
     - GRADIENT
-    - HOVER
 
 
 privateMessages:
@@ -50,7 +48,6 @@ book:
     - HEXCOLOR
     - RAINBOW
     - GRADIENT
-    - HOVER
 
 sign:
   bypassFormatPermission: "chatty.chat.bypassformat"
@@ -64,7 +61,6 @@ sign:
     - HEXCOLOR
     - RAINBOW
     - GRADIENT
-    - HOVER
 
 nicknames:
   permission: "chatty.nickname"
@@ -77,14 +73,12 @@ nicknames:
     - BOLD                    # [TEXTCOLOR, HEXCOLOR, GRADIENT, RAINBOW, UNDERLINE, STRIKETHROUGH, BOLD, ITALIC, OBFUSCATED]
     - STRIKETHROUGH           # [HOVER, CLICK, FONT, SPACES, INSERTION, RESET, TRANSITION, KEYBIND, TRANSLATABLE]
     - UNDERLINE               # https://docs.adventure.kyori.net/minimessage/format.html
-    - UNDERLINE
     - ITALIC
     - OBFUSCATED
     - TEXTCOLOR
     - HEXCOLOR
     - RAINBOW
     - GRADIENT
-    - HOVER
 
 join:
   enabled: true
@@ -96,15 +90,16 @@ leave:
 
 proxy:
   enableProxySwitchMessages: false
+  discordSrvChannelID: "Global"
 
 ping:
   enabledChannels:          # channelIds to enable pings for
     - "global"              # "all" or "*" for all channels
   pingVolume: 1.0
   pingPitch: 1.0
-  pingPrefix: "@"
+  pingPrefix: '@'
   clickToReply: true
-  pingReceiveFormat: "<b>"  # Default format the ping-message is marked with for pinged
+  pingReceiveFormat: "<gold><b>"  # Default format the ping-message is marked with for pinged
   pingSendFormat: "<i>"     # Default format the ping-message is marked with for sender
   defaultPingSound: "block.amethyst_block.place"
   alternativePingSounds:    # "all" to let people choose any sound
@@ -116,6 +111,7 @@ channels:
   global:
     channelType: GLOBAL       # GLOBAL, LOCAL, PRIVATE (Currently does nothing), PERMISSION
     isDefaultChannel: true
+    proxy: true
     discordsrv: true
     format: ":survival: %luckperms_prefix%%%chatty_player_displayname%: "
     channelAliases:         # Shortcut commandalias to switch
@@ -126,7 +122,9 @@ channels:
   # Format of the message itself. Can change color and font for example
   playerhead:
     channelType: GLOBAL
-    isDefaultChannel: true
+    permission: "chatty.channel.playerhead"
+    isDefaultChannel: false
+    proxy: true
     discordsrv: true
     format: "%chatty_player_head% %luckperms_prefix% %%chatty_player_displayname%: "
     channelAliases:
