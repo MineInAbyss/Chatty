@@ -2,6 +2,7 @@ package com.mineinabyss.chatty
 
 import com.github.shynixn.mccoroutine.bukkit.asyncDispatcher
 import com.github.shynixn.mccoroutine.bukkit.launch
+import com.mineinabyss.chatty.components.ChannelType
 import com.mineinabyss.chatty.components.CommandSpy
 import com.mineinabyss.chatty.components.SpyOnChannels
 import com.mineinabyss.chatty.components.chattyData
@@ -173,20 +174,25 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
             }
             "spy" {
                 val channel by stringArg()
-                playerAction {
-                    val player = sender as? Player ?: return@playerAction
+                ensureSenderIsPlayer()
+                action {
+                    val player = sender as? Player ?: return@action
                     val spy = player.toGeary().getOrSetPersisting { SpyOnChannels() }
 
-                    when (channel) {
-                        in chattyConfig.channels.keys ->
+                    when {
+                        channel !in chattyConfig.channels.keys ->
                             player.sendFormattedMessage(chattyMessages.channels.noChannelWithName)
-                        in spy.channels -> {
-                            player.sendFormattedMessage(chattyMessages.channels.stopSpyingOnChannel)
+                        getChannelFromId(channel)?.channelType == ChannelType.GLOBAL ->
+                            player.sendFormattedMessage(chattyMessages.spying.cannotSpyOnChannel)
+                        !player.hasPermission(getChannelFromId(channel)?.permission.toString()) ->
+                            player.sendFormattedMessage(chattyMessages.spying.cannotSpyOnChannel)
+                        channel in spy.channels -> {
+                            player.sendFormattedMessage(chattyMessages.spying.stopSpyingOnChannel)
                             spy.channels.remove(channel)
                         }
                         else -> {
                             spy.channels.add(channel)
-                            player.sendFormattedMessage(chattyMessages.channels.startSpyingOnChannel)
+                            player.sendFormattedMessage(chattyMessages.spying.startSpyingOnChannel)
                         }
                     }
                 }
@@ -262,7 +268,8 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
                     "ping" -> listOf("toggle", "sound").filter { s -> s.startsWith(args[1]) }
                     "reload", "rl" -> listOf("config", "messages").filter { s -> s.startsWith(args[1]) }
                     "message", "msg" -> onlinePlayers.filter { s -> s.startsWith(args[1], true) }
-                    "spy" -> chattyConfig.channels.keys.toList().filter { s -> s.startsWith(args[1], true) }
+                    "spy" ->
+                        chattyConfig.channels.keys.toList().filter { s -> s.startsWith(args[1], true) && getChannelFromId(s)?.channelType != ChannelType.GLOBAL }
                     else -> emptyList()
                 }
                 3 -> when {
