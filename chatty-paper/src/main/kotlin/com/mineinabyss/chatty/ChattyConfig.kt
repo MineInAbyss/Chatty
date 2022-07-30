@@ -28,6 +28,7 @@ object ChattyConfig : IdofrontConfig<ChattyConfig.Data>(chatty, Data.serializer(
 
     @Serializable
     data class Chat(
+        val emoteTabCompletion: Boolean = false,
         val bypassFormatPermission: String = "chatty.chat.bypassformat",
         val commandSpyFormat: String = "<gold>%chatty_player_displayname%: ",
         val chatPreview: ChatPreview = ChatPreview(),

@@ -10,6 +10,7 @@ playerHeadFont: "minecraft:chatty_heads"
 # Chatty does not do anything with it outside the [ChatPreview.kt] file.
 #This feature requires ProtocolLib 5.0.0 or higher.
 chat:
+  emoteTabCompletion: false
   bypassFormatPermission: "chatty.chat.bypassformat"
   commandSpyFormat: "<gold>%chatty_player_displayname%</gold><yellow>: "
   chatPreview:

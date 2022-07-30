@@ -1,5 +1,6 @@
 package com.mineinabyss.chatty.listeners
 
+import com.mineinabyss.chatty.ChattyContext.isBondrewdLikesHisEmotesLoaded
 import com.mineinabyss.chatty.components.ChannelData
 import com.mineinabyss.chatty.components.HideJoinLeave
 import com.mineinabyss.chatty.components.chattyData
@@ -15,15 +16,19 @@ import org.bukkit.event.player.PlayerJoinEvent
 import org.bukkit.event.player.PlayerQuitEvent
 
 class PlayerListener : Listener {
-    //TODO Disable if proxy should handle this
+
     @EventHandler(priority = EventPriority.LOWEST)
     fun PlayerJoinEvent.onFirstJoin() {
         if (player.toGeary().has<ChannelData>()) return
         if (chattyConfig.join.enabled && chattyConfig.join.firstJoin.enabled) {
             joinMessage(translatePlaceholders(player, chattyMessages.joinLeave.firstJoinMessage))
-//            if (chattyConfig.join.firstJoin.enabled)
-//                player.sendPluginMessage(chatty, chattyProxyChannel, PlaceholderAPI.setPlaceholders(player, messages.joinLeave.joinMessage).toByteArray())
         }
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR)
+    fun PlayerJoinEvent.addEmoteTabCompletion() {
+        if (!isBondrewdLikesHisEmotesLoaded || !chattyConfig.chat.emoteTabCompletion) return
+        player.addAdditionalChatCompletions(bondrewd.emotes.map { emote -> ":${emote.id}:" })
     }
 
     @EventHandler(priority = EventPriority.NORMAL)
@@ -33,8 +38,6 @@ class PlayerListener : Listener {
             player.displayName(player.chattyData.displayName?.miniMsg())
         if (chattyConfig.join.enabled && !player.toGeary().has<HideJoinLeave>())
             joinMessage(translatePlaceholders(player, chattyMessages.joinLeave.joinMessage))
-//        if (chattyConfig.join.sendAcrossProxy)
-//            player.sendPluginMessage(chatty, chattyProxyChannel, PlaceholderAPI.setPlaceholders(player, messages.proxies.proxyJoin).toByteArray())
     }
 
     @EventHandler
@@ -43,8 +46,6 @@ class PlayerListener : Listener {
             player.chattyData.displayName = player.displayName().serialize()
         if (chattyConfig.leave.enabled && !player.toGeary().has<HideJoinLeave>())
             quitMessage(translatePlaceholders(player, chattyMessages.joinLeave.leaveMessage))
-//        if (chattyConfig.leave.sendAcrossProxy)
-//            Bukkit.getServer().sendPluginMessage(chatty, chattyProxyChannel, PlaceholderAPI.setPlaceholders(player, messages.proxies.proxyLeave).toByteArray())
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)

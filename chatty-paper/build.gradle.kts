@@ -34,5 +34,5 @@ dependencies {
     // Shaded
     implementation(chattyLibs.imageloader)
     implementation(libs.idofront.core)
-//    compileOnly(libs.idofront.nms)
+    //implementation(libs.idofront.nms)
 }
