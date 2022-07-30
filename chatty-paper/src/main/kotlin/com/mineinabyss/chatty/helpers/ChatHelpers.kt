@@ -172,12 +172,8 @@ fun setAudienceForChannelType(player: Player): Set<Audience> {
         ChannelType.PERMISSION -> {
             audiences.addAll(onlinePlayers.filter { p -> p.checkPermission(channel.permission) })
         }
-        // Intended for Guilds etc, wanna consider finding a non-permission way for this
-        ChannelType.PRIVATE -> {
-            audiences.addAll(onlinePlayers.filter { p ->
-                p.chattyData.channelId == player.chattyData.channelId
-            })
-        }
+        // Intended for Guilds etc., want to consider finding a non-permission way for this
+        ChannelType.PRIVATE -> { audiences.add(player) }
     }
 
     audiences.addAll(onlinePlayers.filter {
