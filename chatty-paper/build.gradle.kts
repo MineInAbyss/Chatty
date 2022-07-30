@@ -32,6 +32,7 @@ dependencies {
     compileOnly(libs.minecraft.plugin.protocollib)
 
     // Shaded
+    implementation(chattyLibs.imageloader)
     implementation(libs.idofront.core)
 //    compileOnly(libs.idofront.nms)
 }

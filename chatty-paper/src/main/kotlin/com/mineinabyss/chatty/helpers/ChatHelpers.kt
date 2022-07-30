@@ -1,18 +1,17 @@
 package com.mineinabyss.chatty.helpers
 
-import com.destroystokyo.paper.ClientOption
+import com.combimagnetron.imageloader.Image
 import com.mineinabyss.chatty.components.ChannelType
 import com.mineinabyss.chatty.components.SpyOnChannels
 import com.mineinabyss.chatty.components.chattyData
 import com.mineinabyss.geary.papermc.access.toGeary
-import com.mineinabyss.idofront.font.Space
 import com.mineinabyss.idofront.messaging.miniMsg
 import me.clip.placeholderapi.PlaceholderAPI
 import net.kyori.adventure.audience.Audience
 import net.kyori.adventure.key.Key
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.TextReplacementConfig
-import net.kyori.adventure.text.format.TextColor
+import net.kyori.adventure.text.format.Style
 import net.kyori.adventure.text.minimessage.MiniMessage
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer
@@ -21,8 +20,6 @@ import org.bukkit.ChatColor
 import org.bukkit.Sound
 import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
-import java.awt.Color
-import javax.imageio.ImageIO
 
 val ZERO_WIDTH = "\u200B"
 val ping = chattyConfig.ping
@@ -54,7 +51,8 @@ fun Component.handlePlayerPings(player: Player, pingedPlayer: Player) {
     val pingMessage = this.replaceText(
         TextReplacementConfig.builder()
             .match(ping.pingPrefix + player.chattyData.displayName)
-            .replacement((ping.pingReceiveFormat + clickToReply + ping.pingPrefix + player.chattyData.displayName).miniMsg()).build()
+            .replacement((ping.pingReceiveFormat + clickToReply + ping.pingPrefix + player.chattyData.displayName).miniMsg())
+            .build()
     )
 
     if (!pingedPlayer.chattyData.disablePingSound)
@@ -64,7 +62,8 @@ fun Component.handlePlayerPings(player: Player, pingedPlayer: Player) {
     val pingerMessage = this.replaceText(
         TextReplacementConfig.builder()
             .match(ping.pingPrefix + player.chattyData.displayName)
-            .replacement((ping.pingSendFormat + clickToReply + ping.pingPrefix + player.chattyData.displayName).miniMsg()).build()
+            .replacement((ping.pingSendFormat + clickToReply + ping.pingPrefix + player.chattyData.displayName).miniMsg())
+            .build()
     )
     player.sendMessage(pingerMessage)
 }
@@ -92,6 +91,7 @@ fun Player.swapChannelCommand(channelId: String) {
         sendFormattedMessage(chattyMessages.channels.missingChannelPermission)
     } else {
         chattyData.channelId = channelId
+        chattyData.lastChannelUsed = channelId
         sendFormattedMessage(chattyMessages.channels.channelChanged)
     }
 }
@@ -123,34 +123,25 @@ fun translatePlaceholders(player: Player, message: String): Component {
 }
 
 //TODO Convert to using BLHE
+val playerHeadMapCache = mutableMapOf<Player, Component>()
 fun Player.translatePlayerHeadComponent(): Component {
-    val message = Component.text()
-    val url = playerProfile.textures.skin ?: return message.build()
-    val hasHat = getClientOption(ClientOption.SKIN_PARTS).hasHatsEnabled()
-    val c = ImageIO.read(url)
-    var pixel = '#'
-
-    (0..9).forEach { x ->
-        val component = Component.text("$pixel!").font(Key.key("minecraft:chatty_heads"))
-        (0..7).forEach { y ->
-            val isTransparent = Color(c.getRGB(40 + y, 8 + x - 2), true).alpha <= 254
-            val color = if (isTransparent || !hasHat) c.getRGB(8 + y, 8 + x - 2) else c.getRGB(40 + y, 8 + x - 2)
-            message.append(component.color(TextColor.color(color)))
-        }
-
-        when (x) {
-            1 -> pixel = '#'
-            2 -> pixel = '$'
-            3 -> pixel = '%'
-            4 -> pixel = '&'
-            5 -> pixel = '\''
-            6 -> pixel = '('
-            7 -> pixel = ')'
-            8 -> pixel = '*'
-        }
-        message.append(Space.of(-12).miniMsg())
+    if (this !in playerHeadMapCache) {
+        val image = convertURLToImageString("https://api.mineatar.io/face/$name?scale=1")
+        playerHeadMapCache[this] =
+            convertToImageComponent(image, Key.key(chattyConfig.playerHeadFont))
+                .append(Component.text("").font(Key.key("minecraft:default")))
     }
-    return message.append(Space.of(8).miniMsg()).build()
+    return playerHeadMapCache[this]!!
+}
+
+private fun convertToImageComponent(image: String, font: Key): Component {
+    return MiniMessage.builder().build().deserialize(image).style(Style.style().font(font).build())
+}
+
+private fun convertURLToImageString(
+    url: String, ascent: Int = 4, colorType: Image.ColorType = Image.ColorType.MINIMESSAGE
+): String {
+    return Image.builder().image(url).colorType(colorType).ascent(ascent).build().generate()
 }
 
 fun setAudienceForChannelType(player: Player): Set<Audience> {
@@ -162,18 +153,22 @@ fun setAudienceForChannelType(player: Player): Set<Audience> {
         ChannelType.GLOBAL -> {
             audiences.addAll(onlinePlayers)
         }
+
         ChannelType.RADIUS -> {
             if (channel.channelRadius <= 0) audiences.addAll(onlinePlayers)
             else audiences.addAll(onlinePlayers.filter { p ->
                 p.toGeary().has<SpyOnChannels>() ||
-                (player.world == p.world && p.location.distanceSquared(player.location) <= channel.channelRadius)
+                        (player.world == p.world && p.location.distanceSquared(player.location) <= channel.channelRadius)
             })
         }
+
         ChannelType.PERMISSION -> {
             audiences.addAll(onlinePlayers.filter { p -> p.checkPermission(channel.permission) })
         }
         // Intended for Guilds etc., want to consider finding a non-permission way for this
-        ChannelType.PRIVATE -> { audiences.add(player) }
+        ChannelType.PRIVATE -> {
+            audiences.add(player)
+        }
     }
 
     audiences.addAll(onlinePlayers.filter {
@@ -185,7 +180,7 @@ fun setAudienceForChannelType(player: Player): Set<Audience> {
 
 fun String.serializeLegacy() = LegacyComponentSerializer.legacy('§').deserialize(this).fixLegacy()
 
-fun Component.fixLegacy() : Component =
+fun Component.fixLegacy(): Component =
     this.serialize().replace("\\<", "<").replace("\\>", ">").miniMsg()
 
 // Splits <color> and <gradient:...> tags and checks if theyre allowed
@@ -223,7 +218,7 @@ fun String.getTags(): List<ChattyTags> {
     val tags = mutableListOf<ChattyTags>()
     if (" " in this) tags.add(ChattyTags.SPACES)
     MiniMessage.builder().build().deserializeToTree(this).toString()
-        .split("TagNode(",") {").filter { "Node" !in it && it.isNotBlank() }.toList().forEach {
+        .split("TagNode(", ") {").filter { "Node" !in it && it.isNotBlank() }.toList().forEach {
             val tag = it.replace("'", "").replace(",", "")
             when {
                 tag in ChatColor.values().toString().lowercase() -> tags.add(ChattyTags.TEXTCOLOR)
@@ -244,7 +239,7 @@ fun String.getTags(): List<ChattyTags> {
                 tag.startsWith("key") -> tags.add(ChattyTags.KEYBIND)
                 tag.startsWith("lang") -> tags.add(ChattyTags.TRANSLATABLE)
             }
-    }
+        }
     return tags.toList()
 }
 

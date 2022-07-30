@@ -60,7 +60,7 @@ object ChattyMessages : IdofrontConfig<ChattyMessages.Messages>(chatty, Messages
     data class Channels(
         val availableChannels: String = "<gold>Available channels are:<newline><yellow>%chatty_available_channels%",
         val channelChanged: String = "<red>You have changed to channel <yellow>%chatty_channel%<red>.",
-        val noChannelWithName: String = "No channel by this name exists.",
+        val noChannelWithName: String = "<red>No channel by this name exists.",
         val missingChannelPermission: String = "You do not have permission to join this channel.",
         val emptyChannelMessage: String = "<red>There is no-one to read your message",
     )
@@ -84,6 +84,6 @@ object ChattyMessages : IdofrontConfig<ChattyMessages.Messages>(chatty, Messages
     data class Other(
         val configReloaded: String = "<green>Chatty config reloaded.",
         val messagesReloaded: String = "<green>Chatty messages reloaded.",
-        val nickNameChanged: String = "Nickname set to <white><i>&%chatty_player_displayname%.",
+        val nickNameChanged: String = "<green>Nickname set to <white><i>&%chatty_player_displayname%.",
     )
 }

@@ -19,6 +19,7 @@ class ChattyPlugin : JavaPlugin() {
     }
 
     override fun onEnable() {
+        saveDefaultAssets()
         saveDefaultEmoteFixer()
         saveDefaultMessages()
         saveDefaultConfig()
@@ -75,4 +76,10 @@ private fun saveDefaultEmoteFixer() {
     if (!Path(chatty.dataFolder.path + "/emotefixer.yml").toFile().exists()) {
         chatty.saveResource("emotefixer.yml", false)
     }
+}
+
+private fun saveDefaultAssets() {
+    chatty.saveResource("assets/minecraft/font/chatty_heads.json", true)
+    chatty.saveResource("assets/space/textures/ui/utils/null.png", true)
+    chatty.saveResource("assets/space/textures/ui/utils/whiteblank_4.png", true)
 }
