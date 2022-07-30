@@ -1,14 +1,13 @@
 package com.mineinabyss.chatty.listeners
 
+import com.mineinabyss.chatty.chatty
+import com.mineinabyss.chatty.chattyProxyChannel
 import com.mineinabyss.chatty.components.chattyData
 import com.mineinabyss.chatty.helpers.*
 import com.mineinabyss.idofront.messaging.miniMsg
 import github.scarsz.discordsrv.api.ListenerPriority
 import github.scarsz.discordsrv.api.Subscribe
-import github.scarsz.discordsrv.api.events.AchievementMessagePostProcessEvent
-import github.scarsz.discordsrv.api.events.AchievementMessagePreProcessEvent
-import github.scarsz.discordsrv.api.events.DeathMessagePreProcessEvent
-import github.scarsz.discordsrv.api.events.GameChatMessagePreProcessEvent
+import github.scarsz.discordsrv.api.events.*
 import github.scarsz.discordsrv.dependencies.jda.api.MessageBuilder
 import github.scarsz.discordsrv.dependencies.jda.api.entities.Message
 import github.scarsz.discordsrv.dependencies.jda.api.entities.MessageEmbed
@@ -18,14 +17,21 @@ import github.scarsz.discordsrv.dependencies.kyori.adventure.text.TextReplacemen
 import github.scarsz.discordsrv.dependencies.kyori.adventure.text.minimessage.MiniMessage
 import github.scarsz.discordsrv.objects.MessageFormat
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer
+import org.bukkit.Bukkit
 
 
 class DiscordListener {
+
+    @Subscribe(priority = ListenerPriority.HIGHEST)
+    fun DiscordGuildMessagePostProcessEvent.sendDiscordToProxy() {
+        Bukkit.getServer().sendPluginMessage(chatty, chattyProxyChannel, minecraftMessage.serialize().toByteArray())
+    }
 
     @Subscribe(priority = ListenerPriority.NORMAL)
     fun GameChatMessagePreProcessEvent.onChat() {
         val channel = getChannelFromId(player.chattyData.channelId) ?: return
         val lastUsedChannel = getChannelFromId(player.chattyData.lastChannelUsed) ?: return
+
         if (isCancelled) return
         else if (!channel.discordsrv || (channel != lastUsedChannel && !lastUsedChannel.discordsrv))
             isCancelled = true

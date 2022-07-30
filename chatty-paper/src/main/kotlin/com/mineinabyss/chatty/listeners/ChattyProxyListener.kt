@@ -3,7 +3,10 @@ package com.mineinabyss.chatty.listeners
 import com.mineinabyss.chatty.ChattyContext
 import com.mineinabyss.chatty.chattyProxyChannel
 import com.mineinabyss.chatty.components.ChannelType
+import com.mineinabyss.chatty.components.SpyOnChannels
+import com.mineinabyss.chatty.components.chattyData
 import com.mineinabyss.chatty.helpers.*
+import com.mineinabyss.geary.papermc.access.toGeary
 import com.mineinabyss.idofront.messaging.miniMsg
 import github.scarsz.discordsrv.Debug
 import github.scarsz.discordsrv.DiscordSRV
@@ -26,17 +29,25 @@ class ChattyProxyListener : PluginMessageListener {
         val senderName = decoded.substringBefore(ZERO_WIDTH)
         val channelId = decoded.substringAfter(ZERO_WIDTH).split(ZERO_WIDTH).first()
         val channelFormat = decoded.substringAfter(channelId + ZERO_WIDTH).split("$ZERO_WIDTH ").first()
-        val channel = getChannelFromId(channelId) ?: return
+        val channel = getChannelFromId(channelId)
         val proxyMessage = decoded.substringAfter(channelFormat).replaceFirst("$ZERO_WIDTH ", "")
+        val onlinePlayers = Bukkit.getOnlinePlayers()
+        val canSpy = onlinePlayers.filter { it.toGeary().get<SpyOnChannels>()?.channels?.contains(player.chattyData.channelId) == true }
 
-        when (channel.channelType) {
-            ChannelType.GLOBAL -> Bukkit.getOnlinePlayers()
-            ChannelType.RADIUS -> emptyList()
-            ChannelType.PERMISSION -> Bukkit.getOnlinePlayers().filter { it.hasPermission(channel.permission) }
-            ChannelType.PRIVATE -> emptyList() //TODO Implement this when PRIVATE is more clear
-        }.forEach { it.sendMessage(proxyMessage.miniMsg()) }
+        when (channel?.channelType) {
+            ChannelType.GLOBAL -> onlinePlayers
+            ChannelType.RADIUS -> canSpy
+            ChannelType.PERMISSION -> onlinePlayers.filter { it.hasPermission(channel.permission) || it in canSpy }
+            ChannelType.PRIVATE -> onlinePlayers.filter { it.getChannelFromPlayer() == channel || it in canSpy }
+            else -> onlinePlayers
+        }.forEach {
+            // Sent from discord
+            if (channel == null)
+                it.sendMessage(decoded.miniMsg())
+            else it.sendMessage(proxyMessage.miniMsg())
+        }
 
-        if (!ChattyContext.isDiscordSRVLoaded || !channel.discordsrv) return
+        if (!ChattyContext.isDiscordSRVLoaded || channel?.discordsrv != true) return
         val dsrv = DiscordSRV.getPlugin()
         var discordMessage = proxyMessage.replaceFirst(channelFormat, "")
         val reserializer = DiscordSRV.config().getBoolean("Experiment_MCDiscordReserializer_ToDiscord")
