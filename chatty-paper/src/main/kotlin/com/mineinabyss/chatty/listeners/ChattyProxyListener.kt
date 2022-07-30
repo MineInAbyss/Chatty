@@ -31,23 +31,27 @@ class ChattyProxyListener : PluginMessageListener {
         val channelFormat = decoded.substringAfter(channelId + ZERO_WIDTH).split("$ZERO_WIDTH ").first()
         val channel = getChannelFromId(channelId)
         val proxyMessage = decoded.substringAfter(channelFormat).replaceFirst("$ZERO_WIDTH ", "")
-        val onlinePlayers = Bukkit.getOnlinePlayers()
-        val canSpy = onlinePlayers.filter { it.toGeary().get<SpyOnChannels>()?.channels?.contains(player.chattyData.channelId) == true }
+        val onlinePlayers = Bukkit.getOnlinePlayers().filter { it.server == Bukkit.getServer() }
+        val canSpy = onlinePlayers.filter {
+            it.toGeary().get<SpyOnChannels>()?.channels?.contains(player.chattyData.channelId) == true
+        }
 
-        when (channel?.channelType) {
+        // If the channel is not found, it is discord
+        //TODO Find out why this gets triggered repeatedly and therefore message is sent a lot of times
+        // Seems to tie into how many players are on other servers under proxy?
+        if (channel == null) {
+            onlinePlayers.forEach {
+                //it.sendMessage(decoded.miniMsg())
+            }
+        } else when (channel.channelType) {
             ChannelType.GLOBAL -> onlinePlayers
             ChannelType.RADIUS -> canSpy
             ChannelType.PERMISSION -> onlinePlayers.filter { it.hasPermission(channel.permission) || it in canSpy }
             ChannelType.PRIVATE -> onlinePlayers.filter { it.getChannelFromPlayer() == channel || it in canSpy }
-            else -> onlinePlayers
-        }.forEach {
-            // Sent from discord
-            if (channel == null)
-                it.sendMessage(decoded.miniMsg())
-            else it.sendMessage(proxyMessage.miniMsg())
-        }
+        }.forEach { it.sendMessage(proxyMessage.miniMsg()) }
 
         if (!ChattyContext.isDiscordSRVLoaded || channel?.discordsrv != true) return
+
         val dsrv = DiscordSRV.getPlugin()
         var discordMessage = proxyMessage.replaceFirst(channelFormat, "")
         val reserializer = DiscordSRV.config().getBoolean("Experiment_MCDiscordReserializer_ToDiscord")
@@ -94,5 +98,6 @@ private fun String.translateEmoteIDsToComponent(): String {
     }
     return translated.cleanUpHackyFix()
 }
+
 private fun String.cleanUpHackyFix() =
     this.replace("<<", "<")
