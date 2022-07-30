@@ -30,6 +30,7 @@ dependencies {
     compileOnly(chattyLibs.discordsrv)
 
     // Shaded
+    implementation(chattyLibs.imageloader)
     implementation(libs.idofront.core)
 //    compileOnly(libs.idofront.nms)
 }
