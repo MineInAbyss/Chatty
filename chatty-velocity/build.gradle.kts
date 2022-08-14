@@ -22,7 +22,7 @@ dependencies {
     api(platform("org.jetbrains.kotlinx:kotlinx-coroutines-bom:$coroutinesVersion"))
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:$coroutinesVersion")
-    implementation("net.kyori:adventure-extra-kotlin:4.10.1")
+    implementation("net.kyori:adventure-extra-kotlin:4.11.0")
 
     compileOnly(chattyLibs.velocity)
     kapt(chattyLibs.velocity)
