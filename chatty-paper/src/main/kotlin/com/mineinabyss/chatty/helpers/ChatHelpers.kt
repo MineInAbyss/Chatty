@@ -21,7 +21,7 @@ import org.bukkit.Sound
 import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
 
-val ZERO_WIDTH = "\u200B"
+const val ZERO_WIDTH = "\u200B"
 val ping = chattyConfig.ping
 val getAlternativePingSounds: List<String> =
     if ("*" in ping.alternativePingSounds || "all" in ping.alternativePingSounds)
@@ -122,7 +122,6 @@ fun translatePlaceholders(player: Player, message: String): Component {
     return PlaceholderAPI.setPlaceholders(player, msg.serialize()).serializeLegacy()
 }
 
-//TODO Convert to using BLHE
 val playerHeadMapCache = mutableMapOf<Player, Component>()
 fun Player.translatePlayerHeadComponent(): Component {
     if (this !in playerHeadMapCache) {
@@ -150,29 +149,19 @@ fun setAudienceForChannelType(player: Player): Set<Audience> {
     val audiences = mutableSetOf<Audience>()
 
     when (channel.channelType) {
-        ChannelType.GLOBAL -> {
-            audiences.addAll(onlinePlayers)
-        }
-
+        ChannelType.GLOBAL -> audiences.addAll(onlinePlayers)
         ChannelType.RADIUS -> {
             if (channel.channelRadius <= 0) audiences.addAll(onlinePlayers)
-            else audiences.addAll(onlinePlayers.filter { p ->
-                p.toGeary().has<SpyOnChannels>() ||
-                        (player.world == p.world && p.location.distanceSquared(player.location) <= channel.channelRadius)
-            })
+            else audiences.addAll(player.world.getNearbyPlayers(player.location, channel.channelRadius.toDouble()))
         }
 
-        ChannelType.PERMISSION -> {
-            audiences.addAll(onlinePlayers.filter { p -> p.checkPermission(channel.permission) })
-        }
+        ChannelType.PERMISSION -> audiences.addAll(onlinePlayers.filter { p -> p.checkPermission(channel.permission) })
         // Intended for Guilds etc., want to consider finding a non-permission way for this
-        ChannelType.PRIVATE -> {
-            audiences.add(player)
-        }
+        ChannelType.PRIVATE -> audiences.add(player)
     }
 
-    audiences.addAll(onlinePlayers.filter {
-        it !in audiences && it.toGeary().get<SpyOnChannels>()?.channels?.contains(player.chattyData.channelId) == true
+    audiences.addAll(onlinePlayers.filter { p ->
+        p !in audiences && p.toGeary().get<SpyOnChannels>()?.channels?.contains(player.chattyData.channelId) == true
     })
 
     return audiences
@@ -183,7 +172,7 @@ fun String.serializeLegacy() = LegacyComponentSerializer.legacy('§').deserializ
 fun Component.fixLegacy(): Component =
     this.serialize().replace("\\<", "<").replace("\\>", ">").miniMsg()
 
-// Splits <color> and <gradient:...> tags and checks if theyre allowed
+// Splits <color> and <gradient:...> tags and checks if they're allowed
 fun String.verifyChatStyling(): String {
     val finalString = this
     this.getTags().filter { tag -> tag !in chattyConfig.chat.allowedTags }.forEach { tag ->
