@@ -22,6 +22,8 @@ import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
 
 const val ZERO_WIDTH = "\u200B"
+const val RESET = "<reset>"
+
 val ping = chattyConfig.ping
 val getAlternativePingSounds: List<String> =
     if ("*" in ping.alternativePingSounds || "all" in ping.alternativePingSounds)

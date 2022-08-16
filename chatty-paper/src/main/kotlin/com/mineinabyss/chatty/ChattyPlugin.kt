@@ -1,6 +1,5 @@
 package com.mineinabyss.chatty
 
-import com.mineinabyss.chatty.helpers.chattyConfig
 import com.mineinabyss.chatty.helpers.protocolManager
 import com.mineinabyss.chatty.listeners.*
 import com.mineinabyss.chatty.placeholderapi.PlaceholderHook
@@ -43,8 +42,8 @@ class ChattyPlugin : JavaPlugin() {
         if (ChattyContext.isDiscordSRVLoaded)
             DiscordSRV.api.subscribe(DiscordListener())
 
-        if (chattyConfig.chat.chatPreview.enabled && ChattyContext.isProtocolLibLoaded)
-            protocolManager.addPacketListener(ChatPreviewPacketAdapter())
+        /*if (ChattyContext.isProtocolLibLoaded && chattyConfig.chat.chatPreview.enabled)
+            protocolManager.addPacketListener(ChatPreviewPacketAdapter())*/
 
         gearyAddon {
             autoscan("com.mineinabyss") {
@@ -60,7 +59,7 @@ class ChattyPlugin : JavaPlugin() {
         if (ChattyContext.isPlaceholderApiLoaded)
             PlaceholderHook().unregister()
 
-        if (ChatPreviewPacketAdapter() in protocolManager.packetListeners && ChattyContext.isProtocolLibLoaded)
+        if (ChattyContext.isProtocolLibLoaded && ChatPreviewPacketAdapter() in protocolManager.packetListeners)
             protocolManager.removePacketListener(ChatPreviewPacketAdapter())
     }
 }

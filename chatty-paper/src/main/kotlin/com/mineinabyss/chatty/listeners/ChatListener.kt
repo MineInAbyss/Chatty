@@ -9,6 +9,7 @@ import com.mineinabyss.geary.papermc.access.toGeary
 import com.mineinabyss.idofront.messaging.miniMsg
 import com.mineinabyss.idofront.messaging.serialize
 import io.papermc.paper.chat.ChatRenderer
+import io.papermc.paper.event.player.AsyncChatDecorateEvent
 import io.papermc.paper.event.player.AsyncChatEvent
 import net.kyori.adventure.audience.Audience
 import net.kyori.adventure.text.Component
@@ -19,6 +20,7 @@ import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
 import org.bukkit.event.player.PlayerCommandPreprocessEvent
 
+@Suppress("UnstableApiUsage")
 class ChatListener : Listener {
 
     @EventHandler
@@ -29,6 +31,21 @@ class ChatListener : Listener {
         }
     }
 
+    private var msg = Component.empty().asComponent()
+
+    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
+    fun AsyncChatDecorateEvent.onPlayerChatPreview() {
+        isPreview || return
+        val player = player() ?: return
+        val channelId = player.chattyData.channelId
+        val channel = getChannelFromId(channelId) ?: return
+        val formatted =
+            if (player.checkPermission(chattyConfig.chat.bypassFormatPermission)) originalMessage().fixLegacy()
+            else originalMessage().serialize().verifyChatStyling().miniMsg()
+        result(RESET.miniMsg().append(translatePlaceholders(player, channel.format + formatted.serialize())))
+        msg = result()
+    }
+
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     fun AsyncChatEvent.onPlayerChat() {
         player.verifyPlayerChannel()
@@ -36,25 +53,18 @@ class ChatListener : Listener {
         val channel = getChannelFromId(channelId) ?: return
         val audiences = viewers()
         val formatted =
-            if (player.checkPermission(chattyConfig.chat.bypassFormatPermission)) originalMessage().fixLegacy()
-            else originalMessage().serialize().verifyChatStyling().miniMsg()
+            if (player.checkPermission(chattyConfig.chat.bypassFormatPermission)) message().fixLegacy()
+            else message().serialize().verifyChatStyling().miniMsg()
 
         if (audiences.isNotEmpty()) audiences.clear()
         audiences.addAll(setAudienceForChannelType(player))
-        message("<reset>".miniMsg().append(translatePlaceholders(player, channel.format + formatted.serialize())))
+        message(RESET.miniMsg().append(translatePlaceholders(player, channel.format + formatted.serialize())))
 
-        val pingedPlayer = originalMessage().serialize().checkForPlayerPings(channelId)
+        val pingedPlayer = message().serialize().checkForPlayerPings(channelId)
         if (pingedPlayer != null && pingedPlayer != player && pingedPlayer in audiences) {
             message().handlePlayerPings(player, pingedPlayer)
             audiences.remove(pingedPlayer)
             audiences.remove(player)
-        }
-
-        if (pingedPlayer == null && audiences.isEmpty()) {
-            isCancelled = true
-            player.sendFormattedMessage(chattyMessages.channels.emptyChannelMessage)
-        } else audiences.forEach { audience ->
-            RendererExtension().render(player, player.displayName(), message(), audience)
         }
 
         if (channel.proxy) {
@@ -63,6 +73,13 @@ class ChatListener : Listener {
                 translatePlaceholders(player, channel.format).serialize()
             }$ZERO_WIDTH ".miniMsg().append(message())).serialize().toByteArray()
             player.sendPluginMessage(chatty, chattyProxyChannel, proxyMessage)
+        }
+
+        if (pingedPlayer == null && audiences.isEmpty()) {
+            isCancelled = true
+            player.sendFormattedMessage(chattyMessages.channels.emptyChannelMessage)
+        } else audiences.forEach { audience ->
+            RendererExtension().render(player, player.displayName(), message(), audience)
         }
         audiences.clear()
     }
