@@ -1,12 +1,13 @@
 [versions]
-geary = "0.19.108"
-guiy = "0.7.22"
+geary = "0.19.109"
+guiy = "0.7.23"
 bondrewdlikeshisemotes = "1.1.3"
 velocity = "3.1.1"
 discordsrv = "1.25.1"
+protocolburrito = "0.5.35"
 
 [libraries]
-protocolburrito = "com.mineinabyss:protocolburrito:0.5.34"
+protocolburrito = { module = "com.mineinabyss:protocolburrito", version.ref = "protocolburrito" }
 geary-papermc-core = { module = "com.mineinabyss:geary-papermc-core", version.ref = "geary" }
 guiy = { module = "com.mineinabyss:guiy-compose", version.ref = "guiy" }
 bondrewdlikeshisemotes = { module = "io.github.bananapuncher714:bondrewdlikeshisemotes", version.ref = "bondrewdlikeshisemotes" }
