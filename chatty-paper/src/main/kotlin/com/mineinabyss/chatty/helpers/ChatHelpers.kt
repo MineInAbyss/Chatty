@@ -20,6 +20,7 @@ import org.bukkit.ChatColor
 import org.bukkit.Sound
 import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
+import kotlin.math.sqrt
 
 const val ZERO_WIDTH = "\u200B"
 val ping = chattyConfig.ping
@@ -152,7 +153,9 @@ fun setAudienceForChannelType(player: Player): Set<Audience> {
         ChannelType.GLOBAL -> audiences.addAll(onlinePlayers)
         ChannelType.RADIUS -> {
             if (channel.channelRadius <= 0) audiences.addAll(onlinePlayers)
-            else audiences.addAll(player.world.getNearbyPlayers(player.location, channel.channelRadius.toDouble()))
+            else audiences.addAll(onlinePlayers.filter { p ->
+                player.world == p.world && sqrt(player.location.distanceSquared(p.location)) <= channel.channelRadius
+            })
         }
 
         ChannelType.PERMISSION -> audiences.addAll(onlinePlayers.filter { p -> p.checkPermission(channel.permission) })
