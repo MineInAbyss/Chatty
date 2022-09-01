@@ -109,7 +109,7 @@ private fun Component.cleanUpHackyFix() =
 
 
 private fun String.cleanUpHackyFix() =
-    this.serializeLegacy().stripTags().replace("\\<", "<").replace("<<", "<")
+    this.deSerializeLegacy().stripTags().replace("\\<", "<").replace("<<", "<")
 
 private fun String.translateEmoteIDs(): String {
     var translated = this

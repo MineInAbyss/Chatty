@@ -11,7 +11,7 @@ fun String.verifyNickLength(): Boolean {
     }
 }
 
-// Splits <color> and <gradient:...> tags and checks if theyre allowed
+// Splits <color> and <gradient:...> tags and checks if they're allowed
 fun String.verifyNickStyling(): Boolean {
     return this.getTags().all { tag -> tag in chattyConfig.nicknames.allowedTags }
 }

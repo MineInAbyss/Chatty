@@ -101,7 +101,7 @@ fun translatePlaceholders(player: Player, message: String): Component {
             .match("%chatty_playerhead%")
             .replacement(player.translatePlayerHeadComponent()).build()
     )
-    return PlaceholderAPI.setPlaceholders(player, msg.serialize()).serializeLegacy()
+    return PlaceholderAPI.setPlaceholders(player, msg.serialize()).deSerializeLegacy()
 }
 
 val playerHeadMapCache = mutableMapOf<Player, Component>()
@@ -125,7 +125,7 @@ private fun convertURLToImageString(
     return Image.builder().image(url).colorType(colorType).ascent(ascent).build().generate()
 }
 
-fun String.serializeLegacy() = LegacyComponentSerializer.legacy('§').deserialize(this).fixLegacy()
+fun String.deSerializeLegacy() = LegacyComponentSerializer.legacy('§').deserialize(this).fixLegacy()
 
 fun Component.fixLegacy(): Component =
     this.serialize().replace("\\<", "<").replace("\\>", ">").miniMsg()

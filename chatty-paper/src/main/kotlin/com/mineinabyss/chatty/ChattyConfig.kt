@@ -28,6 +28,7 @@ object ChattyConfig : IdofrontConfig<ChattyConfig.Data>(chatty, Data.serializer(
 
     @Serializable
     data class Chat(
+        val enableChatSigning: Boolean = true,
         val bypassFormatPermission: String = "chatty.chat.bypassformat",
         val commandSpyFormat: String = "<gold>%chatty_player_displayname%: ",
         val allowedTags: List<ChattyTags> = emptyList(),
