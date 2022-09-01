@@ -342,4 +342,32 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
                 player.playSound(player.location, chattyConfig.privateMessages.messageReceivedSound, 1f, 1f)
         }
     }
+
+    private fun Player.swapChannelCommand(channelId: String) {
+        val newChannel = getChannelFromId(channelId)
+
+        if (newChannel == null) {
+            sendFormattedMessage(chattyMessages.channels.noChannelWithName)
+        } else if (!checkPermission(newChannel.permission)) {
+            sendFormattedMessage(chattyMessages.channels.missingChannelPermission)
+        } else {
+            chattyData.channelId = channelId
+            chattyData.lastChannelUsed = channelId
+            sendFormattedMessage(chattyMessages.channels.channelChanged)
+        }
+    }
+
+    private fun Player.sendFormattedMessage(message: String) =
+        this.sendMessage(translatePlaceholders(this, message).serialize().miniMsg())
+
+    private fun Player.sendFormattedMessage(message: String, optionalPlayer: Player? = null) =
+        this.sendMessage(translatePlaceholders((optionalPlayer ?: this), message).serialize().miniMsg())
+
+    private fun Player.sendFormattedPrivateMessage(messageFormat: String, message: String, receiver: Player) =
+        this.sendMessage((translatePlaceholders(receiver, messageFormat).serialize() + message).miniMsg())
+
+    private fun List<String>.removeFirstArgumentOfStringList(): String =
+        this.filter { it != this.first() }.toSentence()
+
+    private fun CommandSender.sendConsoleMessage(message: String) = this.sendMessage(message.miniMsg())
 }

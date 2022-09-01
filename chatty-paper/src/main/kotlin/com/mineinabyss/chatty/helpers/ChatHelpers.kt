@@ -2,12 +2,9 @@ package com.mineinabyss.chatty.helpers
 
 import com.combimagnetron.imageloader.Image
 import com.mineinabyss.chatty.components.ChannelType
-import com.mineinabyss.chatty.components.SpyOnChannels
 import com.mineinabyss.chatty.components.chattyData
-import com.mineinabyss.geary.papermc.access.toGeary
 import com.mineinabyss.idofront.messaging.miniMsg
 import me.clip.placeholderapi.PlaceholderAPI
-import net.kyori.adventure.audience.Audience
 import net.kyori.adventure.key.Key
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.TextReplacementConfig
@@ -18,9 +15,7 @@ import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer
 import org.bukkit.Bukkit
 import org.bukkit.ChatColor
 import org.bukkit.Sound
-import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
-import kotlin.math.sqrt
 
 const val ZERO_WIDTH = "\u200B"
 val ping = chattyConfig.ping
@@ -83,20 +78,6 @@ fun getDefaultChat() =
         ?: getGlobalChat()
         ?: throw IllegalStateException("No Default or Global channel found")
 
-fun Player.swapChannelCommand(channelId: String) {
-    val newChannel = getChannelFromId(channelId)
-
-    if (newChannel == null) {
-        sendFormattedMessage(chattyMessages.channels.noChannelWithName)
-    } else if (!checkPermission(newChannel.permission)) {
-        sendFormattedMessage(chattyMessages.channels.missingChannelPermission)
-    } else {
-        chattyData.channelId = channelId
-        chattyData.lastChannelUsed = channelId
-        sendFormattedMessage(chattyMessages.channels.channelChanged)
-    }
-}
-
 fun getChannelFromId(channelId: String) =
     chattyConfig.channels.entries.firstOrNull { it.key == channelId }?.value
 
@@ -144,32 +125,6 @@ private fun convertURLToImageString(
     return Image.builder().image(url).colorType(colorType).ascent(ascent).build().generate()
 }
 
-fun setAudienceForChannelType(player: Player): Set<Audience> {
-    val onlinePlayers = Bukkit.getOnlinePlayers()
-    val channel = getChannelFromId(player.chattyData.channelId) ?: return emptySet()
-    val audiences = mutableSetOf<Audience>()
-
-    when (channel.channelType) {
-        ChannelType.GLOBAL -> audiences.addAll(onlinePlayers)
-        ChannelType.RADIUS -> {
-            if (channel.channelRadius <= 0) audiences.addAll(onlinePlayers)
-            else audiences.addAll(onlinePlayers.filter { p ->
-                player.world == p.world && sqrt(player.location.distanceSquared(p.location)) <= channel.channelRadius
-            })
-        }
-
-        ChannelType.PERMISSION -> audiences.addAll(onlinePlayers.filter { p -> p.checkPermission(channel.permission) })
-        // Intended for Guilds etc., want to consider finding a non-permission way for this
-        ChannelType.PRIVATE -> audiences.add(player)
-    }
-
-    audiences.addAll(onlinePlayers.filter { p ->
-        p !in audiences && p.toGeary().get<SpyOnChannels>()?.channels?.contains(player.chattyData.channelId) == true
-    })
-
-    return audiences
-}
-
 fun String.serializeLegacy() = LegacyComponentSerializer.legacy('§').deserialize(this).fixLegacy()
 
 fun Component.fixLegacy(): Component =
@@ -187,14 +142,6 @@ fun String.verifyChatStyling(): String {
 fun String.verifyBookStyling(): String {
     val finalString = this
     this.getTags().filter { tag -> tag !in chattyConfig.book.allowedTags }.forEach { tag ->
-        finalString.replace(tag.toString().lowercase(), "\\<${tag.toString().lowercase()}")
-    }
-    return finalString
-}
-
-fun String.verifySignStyling(): String {
-    val finalString = this
-    this.getTags().filter { tag -> tag !in chattyConfig.sign.allowedTags }.forEach { tag ->
         finalString.replace(tag.toString().lowercase(), "\\<${tag.toString().lowercase()}")
     }
     return finalString
@@ -240,20 +187,3 @@ fun List<String>.toSentence() = this.joinToString(" ")
 fun String.toPlayer(): Player? {
     return Bukkit.getPlayer(this)
 }
-
-fun Player.sendFormattedMessage(message: String) =
-    this.sendMessage(translatePlaceholders(this, message).serialize().miniMsg())
-
-fun Player.sendFormattedMessage(message: String, optionalPlayer: Player? = null) =
-    this.sendMessage(translatePlaceholders((optionalPlayer ?: this), message).serialize().miniMsg())
-
-fun Player.sendFormattedMessage(vararg message: String, optionalPlayer: Player? = null) =
-    this.sendMessage(translatePlaceholders((optionalPlayer ?: this), message.joinToString(" ")))
-
-fun Player.sendFormattedPrivateMessage(messageFormat: String, message: String, receiver: Player) =
-    this.sendMessage((translatePlaceholders(receiver, messageFormat).serialize() + message).miniMsg())
-
-fun List<String>.removeFirstArgumentOfStringList(): String =
-    this.filter { it != this.first() }.toSentence()
-
-fun CommandSender.sendConsoleMessage(message: String) = this.sendMessage(message.miniMsg())

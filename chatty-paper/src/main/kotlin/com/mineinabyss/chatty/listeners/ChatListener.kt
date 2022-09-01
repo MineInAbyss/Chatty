@@ -2,7 +2,9 @@ package com.mineinabyss.chatty.listeners
 
 import com.mineinabyss.chatty.chatty
 import com.mineinabyss.chatty.chattyProxyChannel
+import com.mineinabyss.chatty.components.ChannelType
 import com.mineinabyss.chatty.components.CommandSpy
+import com.mineinabyss.chatty.components.SpyOnChannels
 import com.mineinabyss.chatty.components.chattyData
 import com.mineinabyss.chatty.helpers.*
 import com.mineinabyss.geary.papermc.access.toGeary
@@ -18,6 +20,7 @@ import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
 import org.bukkit.event.player.PlayerCommandPreprocessEvent
+import kotlin.math.sqrt
 
 class ChatListener : Listener {
 
@@ -66,6 +69,35 @@ class ChatListener : Listener {
         }
         audiences.clear()
     }
+
+    private fun setAudienceForChannelType(player: Player): Set<Audience> {
+        val onlinePlayers = Bukkit.getOnlinePlayers()
+        val channel = getChannelFromId(player.chattyData.channelId) ?: return emptySet()
+        val audiences = mutableSetOf<Audience>()
+
+        when (channel.channelType) {
+            ChannelType.GLOBAL -> audiences.addAll(onlinePlayers)
+            ChannelType.RADIUS -> {
+                if (channel.channelRadius <= 0) audiences.addAll(onlinePlayers)
+                else audiences.addAll(onlinePlayers.filter { p ->
+                    player.world == p.world && sqrt(player.location.distanceSquared(p.location)) <= channel.channelRadius
+                })
+            }
+
+            ChannelType.PERMISSION -> audiences.addAll(onlinePlayers.filter { p -> p.checkPermission(channel.permission) })
+            // Intended for Guilds etc., want to consider finding a non-permission way for this
+            ChannelType.PRIVATE -> audiences.add(player)
+        }
+
+        audiences.addAll(onlinePlayers.filter { p ->
+            p !in audiences && p.toGeary().get<SpyOnChannels>()?.channels?.contains(player.chattyData.channelId) == true
+        })
+
+        return audiences
+    }
+
+    private fun Player.sendFormattedMessage(vararg message: String, optionalPlayer: Player? = null) =
+        this.sendMessage(translatePlaceholders((optionalPlayer ?: this), message.joinToString(" ")))
 }
 
 class RendererExtension : ChatRenderer {
