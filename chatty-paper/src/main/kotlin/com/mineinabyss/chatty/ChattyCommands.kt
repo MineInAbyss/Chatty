@@ -320,6 +320,9 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
         }
     }
 
+    private fun Player.sendFormattedMessage(message: String, optionalPlayer: Player? = null) =
+        this.sendMessage(translatePlaceholders((optionalPlayer ?: this), message).serialize().miniMsg())
+
     private fun Player.handleSendingPrivateMessage(player: Player, arguments: List<String>, isReply: Boolean = false) {
         if (!chattyConfig.privateMessages.enabled) {
             this.sendFormattedMessage(chattyMessages.privateMessages.disabled)
@@ -343,25 +346,7 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
         }
     }
 
-    private fun Player.swapChannelCommand(channelId: String) {
-        val newChannel = getChannelFromId(channelId)
 
-        if (newChannel == null) {
-            sendFormattedMessage(chattyMessages.channels.noChannelWithName)
-        } else if (!checkPermission(newChannel.permission)) {
-            sendFormattedMessage(chattyMessages.channels.missingChannelPermission)
-        } else {
-            chattyData.channelId = channelId
-            chattyData.lastChannelUsed = channelId
-            sendFormattedMessage(chattyMessages.channels.channelChanged)
-        }
-    }
-
-    private fun Player.sendFormattedMessage(message: String) =
-        this.sendMessage(translatePlaceholders(this, message).serialize().miniMsg())
-
-    private fun Player.sendFormattedMessage(message: String, optionalPlayer: Player? = null) =
-        this.sendMessage(translatePlaceholders((optionalPlayer ?: this), message).serialize().miniMsg())
 
     private fun Player.sendFormattedPrivateMessage(messageFormat: String, message: String, receiver: Player) =
         this.sendMessage((translatePlaceholders(receiver, messageFormat).serialize() + message).miniMsg())

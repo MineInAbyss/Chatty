@@ -187,3 +187,22 @@ fun List<String>.toSentence() = this.joinToString(" ")
 fun String.toPlayer(): Player? {
     return Bukkit.getPlayer(this)
 }
+
+fun Player.swapChannelCommand(channelId: String) {
+    val newChannel = getChannelFromId(channelId)
+
+    if (newChannel == null) {
+        sendFormattedMessage(chattyMessages.channels.noChannelWithName)
+    } else if (!checkPermission(newChannel.permission)) {
+        sendFormattedMessage(chattyMessages.channels.missingChannelPermission)
+    } else {
+        chattyData.channelId = channelId
+        chattyData.lastChannelUsed = channelId
+        sendFormattedMessage(chattyMessages.channels.channelChanged)
+    }
+}
+
+fun Player.sendFormattedMessage(message: String) =
+    this.sendMessage(translatePlaceholders(this, message).serialize().miniMsg())
+
+
