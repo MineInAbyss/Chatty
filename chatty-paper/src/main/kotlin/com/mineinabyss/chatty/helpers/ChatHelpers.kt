@@ -98,8 +98,8 @@ fun translatePlaceholders(player: Player, message: String): Component {
         TextReplacementConfig.builder()
             .match("%chatty_playerhead%")
             .replacement(player.translatePlayerHeadComponent()).build()
-    )
-    return PlaceholderAPI.setPlaceholders(player, msg.serialize()).deSerializeLegacy()
+    ).serialize()
+    return PlaceholderAPI.setPlaceholders(player, msg).deSerializeLegacy()
 }
 
 val playerHeadMapCache = mutableMapOf<Player, Component>()
@@ -123,18 +123,17 @@ private fun convertURLToImageString(
     return Image.builder().image(url).colorType(colorType).ascent(ascent).build().generate()
 }
 
-fun String.deSerializeLegacy() = LegacyComponentSerializer.legacy('§').deserialize(this).fixLegacy()
+fun String.deSerializeLegacy() = LegacyComponentSerializer.legacy('&').deserialize(this).fixLegacy()
 
 fun Component.fixLegacy(): Component =
     this.serialize().replace("\\<", "<").replace("\\>", ">").miniMsg()
 
-// Splits <color> and <gradient:...> tags and checks if they're allowed
-fun String.verifyChatStyling(): String {
-    val finalString = this
-    this.getTags().filter { tag -> tag !in chattyConfig.chat.allowedTags }.forEach { tag ->
-        finalString.replace(tag.toString().lowercase(), "\\<${tag.toString().lowercase()}")
+fun String.verifyChatStyling(player: Player): String {
+    return if (this.getTags().all { tag -> tag in chattyConfig.chat.allowedTags }) this
+    else {
+        player.sendFormattedMessage(chattyMessages.other.disallowedStyling)
+        miniMsg().toPlainText()
     }
-    return finalString
 }
 
 fun Component.serialize() = mm.serialize(this)
@@ -143,33 +142,26 @@ fun Component.toPlainText() = plainText.serialize(this)
 
 fun Component.stripTags() = mm.stripTags(this.serialize())
 
-fun String.getTags(): List<ChattyTags> {
-    val tags = mutableListOf<ChattyTags>()
-    if (" " in this) tags.add(ChattyTags.SPACES)
-    mm.deserializeToTree(this).toString().split("TagNode(", ") {")
-        .filter { "Node" !in it && it.isNotBlank() }.toList().forEach {
-            val tag = it.replace("'", "").replace(",", "")
-            when {
-                tag in ChatColor.values().toString().lowercase() -> tags.add(ChattyTags.TEXTCOLOR)
-                tag.startsWith("gradient") -> tags.add(ChattyTags.GRADIENT)
-                tag.startsWith("#") -> tags.add(ChattyTags.HEXCOLOR)
-                tag.startsWith("i") || tag.startsWith("italic") -> tags.add(ChattyTags.ITALIC)
-                tag.startsWith("b") || tag.startsWith("bold") -> tags.add(ChattyTags.BOLD)
-                tag.startsWith("u") || tag.startsWith("underline") -> tags.add(ChattyTags.UNDERLINE)
-                tag.startsWith("st") || tag.startsWith("strikethrough") -> tags.add(ChattyTags.STRIKETHROUGH)
-                tag.startsWith("obf") || tag.startsWith("obfuscated") -> tags.add(ChattyTags.OBFUSCATED)
-                tag.startsWith("click") -> tags.add(ChattyTags.CLICK)
-                tag.startsWith("hover") -> tags.add(ChattyTags.HOVER)
-                tag.startsWith("insert") -> tags.add(ChattyTags.INSERTION)
-                tag.startsWith("rainbow") -> tags.add(ChattyTags.RAINBOW)
-                tag.startsWith("transition") -> tags.add(ChattyTags.TRANSITION)
-                tag.startsWith("reset") -> tags.add(ChattyTags.RESET)
-                tag.startsWith("font") -> tags.add(ChattyTags.FONT)
-                tag.startsWith("key") -> tags.add(ChattyTags.KEYBIND)
-                tag.startsWith("lang") -> tags.add(ChattyTags.TRANSLATABLE)
-            }
+// Cache tagmap so as it is static
+private var cachedTags = mutableSetOf<String>()
+fun String.getTags(): Set<ChattyTags> {
+    val tags = mutableSetOf<ChattyTags>()
+    val allTags = cachedTags.takeIf { it.isNotEmpty() } ?: run {
+        cachedTags += ChattyTags.values().map { t -> "<${t.name.lowercase()}" }
+        cachedTags += ChatColor.values().map { c -> "<${c.name.lowercase()}" }
+        cachedTags
+    }
+
+    allTags.forEach {
+        val tag = it.replace("<", "")
+        if (tag.isNotBlank() && it in this) {
+            if (tag.uppercase() in ChattyTags.values().map { t -> t.name })
+                tags += ChattyTags.valueOf(tag.uppercase())
+            else if (tag.uppercase() in ChatColor.values().map { c -> c.name })
+                tags += ChattyTags.TEXTCOLOR
         }
-    return tags.toList()
+    }
+    return tags
 }
 
 fun List<String>.toSentence() = this.joinToString(" ")
