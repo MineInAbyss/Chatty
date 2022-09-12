@@ -16,7 +16,6 @@ import github.scarsz.discordsrv.dependencies.kyori.adventure.text.Component
 import github.scarsz.discordsrv.dependencies.kyori.adventure.text.TextReplacementConfig
 import github.scarsz.discordsrv.dependencies.kyori.adventure.text.minimessage.MiniMessage
 import github.scarsz.discordsrv.objects.MessageFormat
-import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer
 import org.bukkit.Bukkit
 
 
@@ -36,9 +35,8 @@ class DiscordListener {
         else if (!channel.discordsrv || (channel != lastUsedChannel && !lastUsedChannel.discordsrv))
             isCancelled = true
         else {
-            val plain = PlainTextComponentSerializer.builder().build()
-            val format = plain.serialize(translatePlaceholders(player, player.getChannelFromPlayer()?.format.toString()))
-            val msg = plain.serialize(messageComponent.serialize().miniMsg()).replace(format, "")
+            val format = plainText.serialize(translatePlaceholders(player, player.getChannelFromPlayer()?.format.toString()))
+            val msg = plainText.serialize(messageComponent.serialize().miniMsg()).replace(format, "")
             messageComponent = msg.miniMessage().translateEmoteIDsToComponent()
         }
     }
@@ -136,12 +134,11 @@ private fun Component.translateEmoteIDsToComponent(): Component {
     return translated.cleanUpHackyFix()
 }
 
+val mm = MiniMessage.builder().build()
 private fun Component.serialize(): String {
-    return MiniMessage.builder().build()
-        .serialize(this)
+    return mm.serialize(this)
 }
 
 private fun String.miniMessage(): Component {
-    return MiniMessage.builder().build()
-        .deserialize(this)
+    return mm.deserialize(this)
 }

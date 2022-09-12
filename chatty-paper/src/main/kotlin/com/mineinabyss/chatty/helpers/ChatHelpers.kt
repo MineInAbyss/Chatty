@@ -9,9 +9,7 @@ import net.kyori.adventure.key.Key
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.TextReplacementConfig
 import net.kyori.adventure.text.format.Style
-import net.kyori.adventure.text.minimessage.MiniMessage
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
-import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer
 import org.bukkit.Bukkit
 import org.bukkit.ChatColor
 import org.bukkit.Sound
@@ -116,7 +114,7 @@ fun Player.translatePlayerHeadComponent(): Component {
 }
 
 private fun convertToImageComponent(image: String, font: Key): Component {
-    return MiniMessage.builder().build().deserialize(image).style(Style.style().font(font).build())
+    return mm.deserialize(image).style(Style.style().font(font).build())
 }
 
 private fun convertURLToImageString(
@@ -139,25 +137,17 @@ fun String.verifyChatStyling(): String {
     return finalString
 }
 
-fun String.verifyBookStyling(): String {
-    val finalString = this
-    this.getTags().filter { tag -> tag !in chattyConfig.book.allowedTags }.forEach { tag ->
-        finalString.replace(tag.toString().lowercase(), "\\<${tag.toString().lowercase()}")
-    }
-    return finalString
-}
+fun Component.serialize() = mm.serialize(this)
 
-fun Component.serialize() = MiniMessage.builder().build().serialize(this)
+fun Component.toPlainText() = plainText.serialize(this)
 
-fun Component.toPlainText() = PlainTextComponentSerializer.builder().build().serialize(this)
-
-fun Component.stripTags() = MiniMessage.builder().build().stripTags(this.serialize())
+fun Component.stripTags() = mm.stripTags(this.serialize())
 
 fun String.getTags(): List<ChattyTags> {
     val tags = mutableListOf<ChattyTags>()
     if (" " in this) tags.add(ChattyTags.SPACES)
-    MiniMessage.builder().build().deserializeToTree(this).toString()
-        .split("TagNode(", ") {").filter { "Node" !in it && it.isNotBlank() }.toList().forEach {
+    mm.deserializeToTree(this).toString().split("TagNode(", ") {")
+        .filter { "Node" !in it && it.isNotBlank() }.toList().forEach {
             val tag = it.replace("'", "").replace(",", "")
             when {
                 tag in ChatColor.values().toString().lowercase() -> tags.add(ChattyTags.TEXTCOLOR)

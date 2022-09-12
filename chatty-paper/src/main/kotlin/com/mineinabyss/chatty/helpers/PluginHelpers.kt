@@ -2,12 +2,16 @@ package com.mineinabyss.chatty.helpers
 
 import com.mineinabyss.chatty.ChattyConfig
 import com.mineinabyss.chatty.ChattyMessages
+import net.kyori.adventure.text.minimessage.MiniMessage
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer
 import org.bukkit.entity.Player
 
 //val bondrewd = BondrewdLikesHisEmotes.getPlugin(BondrewdLikesHisEmotes::class.java)
 val chattyConfig = ChattyConfig.data
 val chattyMessages = ChattyMessages.data
 val emoteFixer = DiscordEmoteFixer.data
+val mm = MiniMessage.miniMessage()
+val plainText = PlainTextComponentSerializer.plainText()
 
 fun Player.checkPermission(perm: String): Boolean {
     return if (perm.isEmpty()) true
