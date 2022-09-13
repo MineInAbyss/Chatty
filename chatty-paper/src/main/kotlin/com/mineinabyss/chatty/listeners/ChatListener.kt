@@ -78,6 +78,14 @@ class ChatListener : Listener {
         }
     }
 
+    private fun String.verifyChatStyling(player: Player): String {
+        return if (this.getTags().all { tag -> tag in chattyConfig.chat.allowedTags }) this
+        else {
+            player.sendFormattedMessage(chattyMessages.other.disallowedStyling)
+            mm.stripTags(miniMsg().toPlainText())
+        }
+    }
+
     private fun setAudienceForChannelType(player: Player): Set<Audience> {
         val onlinePlayers = Bukkit.getOnlinePlayers()
         val channel = getChannelFromId(player.chattyData.channelId) ?: return emptySet()

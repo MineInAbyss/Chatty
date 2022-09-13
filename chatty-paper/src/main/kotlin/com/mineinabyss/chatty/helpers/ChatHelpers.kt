@@ -127,14 +127,6 @@ private fun convertURLToImageString(
 fun Component.fixLegacy(): Component =
     this.serialize().replace("\\<", "<").replace("\\>", ">").miniMsg()
 
-fun String.verifyChatStyling(player: Player): String {
-    return if (this.getTags().all { tag -> tag in chattyConfig.chat.allowedTags }) this
-    else {
-        player.sendFormattedMessage(chattyMessages.other.disallowedStyling)
-        miniMsg().toPlainText()
-    }
-}
-
 fun Component.serialize() = mm.serialize(this)
 
 fun Component.toPlainText() = plainText.serialize(this)
