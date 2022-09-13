@@ -45,7 +45,7 @@ object ChattyMessages : IdofrontConfig<ChattyMessages.Messages>(chatty, Messages
         val otherEmpty: String = "<yellow>Removed nickname for %player_name%!",
         val invalidPlayer: String = "<red>That player doesn't exist!",
         val consoleNicknameSelf: String = "<red>Sadly console cannot have cool nickname :(",
-        val disallowedStyling: String = "<red>This nickname contains formatting that are not allowed!",
+        val disallowedStyling: String = "<red>This nickname formatting you cannot use!",
         val tooLong: String = "<red>The nickname was too long!",
     )
 
@@ -82,6 +82,7 @@ object ChattyMessages : IdofrontConfig<ChattyMessages.Messages>(chatty, Messages
 
     @Serializable
     data class Other(
+        val disallowedStyling: String = "<red>Your message contains formatting you cannot use!",
         val configReloaded: String = "<green>Chatty config reloaded.",
         val messagesReloaded: String = "<green>Chatty messages reloaded.",
         val nickNameChanged: String = "<green>Nickname set to <white><i>&%chatty_player_displayname%.",

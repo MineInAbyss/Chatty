@@ -4,17 +4,16 @@ import com.combimagnetron.imageloader.Image
 import com.mineinabyss.chatty.components.ChannelType
 import com.mineinabyss.chatty.components.chattyData
 import com.mineinabyss.idofront.messaging.miniMsg
+import com.mineinabyss.idofront.messaging.serialize
 import me.clip.placeholderapi.PlaceholderAPI
 import net.kyori.adventure.key.Key
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.TextReplacementConfig
 import net.kyori.adventure.text.format.Style
-import net.kyori.adventure.text.minimessage.MiniMessage
-import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
-import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer
 import org.bukkit.Bukkit
 import org.bukkit.ChatColor
 import org.bukkit.Sound
+import org.bukkit.SoundCategory
 import org.bukkit.entity.Player
 
 const val ZERO_WIDTH = "\u200B"
@@ -41,24 +40,24 @@ fun Component.handlePlayerPings(player: Player, pingedPlayer: Player) {
     val pingSound = pingedPlayer.chattyData.pingSound ?: ping.defaultPingSound
     val clickToReply =
         if (ping.clickToReply) "<insert:@${
-            player.displayName().stripTags()
+            player.displayName().toPlainText()
         } ><hover:show_text:'<red>Shift + Click to mention!'>"
         else ""
     val pingMessage = this.replaceText(
         TextReplacementConfig.builder()
-            .match(ping.pingPrefix + player.chattyData.displayName)
-            .replacement((ping.pingReceiveFormat + clickToReply + ping.pingPrefix + player.chattyData.displayName).miniMsg())
+            .match(ping.pingPrefix + pingedPlayer.chattyData.displayName)
+            .replacement((ping.pingReceiveFormat + clickToReply + ping.pingPrefix + pingedPlayer.chattyData.displayName).miniMsg())
             .build()
     )
 
     if (!pingedPlayer.chattyData.disablePingSound)
-        pingedPlayer.playSound(pingedPlayer.location, pingSound, ping.pingVolume, ping.pingPitch)
+        pingedPlayer.playSound(pingedPlayer.location, pingSound, SoundCategory.VOICE, ping.pingVolume, ping.pingPitch)
     pingedPlayer.sendMessage(pingMessage)
 
     val pingerMessage = this.replaceText(
         TextReplacementConfig.builder()
-            .match(ping.pingPrefix + player.chattyData.displayName)
-            .replacement((ping.pingSendFormat + clickToReply + ping.pingPrefix + player.chattyData.displayName).miniMsg())
+            .match(ping.pingPrefix + pingedPlayer.chattyData.displayName)
+            .replacement((ping.pingSendFormat + ping.pingPrefix + pingedPlayer.chattyData.displayName).miniMsg())
             .build()
     )
     player.sendMessage(pingerMessage)
@@ -100,8 +99,8 @@ fun translatePlaceholders(player: Player, message: String): Component {
         TextReplacementConfig.builder()
             .match("%chatty_playerhead%")
             .replacement(player.translatePlayerHeadComponent()).build()
-    )
-    return PlaceholderAPI.setPlaceholders(player, msg.serialize()).deSerializeLegacy()
+    ).serialize()
+    return PlaceholderAPI.setPlaceholders(player, msg).miniMsg().fixLegacy()
 }
 
 val playerHeadMapCache = mutableMapOf<Player, Component>()
@@ -116,7 +115,7 @@ fun Player.translatePlayerHeadComponent(): Component {
 }
 
 private fun convertToImageComponent(image: String, font: Key): Component {
-    return MiniMessage.builder().build().deserialize(image).style(Style.style().font(font).build())
+    return mm.deserialize(image).style(Style.style().font(font).build())
 }
 
 private fun convertURLToImageString(
@@ -125,61 +124,33 @@ private fun convertURLToImageString(
     return Image.builder().image(url).colorType(colorType).ascent(ascent).build().generate()
 }
 
-fun String.deSerializeLegacy() = LegacyComponentSerializer.legacy('§').deserialize(this).fixLegacy()
-
 fun Component.fixLegacy(): Component =
     this.serialize().replace("\\<", "<").replace("\\>", ">").miniMsg()
 
-// Splits <color> and <gradient:...> tags and checks if they're allowed
-fun String.verifyChatStyling(): String {
-    val finalString = this
-    this.getTags().filter { tag -> tag !in chattyConfig.chat.allowedTags }.forEach { tag ->
-        finalString.replace(tag.toString().lowercase(), "\\<${tag.toString().lowercase()}")
+fun Component.serialize() = mm.serialize(this)
+
+fun Component.toPlainText() = plainText.serialize(this)
+
+// Cache tagmap so as it is static
+private var cachedTags = mutableSetOf<String>()
+fun String.getTags(): Set<ChattyTags> {
+    val tags = mutableSetOf<ChattyTags>()
+    val allTags = cachedTags.takeIf { it.isNotEmpty() } ?: run {
+        cachedTags += ChattyTags.values().map { t -> "<${t.name.lowercase()}" }
+        cachedTags += ChatColor.values().map { c -> "<${c.name.lowercase()}" }
+        cachedTags
     }
-    return finalString
-}
 
-fun String.verifyBookStyling(): String {
-    val finalString = this
-    this.getTags().filter { tag -> tag !in chattyConfig.book.allowedTags }.forEach { tag ->
-        finalString.replace(tag.toString().lowercase(), "\\<${tag.toString().lowercase()}")
-    }
-    return finalString
-}
-
-fun Component.serialize() = MiniMessage.builder().build().serialize(this)
-
-fun Component.toPlainText() = PlainTextComponentSerializer.builder().build().serialize(this)
-
-fun Component.stripTags() = MiniMessage.builder().build().stripTags(this.serialize())
-
-fun String.getTags(): List<ChattyTags> {
-    val tags = mutableListOf<ChattyTags>()
-    if (" " in this) tags.add(ChattyTags.SPACES)
-    MiniMessage.builder().build().deserializeToTree(this).toString()
-        .split("TagNode(", ") {").filter { "Node" !in it && it.isNotBlank() }.toList().forEach {
-            val tag = it.replace("'", "").replace(",", "")
-            when {
-                tag in ChatColor.values().toString().lowercase() -> tags.add(ChattyTags.TEXTCOLOR)
-                tag.startsWith("gradient") -> tags.add(ChattyTags.GRADIENT)
-                tag.startsWith("#") -> tags.add(ChattyTags.HEXCOLOR)
-                tag.startsWith("i") || tag.startsWith("italic") -> tags.add(ChattyTags.ITALIC)
-                tag.startsWith("b") || tag.startsWith("bold") -> tags.add(ChattyTags.BOLD)
-                tag.startsWith("u") || tag.startsWith("underline") -> tags.add(ChattyTags.UNDERLINE)
-                tag.startsWith("st") || tag.startsWith("strikethrough") -> tags.add(ChattyTags.STRIKETHROUGH)
-                tag.startsWith("obf") || tag.startsWith("obfuscated") -> tags.add(ChattyTags.OBFUSCATED)
-                tag.startsWith("click") -> tags.add(ChattyTags.CLICK)
-                tag.startsWith("hover") -> tags.add(ChattyTags.HOVER)
-                tag.startsWith("insert") -> tags.add(ChattyTags.INSERTION)
-                tag.startsWith("rainbow") -> tags.add(ChattyTags.RAINBOW)
-                tag.startsWith("transition") -> tags.add(ChattyTags.TRANSITION)
-                tag.startsWith("reset") -> tags.add(ChattyTags.RESET)
-                tag.startsWith("font") -> tags.add(ChattyTags.FONT)
-                tag.startsWith("key") -> tags.add(ChattyTags.KEYBIND)
-                tag.startsWith("lang") -> tags.add(ChattyTags.TRANSLATABLE)
-            }
+    allTags.forEach {
+        val tag = it.replace("<", "")
+        if (tag.isNotBlank() && it in this) {
+            if (tag.uppercase() in ChattyTags.values().map { t -> t.name })
+                tags += ChattyTags.valueOf(tag.uppercase())
+            else if (tag.uppercase() in ChatColor.values().map { c -> c.name })
+                tags += ChattyTags.TEXTCOLOR
         }
-    return tags.toList()
+    }
+    return tags
 }
 
 fun List<String>.toSentence() = this.joinToString(" ")

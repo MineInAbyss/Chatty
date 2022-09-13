@@ -41,10 +41,9 @@ class ChatListener : Listener {
         val channelId = player.chattyData.channelId
         val channel = getChannelFromId(channelId) ?: return
         val formatted =
-            if (player.checkPermission(chattyConfig.chat.bypassFormatPermission)) originalMessage().fixLegacy()
-            else originalMessage().serialize().verifyChatStyling().miniMsg()
-
-        result("<reset>".miniMsg().append(translatePlaceholders(player, channel.format + formatted.serialize())))
+            if (player.checkPermission(chattyConfig.chat.bypassFormatPermission)) originalMessage().fixLegacy().serialize()
+            else originalMessage().serialize().verifyChatStyling(player)
+        result("<reset>".miniMsg().append(translatePlaceholders(player, channel.format + formatted)))
     }
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
@@ -54,13 +53,12 @@ class ChatListener : Listener {
         val channel = getChannelFromId(channelId) ?: return
 
         if (viewers().isNotEmpty()) viewers().clear()
-        viewers().addAll(setAudienceForChannelType(player))
+        viewers() += setAudienceForChannelType(player)
 
         val pingedPlayer = originalMessage().serialize().checkForPlayerPings(channelId)
         if (pingedPlayer != null && pingedPlayer != player && pingedPlayer in viewers()) {
             message().handlePlayerPings(player, pingedPlayer)
-            viewers().remove(pingedPlayer)
-            viewers().remove(player)
+            viewers() -= setOf(pingedPlayer, player)
         }
 
         if (channel.proxy) {
@@ -77,6 +75,14 @@ class ChatListener : Listener {
         } else if (!chattyConfig.chat.enableChatSigning) {
             viewers().forEach { a -> RendererExtension().render(player, player.displayName(), message(), a) }
             viewers().clear()
+        }
+    }
+
+    private fun String.verifyChatStyling(player: Player): String {
+        return if (this.getTags().all { tag -> tag in chattyConfig.chat.allowedTags }) this
+        else {
+            player.sendFormattedMessage(chattyMessages.other.disallowedStyling)
+            mm.stripTags(miniMsg().toPlainText())
         }
     }
 
