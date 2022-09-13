@@ -19,7 +19,6 @@ import github.scarsz.discordsrv.dependencies.jda.api.entities.MessageEmbed.Field
 import github.scarsz.discordsrv.dependencies.kyori.adventure.text.Component
 import github.scarsz.discordsrv.dependencies.kyori.adventure.text.TextReplacementConfig
 import github.scarsz.discordsrv.dependencies.kyori.adventure.text.minimessage.MiniMessage
-import github.scarsz.discordsrv.dependencies.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
 import github.scarsz.discordsrv.dependencies.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer
 import github.scarsz.discordsrv.objects.MessageFormat
 import me.clip.placeholderapi.PlaceholderAPI
@@ -31,7 +30,6 @@ class DiscordListener {
 
     private val mm = MiniMessage.builder().build()
     private val plainText = PlainTextComponentSerializer.plainText()
-    private val legacy = LegacyComponentSerializer.builder().useUnusualXRepeatedCharacterHexFormat().build()
 
     @Subscribe(priority = ListenerPriority.HIGHEST)
     fun DiscordGuildMessagePostProcessEvent.sendDiscordToProxy() {
@@ -79,10 +77,8 @@ class DiscordListener {
                 .match("%chatty_playerhead%")
                 .replacement(player.translatePlayerHeadComponent()).build()
         ).serialize()
-        return PlaceholderAPI.setPlaceholders(player, msg).deSerializeLegacy()
+        return PlaceholderAPI.setPlaceholders(player, msg).miniMessage().fixLegacy()
     }
-
-    private fun String.deSerializeLegacy() = legacy.deserialize(this).fixLegacy()
 
     private fun Component.fixLegacy(): Component =
         mm.deserialize(this.serialize().replace("\\<", "<").replace("\\>", ">"))
@@ -132,7 +128,7 @@ class DiscordListener {
 
 
     private fun String.cleanUpHackyFix() =
-        plainText.serialize(this.deSerializeLegacy()).replace("\\<", "<").replace("<<", "<")
+        plainText.serialize(this.miniMessage()).replace("\\<", "<").replace("<<", "<")
 
     private fun String.translateEmoteIDs(): String {
         var translated = this

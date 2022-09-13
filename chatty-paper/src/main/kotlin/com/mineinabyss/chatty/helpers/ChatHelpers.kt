@@ -10,7 +10,6 @@ import net.kyori.adventure.key.Key
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.TextReplacementConfig
 import net.kyori.adventure.text.format.Style
-import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
 import org.bukkit.Bukkit
 import org.bukkit.ChatColor
 import org.bukkit.Sound
@@ -101,7 +100,7 @@ fun translatePlaceholders(player: Player, message: String): Component {
             .match("%chatty_playerhead%")
             .replacement(player.translatePlayerHeadComponent()).build()
     ).serialize()
-    return PlaceholderAPI.setPlaceholders(player, msg).deSerializeLegacy()
+    return PlaceholderAPI.setPlaceholders(player, msg).miniMsg().fixLegacy()
 }
 
 val playerHeadMapCache = mutableMapOf<Player, Component>()
@@ -125,8 +124,6 @@ private fun convertURLToImageString(
     return Image.builder().image(url).colorType(colorType).ascent(ascent).build().generate()
 }
 
-fun String.deSerializeLegacy() = LegacyComponentSerializer.legacy('&').deserialize(this).fixLegacy()
-
 fun Component.fixLegacy(): Component =
     this.serialize().replace("\\<", "<").replace("\\>", ">").miniMsg()
 
@@ -141,8 +138,6 @@ fun String.verifyChatStyling(player: Player): String {
 fun Component.serialize() = mm.serialize(this)
 
 fun Component.toPlainText() = plainText.serialize(this)
-
-fun Component.stripTags() = mm.stripTags(this.serialize())
 
 // Cache tagmap so as it is static
 private var cachedTags = mutableSetOf<String>()
