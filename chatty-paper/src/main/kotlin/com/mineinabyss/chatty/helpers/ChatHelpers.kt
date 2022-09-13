@@ -1,6 +1,8 @@
 package com.mineinabyss.chatty.helpers
 
-import com.combimagnetron.imageloader.Image
+import com.combimagnetron.imageloader.Avatar
+import com.combimagnetron.imageloader.Image.ColorType
+import com.combimagnetron.imageloader.ImageUtils
 import com.mineinabyss.chatty.components.ChannelType
 import com.mineinabyss.chatty.components.chattyData
 import com.mineinabyss.idofront.messaging.miniMsg
@@ -9,12 +11,12 @@ import me.clip.placeholderapi.PlaceholderAPI
 import net.kyori.adventure.key.Key
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.TextReplacementConfig
-import net.kyori.adventure.text.format.Style
 import org.bukkit.Bukkit
 import org.bukkit.ChatColor
 import org.bukkit.Sound
 import org.bukkit.SoundCategory
 import org.bukkit.entity.Player
+import org.bukkit.profile.PlayerTextures.SkinModel
 
 const val ZERO_WIDTH = "\u200B"
 val ping = chattyConfig.ping
@@ -105,23 +107,23 @@ fun translatePlaceholders(player: Player, message: String): Component {
 
 val playerHeadMapCache = mutableMapOf<Player, Component>()
 fun Player.translatePlayerHeadComponent(): Component {
-    if (this !in playerHeadMapCache) {
-        val image = convertURLToImageString("https://api.mineatar.io/face/$name?scale=1")
-        playerHeadMapCache[this] =
-            convertToImageComponent(image, Key.key(chattyConfig.playerHeadFont))
-                .append(Component.text("").font(Key.key("minecraft:default")))
-    }
+    if (this !in playerHeadMapCache)
+        playerHeadMapCache[this] = getPlayerHeadTexture(ascent = -5).append("".miniMsg().font(Key.key("minecraft:default")))
     return playerHeadMapCache[this]!!
 }
 
-private fun convertToImageComponent(image: String, font: Key): Component {
-    return mm.deserialize(image).style(Style.style().font(font).build())
+fun Player.getPlayerHeadTexture(scale: Int = 1, ascent: Int = 0, colorType: ColorType = ColorType.MINIMESSAGE, font: Key = Key.key(chattyConfig.playerHeadFont)) : Component {
+    val image = avatarBuilder(this, scale, ascent, colorType).getBodyBufferedImage(scale).getSubimage(4,0,8,8)
+    return ImageUtils.generateStringFromImage(image, colorType, ascent).miniMsg().font(font)
 }
 
-private fun convertURLToImageString(
-    url: String, ascent: Int = 4, colorType: Image.ColorType = Image.ColorType.MINIMESSAGE
-): String {
-    return Image.builder().image(url).colorType(colorType).ascent(ascent).build().generate()
+fun Player.getFullPlayerBodyTexture(scale: Int = 1, ascent: Int = 0, colorType: ColorType = ColorType.MINIMESSAGE, font: Key = Key.key(chattyConfig.playerHeadFont)) : Component {
+    val image = avatarBuilder(this, scale, ascent, colorType).getBodyBufferedImage(scale)
+    return ImageUtils.generateStringFromImage(image, colorType, ascent).miniMsg().font(font)
+}
+
+private fun avatarBuilder(player: Player, scale: Int = 1, ascent: Int = 0, colorType: ColorType = ColorType.MINIMESSAGE) : Avatar {
+    return Avatar.builder().isSlim(player.playerProfile.textures.skinModel == SkinModel.SLIM).playerName(player.name).ascent(ascent).colorType(colorType).scale(scale).build()
 }
 
 fun Component.fixLegacy(): Component =

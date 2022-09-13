@@ -12,4 +12,4 @@ bondrewdlikeshisemotes = { module = "io.github.bananapuncher714:bondrewdlikeshis
 velocity = { module = "com.velocitypowered:velocity-api", version.ref = "velocity" }
 discordsrv = { module = "com.discordsrv:discordsrv", version.ref = "discordsrv" }
 placeholderapi = "me.clip:placeholderapi:2.11.1"
-imageloader = "com.combimagnetron:imageloader:1.0-SNAPSHOT"
+imageloader = "com.combimagnetron:imageloader:1.1-SNAPSHOT"
