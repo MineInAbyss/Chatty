@@ -4,6 +4,7 @@ import com.combimagnetron.imageloader.Image
 import com.mineinabyss.chatty.components.ChannelType
 import com.mineinabyss.chatty.components.chattyData
 import com.mineinabyss.idofront.messaging.miniMsg
+import com.mineinabyss.idofront.messaging.serialize
 import me.clip.placeholderapi.PlaceholderAPI
 import net.kyori.adventure.key.Key
 import net.kyori.adventure.text.Component
@@ -13,6 +14,7 @@ import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
 import org.bukkit.Bukkit
 import org.bukkit.ChatColor
 import org.bukkit.Sound
+import org.bukkit.SoundCategory
 import org.bukkit.entity.Player
 
 const val ZERO_WIDTH = "\u200B"
@@ -39,24 +41,24 @@ fun Component.handlePlayerPings(player: Player, pingedPlayer: Player) {
     val pingSound = pingedPlayer.chattyData.pingSound ?: ping.defaultPingSound
     val clickToReply =
         if (ping.clickToReply) "<insert:@${
-            player.displayName().stripTags()
+            player.displayName().toPlainText()
         } ><hover:show_text:'<red>Shift + Click to mention!'>"
         else ""
     val pingMessage = this.replaceText(
         TextReplacementConfig.builder()
-            .match(ping.pingPrefix + player.chattyData.displayName)
-            .replacement((ping.pingReceiveFormat + clickToReply + ping.pingPrefix + player.chattyData.displayName).miniMsg())
+            .match(ping.pingPrefix + pingedPlayer.chattyData.displayName)
+            .replacement((ping.pingReceiveFormat + clickToReply + ping.pingPrefix + pingedPlayer.chattyData.displayName).miniMsg())
             .build()
     )
 
     if (!pingedPlayer.chattyData.disablePingSound)
-        pingedPlayer.playSound(pingedPlayer.location, pingSound, ping.pingVolume, ping.pingPitch)
+        pingedPlayer.playSound(pingedPlayer.location, pingSound, SoundCategory.VOICE, ping.pingVolume, ping.pingPitch)
     pingedPlayer.sendMessage(pingMessage)
 
     val pingerMessage = this.replaceText(
         TextReplacementConfig.builder()
-            .match(ping.pingPrefix + player.chattyData.displayName)
-            .replacement((ping.pingSendFormat + clickToReply + ping.pingPrefix + player.chattyData.displayName).miniMsg())
+            .match(ping.pingPrefix + pingedPlayer.chattyData.displayName)
+            .replacement((ping.pingSendFormat + ping.pingPrefix + pingedPlayer.chattyData.displayName).miniMsg())
             .build()
     )
     player.sendMessage(pingerMessage)

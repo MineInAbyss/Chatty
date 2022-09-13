@@ -7,7 +7,7 @@ import org.bukkit.entity.Player
 fun String.verifyNickLength(): Boolean {
     return when (chattyConfig.nicknames.countColorsInLength) {
         true -> this.length <= chattyConfig.nicknames.maxLength
-        false -> this.miniMsg().stripTags().length <= chattyConfig.nicknames.maxLength
+        false -> this.miniMsg().toPlainText().length <= chattyConfig.nicknames.maxLength
     }
 }
 
