@@ -4,12 +4,6 @@
 # Please note: This is not the most performance friendly feature so use the placeholder sparingly.
 playerHeadFont: "minecraft:chatty_heads"
 
-# Keep in mind this needs to also be enabled in your [server.properties] file
-# It will warn all your players when they first join
-# that the server can read all their messages before they are sent.
-# Chatty does not do anything with it outside the [ChatPreview.kt] file.
-enableChatPreviews: true
-
 privateMessages:
   enabled: true
   proxy: true                       # Not currently supported
@@ -19,27 +13,37 @@ privateMessages:
   messageSendSound: ""              # Empty for no sound
   messageReceiveSound: ""           # Empty for no sound
 
+# [enableChatSigning]: Sends messages with valid signatures to support 1.19.1+ chat reporting. Disabling this will disable reporting
+# [allowedTags]: # Available formats are:
+# [TEXTCOLOR, HEXCOLOR, GRADIENT, RAINBOW, UNDERLINE, STRIKETHROUGH, BOLD, ITALIC, OBFUSCATED]
+# [HOVER, CLICK, FONT, SPACES, INSERTION, RESET, TRANSITION, KEYBIND, TRANSLATABLE]
+# https://docs.adventure.kyori.net/minimessage/format.html
 chat:
-  enableChatSigning: true           # Enable chat signing and reporting
+  enableChatSigning: true
   bypassFormatPermission: "chatty.chat.bypassformat"
   commandSpyFormat: "<gold>%chatty_player_displayname%</gold><yellow>: "
-  allowedTags: # Available formats are:
-    - BOLD                    # [TEXTCOLOR, HEXCOLOR, GRADIENT, RAINBOW, UNDERLINE, STRIKETHROUGH, BOLD, ITALIC, OBFUSCATED]
-    - STRIKETHROUGH           # [HOVER, CLICK, FONT, SPACES, INSERTION, RESET, TRANSITION, KEYBIND, TRANSLATABLE]
-    - UNDERLINE               # https://docs.adventure.kyori.net/minimessage/format.html
+  allowedTags:
+    - BOLD
+    - STRIKETHROUGH
+    - UNDERLINE
     - ITALIC
     - TEXTCOLOR
     - HEXCOLOR
     - RAINBOW
     - GRADIENT
 
+# [useDisplayNameforAuthor]: Whether books should be signed using displayname or username of a player
+# [allowedTags]: # Available formats are:
+#   [TEXTCOLOR, HEXCOLOR, GRADIENT, RAINBOW, UNDERLINE, STRIKETHROUGH, BOLD, ITALIC, OBFUSCATED]
+#   [HOVER, CLICK, FONT, SPACES, INSERTION, RESET, TRANSITION, KEYBIND, TRANSLATABLE]
+#   https://docs.adventure.kyori.net/minimessage/format.html
 book:
   useDisplayNameForAuthor: false
   bypassFormatPermission: "chatty.chat.bypassformat"
-  allowedTags: # Available formats are:
-    - BOLD                    # [TEXTCOLOR, HEXCOLOR, GRADIENT, RAINBOW, UNDERLINE, STRIKETHROUGH, BOLD, ITALIC, OBFUSCATED]
-    - STRIKETHROUGH           # [HOVER, CLICK, FONT, SPACES, INSERTION, RESET, TRANSITION, KEYBIND, TRANSLATABLE]
-    - UNDERLINE               # https://docs.adventure.kyori.net/minimessage/format.html
+  allowedTags:
+    - BOLD
+    - STRIKETHROUGH
+    - UNDERLINE
     - ITALIC
     - OBFUSCATED
     - TEXTCOLOR
@@ -47,12 +51,16 @@ book:
     - RAINBOW
     - GRADIENT
 
+# [allowedTags]: # Available formats are:
+#   [TEXTCOLOR, HEXCOLOR, GRADIENT, RAINBOW, UNDERLINE, STRIKETHROUGH, BOLD, ITALIC, OBFUSCATED]
+#   [HOVER, CLICK, FONT, SPACES, INSERTION, RESET, TRANSITION, KEYBIND, TRANSLATABLE]
+#   https://docs.adventure.kyori.net/minimessage/format.html
 sign:
   bypassFormatPermission: "chatty.chat.bypassformat"
-  allowedTags: # Available formats are:
-    - BOLD                    # [TEXTCOLOR, HEXCOLOR, GRADIENT, RAINBOW, UNDERLINE, STRIKETHROUGH, BOLD, ITALIC, OBFUSCATED]
-    - STRIKETHROUGH           # [HOVER, CLICK, FONT, SPACES, INSERTION, RESET, TRANSITION, KEYBIND, TRANSLATABLE]
-    - UNDERLINE               # https://docs.adventure.kyori.net/minimessage/format.html
+  allowedTags:
+    - BOLD
+    - STRIKETHROUGH
+    - UNDERLINE
     - ITALIC
     - OBFUSCATED
     - TEXTCOLOR
@@ -60,13 +68,16 @@ sign:
     - RAINBOW
     - GRADIENT
 
+# [maxLength]: The max length a nickname can be, with or without tags, depending on [countTagsInLength]
+# [countTagsInLength]: If true, tags will be taken into account in [maxLength].
+# [nickNameOtherPrefix]: Prefix to specify you want to nickname another player: [/chatty nickname @player nickname]
 nicknames:
   permission: "chatty.nickname"
   nickOtherPermission: "chatty.nickname.other"
   bypassFormatPermission: "chatty.nickname.bypassformat" #Permission to bypass all format checks
   maxLength: 32
-  countTagsInLength: false    # Should [maxLength] take tags into account?
-  nickNameOtherPrefix: '@'    # Prefix to specify you wanna nickname another player: [/chatty nickname @player nickname]
+  countTagsInLength: false
+  nickNameOtherPrefix: '@'
   allowedTags:                # Available formats are:
     - BOLD                    # [TEXTCOLOR, HEXCOLOR, GRADIENT, RAINBOW, UNDERLINE, STRIKETHROUGH, BOLD, ITALIC, OBFUSCATED]
     - STRIKETHROUGH           # [HOVER, CLICK, FONT, SPACES, INSERTION, RESET, TRANSITION, KEYBIND, TRANSLATABLE]
@@ -86,29 +97,46 @@ join:
 leave:
   enabled: false
 
+# [enableProxySwitchMessages]: If true, will send a message to all servers when a player switched servers
+# [discordSrvChannelID]: The channel ID to send the message to as set in DiscordSRV's config.yml
+# [sendProxyMessagesToDiscord]: Enable if you have DiscordSRV on 1 server, Disable if you have it on more than 1 server.
 proxy:
   enableProxySwitchMessages: false
   discordSrvChannelID: "Global"
+  sendProxyMessagesToDiscord: false
 
+# [enabledChannels]: List of all channelIds to enable pings for ("all" or "*" for all channels)
+# [clickToReply]: Whether shift+clicking a ping should reply for a player
+# [pingReceiveFormat]: Default format the ping-message is marked with for pinged
+# [pingSendFormat]: Default format the ping-message is marked with for sender
+# [defaultPingSound]: The default ping sound to play for a player when they are pinged
+# [alternativePingSounds]: List of sounds a player can choose between for their pings ("all" for all sounds in minecarft)
 ping:
-  enabledChannels:          # channelIds to enable pings for
-    - "all"              # "all" or "*" for all channels
+  enabledChannels:
+    - "all"
   pingVolume: 1.0
   pingPitch: 1.0
   pingPrefix: '@'
   clickToReply: true
-  pingReceiveFormat: "<gold><b>"  # Default format the ping-message is marked with for pinged
-  pingSendFormat: "<i>"     # Default format the ping-message is marked with for sender
+  pingReceiveFormat: "<gold><b>"
+  pingSendFormat: "<i>"
   defaultPingSound: "block.amethyst_block.place"
-  alternativePingSounds:    # "all" to let people choose any sound
+  alternativePingSounds:
     - "all"
 
-
+# [channelType]: The type this channel is, GLOBAL, LOCAL, PRIVATE (Currently does nothing), PERMISSION
+# [isDefaultChannel]: Specify if this is the channel players should be put in by default
+# [proxy]: Specify if messages sent in this channel should be sent across a proxy network (BungeeCord / Velocity)
+# [logToConsole]: Specify if messages in this channel should be sent to the console
+# [discordsrv]: Specify if messages sent in this channel should also be sent to Discord via DiscordSRV
+# [format]: The format to use for this channel, this is what is added before the message itself
+# [channelAliases]: List of aliases for this channel, these can be used to switch to this channel
 channels:
   global:
-    channelType: GLOBAL       # GLOBAL, LOCAL, PRIVATE (Currently does nothing), PERMISSION
+    channelType: GLOBAL
     isDefaultChannel: true
     proxy: true
+    logToConsole: true
     discordsrv: true
     format: ":survival: %luckperms_prefix% %chatty_player_displayname%: "
     channelAliases:
@@ -119,6 +147,7 @@ channels:
     permission: "chatty.channel.playerhead"
     isDefaultChannel: false
     proxy: true
+    logToConsole: true
     discordsrv: true
     format: "%chatty_player_head% %luckperms_prefix %chatty_player_displayname%: "
     channelAliases:
@@ -128,6 +157,7 @@ channels:
     channelType: RADIUS
     isDefaultChannel: false
     discordsrv: false
+    logToConsole: true
     format: ":survival:%chatty_shift_-4%%chatty_shift_-4%:local: <yellow>%chatty_player_displayname%:<yellow> "
     channelRadius: 500
     channelAliases:
@@ -141,6 +171,7 @@ channels:
     isStaffChannel: true
     discordsrv: false
     proxy: true
+    logToConsole: false
     format: ":survival:%chatty_shift_-4%%chatty_shift_-4%:admin:%chatty_player_displayname%:<red> "
     channelAliases:
       - "a"

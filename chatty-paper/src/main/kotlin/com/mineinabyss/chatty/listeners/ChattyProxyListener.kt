@@ -37,20 +37,26 @@ class ChattyProxyListener : PluginMessageListener {
         }
 
         // If the channel is not found, it is discord
-        //TODO Find out why this gets triggered repeatedly and therefore message is sent a lot of times
-        // Seems to tie into how many players are on other servers under proxy?
         if (channel == null) {
             onlinePlayers.forEach {
                 //it.sendMessage(decoded.miniMsg())
             }
-        } else when (channel.channelType) {
-            ChannelType.GLOBAL -> onlinePlayers
-            ChannelType.RADIUS -> canSpy
-            ChannelType.PERMISSION -> onlinePlayers.filter { it.hasPermission(channel.permission) || it in canSpy }
-            ChannelType.PRIVATE -> onlinePlayers.filter { it.getChannelFromPlayer() == channel || it in canSpy }
-        }.forEach { it.sendMessage(proxyMessage.miniMsg()) }
+        }
+        else {
+            if (channel.logToConsole)
+                Bukkit.getConsoleSender().sendMessage(proxyMessage.miniMsg())
 
-        if (!ChattyContext.isDiscordSRVLoaded || channel?.discordsrv != true) return
+            when (channel.channelType) {
+                ChannelType.GLOBAL -> onlinePlayers
+                ChannelType.RADIUS -> canSpy
+                ChannelType.PERMISSION -> onlinePlayers.filter { it.hasPermission(channel.permission) || it in canSpy }
+                ChannelType.PRIVATE -> onlinePlayers.filter { it.getChannelFromPlayer() == channel || it in canSpy }
+            }.forEach { it.sendMessage(proxyMessage.miniMsg()) }
+        }
+
+
+        if (!chattyConfig.proxy.sendProxyMessagesToDiscord ||
+            channel?.discordsrv != true || !ChattyContext.isDiscordSRVLoaded) return
 
         val dsrv = DiscordSRV.getPlugin()
         var discordMessage = proxyMessage.replaceFirst(channelFormat, "")
@@ -86,18 +92,18 @@ class ChattyProxyListener : PluginMessageListener {
             )
         }
     }
-}
 
-private val translateMentions = DiscordSRV.config().getBoolean("DiscordChatChannelTranslateMentions")
-private fun String.translateEmoteIDsToComponent(): String {
-    var translated = this
-    emoteFixer.emotes.entries.forEach { (emoteId, replacement) ->
-        val id = ":$emoteId:"
-        if (id in translated)
-            translated = translated.replace(id, "<$replacement")
+    private val translateMentions = DiscordSRV.config().getBoolean("DiscordChatChannelTranslateMentions")
+    private fun String.translateEmoteIDsToComponent(): String {
+        var translated = this
+        emoteFixer.emotes.entries.forEach { (emoteId, replacement) ->
+            val id = ":$emoteId:"
+            if (id in translated)
+                translated = translated.replace(id, "<$replacement")
+        }
+        return translated.cleanUpHackyFix()
     }
-    return translated.cleanUpHackyFix()
-}
 
-private fun String.cleanUpHackyFix() =
-    this.replace("<<", "<")
+    private fun String.cleanUpHackyFix() =
+        this.replace("<<", "<")
+}

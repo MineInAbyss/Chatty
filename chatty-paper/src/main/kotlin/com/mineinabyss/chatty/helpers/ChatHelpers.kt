@@ -126,8 +126,12 @@ private fun avatarBuilder(player: Player, scale: Int = 1, ascent: Int = 0, color
     return Avatar.builder().isSlim(player.playerProfile.textures.skinModel == SkinModel.SLIM).playerName(player.name).ascent(ascent).colorType(colorType).scale(scale).build()
 }
 
-fun Component.fixLegacy(): Component =
-    this.serialize().replace("\\<", "<").replace("\\>", ">").miniMsg()
+fun Component.fixLegacy(): Component {
+    val string = this.serialize().replace("\\<", "<").replace("\\>", ">")
+    return if ("§" in serialize())
+        legacy.deserialize(string)
+    else string.miniMsg()
+}
 
 fun Component.serialize() = mm.serialize(this)
 
