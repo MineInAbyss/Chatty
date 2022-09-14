@@ -69,6 +69,9 @@ class ChatListener : Listener {
             player.sendPluginMessage(chatty, chattyProxyChannel, proxyMessage)
         }
 
+        if (channel.logToConsole)
+            Bukkit.getConsoleSender().sendMessage(message())
+
         if (pingedPlayer == null && viewers().isEmpty()) {
             player.sendFormattedMessage(chattyMessages.channels.emptyChannelMessage)
             viewers().clear()

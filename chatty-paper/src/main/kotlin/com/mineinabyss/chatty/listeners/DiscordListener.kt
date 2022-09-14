@@ -43,7 +43,6 @@ class DiscordListener {
     fun GameChatMessagePreProcessEvent.onChat() {
         val channel = getChannelFromId(player.chattyData.channelId) ?: return
         val lastUsedChannel = getChannelFromId(player.chattyData.lastChannelUsed) ?: return
-
         if (isCancelled) return
         else if (!channel.discordsrv || (channel != lastUsedChannel && !lastUsedChannel.discordsrv))
             isCancelled = true
