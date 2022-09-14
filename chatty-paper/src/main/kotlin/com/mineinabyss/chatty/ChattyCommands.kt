@@ -142,21 +142,16 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
                 }
             }
             ("reload" / "rl") {
-                "config" {
-                    action {
-                        ChattyConfig.reload()
-                        ChattyConfig.load()
-                        (sender as? Player)?.sendFormattedMessage(chattyMessages.other.configReloaded)
-                            ?: sender.sendConsoleMessage(chattyMessages.other.configReloaded)
-                    }
-                }
-                "messages" {
-                    action {
-                        ChattyMessages.reload()
-                        ChattyMessages.load()
-                        (sender as? Player)?.sendFormattedMessage(chattyMessages.other.messagesReloaded)
-                            ?: sender.sendConsoleMessage(chattyMessages.other.messagesReloaded)
-                    }
+                action {
+                    ChattyConfig.reload()
+                    ChattyConfig.load()
+                    (sender as? Player)?.sendFormattedMessage(chattyMessages.other.configReloaded)
+                        ?: sender.sendConsoleMessage(chattyMessages.other.configReloaded)
+
+                    ChattyMessages.reload()
+                    ChattyMessages.load()
+                    (sender as? Player)?.sendFormattedMessage(chattyMessages.other.messagesReloaded)
+                        ?: sender.sendConsoleMessage(chattyMessages.other.messagesReloaded)
                 }
 
             }
@@ -266,7 +261,6 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
                 1 -> listOf("message", "ping", "reload", "channels", "nickname", "spy", "commandspy").filter { s -> s.startsWith(args[0]) }
                 2 -> when (args[0]) {
                     "ping" -> listOf("toggle", "sound").filter { s -> s.startsWith(args[1]) }
-                    "reload", "rl" -> listOf("config", "messages").filter { s -> s.startsWith(args[1]) }
                     "message", "msg" -> onlinePlayers.filter { s -> s.startsWith(args[1], true) }
                     "spy" ->
                         chattyConfig.channels.keys.toList().filter { s -> s.startsWith(args[1], true) && getChannelFromId(s)?.channelType != ChannelType.GLOBAL }
