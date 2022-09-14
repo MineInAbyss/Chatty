@@ -19,6 +19,7 @@ import github.scarsz.discordsrv.dependencies.jda.api.entities.MessageEmbed.Field
 import github.scarsz.discordsrv.dependencies.kyori.adventure.text.Component
 import github.scarsz.discordsrv.dependencies.kyori.adventure.text.TextReplacementConfig
 import github.scarsz.discordsrv.dependencies.kyori.adventure.text.minimessage.MiniMessage
+import github.scarsz.discordsrv.dependencies.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
 import github.scarsz.discordsrv.dependencies.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer
 import github.scarsz.discordsrv.objects.MessageFormat
 import me.clip.placeholderapi.PlaceholderAPI
@@ -30,6 +31,7 @@ class DiscordListener {
 
     private val mm = MiniMessage.builder().build()
     private val plainText = PlainTextComponentSerializer.plainText()
+    private val legacy = LegacyComponentSerializer.builder().useUnusualXRepeatedCharacterHexFormat().build()
 
     @Subscribe(priority = ListenerPriority.HIGHEST)
     fun DiscordGuildMessagePostProcessEvent.sendDiscordToProxy() {
@@ -81,8 +83,12 @@ class DiscordListener {
         return PlaceholderAPI.setPlaceholders(player, msg).miniMessage().fixLegacy()
     }
 
-    private fun Component.fixLegacy(): Component =
-        mm.deserialize(this.serialize().replace("\\<", "<").replace("\\>", ">"))
+    private fun Component.fixLegacy(): Component {
+        val string = this.serialize().replace("\\<", "<").replace("\\>", ">")
+        return if ("§" in serialize())
+            legacy.deserialize(string)
+        else mm.deserialize(string)
+    }
 
     private fun Message.translatePostFormat(): Message {
         val message = this
