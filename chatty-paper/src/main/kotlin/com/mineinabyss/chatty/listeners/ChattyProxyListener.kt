@@ -11,6 +11,7 @@ import com.mineinabyss.idofront.messaging.miniMsg
 import github.scarsz.discordsrv.Debug
 import github.scarsz.discordsrv.DiscordSRV
 import github.scarsz.discordsrv.dependencies.jda.api.Permission
+import github.scarsz.discordsrv.dependencies.jda.api.entities.MessageEmbed
 import github.scarsz.discordsrv.util.DiscordUtil
 import github.scarsz.discordsrv.util.MessageUtil
 import github.scarsz.discordsrv.util.PlaceholderUtil
@@ -41,8 +42,7 @@ class ChattyProxyListener : PluginMessageListener {
             onlinePlayers.forEach {
                 //it.sendMessage(decoded.miniMsg())
             }
-        }
-        else {
+        } else {
             if (channel.logToConsole)
                 Bukkit.getConsoleSender().sendMessage(proxyMessage.miniMsg())
 
@@ -56,7 +56,8 @@ class ChattyProxyListener : PluginMessageListener {
 
 
         if (!chattyConfig.proxy.sendProxyMessagesToDiscord ||
-            channel?.discordsrv != true || !ChattyContext.isDiscordSRVLoaded) return
+            channel?.discordsrv != true || !ChattyContext.isDiscordSRVLoaded
+        ) return
 
         val dsrv = DiscordSRV.getPlugin()
         var discordMessage = proxyMessage.replaceFirst(channelFormat, "")
@@ -88,7 +89,7 @@ class ChattyProxyListener : PluginMessageListener {
                 whUsername,
                 DiscordSRV.getAvatarUrl(senderName, senderName.toPlayer()?.uniqueId),
                 discordMessage.translateEmoteIDsToComponent(),
-                null
+                MessageEmbed(null, null, null, null, null, 10, null, null, null, null, null, null, null)
             )
         }
     }

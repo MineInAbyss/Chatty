@@ -35,7 +35,7 @@ class DiscordListener {
 
     @Subscribe(priority = ListenerPriority.HIGHEST)
     fun DiscordGuildMessagePostProcessEvent.sendDiscordToProxy() {
-        minecraftMessage = (minecraftMessage.serialize().substringBefore(message.contentRaw) + mm.stripTokens(message.contentStripped)).miniMessage()
+        minecraftMessage = (minecraftMessage.serialize().substringBefore(message.contentRaw) + mm.stripTags(message.contentStripped)).miniMessage()
         Bukkit.getServer().sendPluginMessage(chatty, chattyProxyChannel, minecraftMessage.serialize().toByteArray())
     }
 
