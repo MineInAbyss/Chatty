@@ -94,7 +94,8 @@ class ChattyProxyListener : PluginMessageListener {
         }
     }
 
-    private val translateMentions = DiscordSRV.config().getBoolean("DiscordChatChannelTranslateMentions")
+    private val translateMentions =
+        if (!ChattyContext.isDiscordSRVLoaded) false else DiscordSRV.config().getBoolean("DiscordChatChannelTranslateMentions")
     private fun String.translateEmoteIDsToComponent(): String {
         var translated = this
         emoteFixer.emotes.entries.forEach { (emoteId, replacement) ->
