@@ -57,7 +57,7 @@ class DiscordListener {
     fun DeathMessagePreProcessEvent.onDeath() {
         if (isCancelled) return
         messageFormat = messageFormat.translatePreFormat()
-        deathMessage = deathMessage.translateEmoteIDs()
+        deathMessage = legacy.deserialize(deathMessage).serialize().translateEmoteIDs()
     }
 
     @Subscribe
