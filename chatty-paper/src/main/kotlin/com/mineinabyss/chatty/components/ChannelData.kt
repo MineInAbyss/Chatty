@@ -13,11 +13,10 @@ class ChannelData(
     var lastChannelUsed: String = channelId,
     var disablePingSound: Boolean = false,
     var pingSound: String? = null,
-    var displayName: String? = null,
     var lastMessager: Player? = null,
 )
 
-val Player.chattyData get() = toGeary().getOrSetPersisting { ChannelData(displayName = name) }
+val Player.chattyData get() = toGeary().getOrSetPersisting { ChannelData() }
 enum class ChannelType {
     GLOBAL,
     RADIUS,

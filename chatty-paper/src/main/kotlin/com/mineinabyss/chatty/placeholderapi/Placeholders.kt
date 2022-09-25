@@ -2,8 +2,10 @@ package com.mineinabyss.chatty.helpers
 
 import com.mineinabyss.chatty.components.SpyOnChannels
 import com.mineinabyss.chatty.components.chattyData
+import com.mineinabyss.chatty.components.chattyNickname
 import com.mineinabyss.geary.papermc.access.toGeary
 import com.mineinabyss.idofront.font.Space
+import com.mineinabyss.idofront.messaging.serialize
 import org.bukkit.entity.Player
 
 fun chattyPlaceholders(player: Player, string: String) : Map<String, String> {
@@ -13,7 +15,7 @@ fun chattyPlaceholders(player: Player, string: String) : Map<String, String> {
     val shift = Integer.parseInt(string.substringAfter("shift_", "0"))
 
     return mapOf(
-        "available_channels" to getAllChannelNames().joinToString(),
+        "available_channels" to getAllChannelNames().joinToString(", "),
         "player_channel" to data.channelId,
         "player_channel_permission" to channel?.permission.toString(),
         "player_channel_isdefault" to channel?.isDefaultChannel.toString(),
@@ -34,7 +36,7 @@ fun chattyPlaceholders(player: Player, string: String) : Map<String, String> {
         "player_ping_sound" to data.pingSound.toString(),
         "player_ping_toggle" to (!data.disablePingSound).toString(),
 
-        "player_displayname" to (player.chattyData.displayName ?: player.name)+"<reset>",
+        "player_displayname" to (player.chattyNickname ?: player.name()).serialize(),
         "player_head" to player.translatePlayerHeadComponent().serialize(),
         "shift_$shift" to Space.of(shift)
     )

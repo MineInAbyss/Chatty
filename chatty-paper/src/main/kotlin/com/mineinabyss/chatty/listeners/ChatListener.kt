@@ -10,7 +10,9 @@ import com.mineinabyss.chatty.helpers.*
 import com.mineinabyss.geary.papermc.access.toGeary
 import com.mineinabyss.idofront.messaging.miniMsg
 import com.mineinabyss.idofront.messaging.serialize
+import com.mineinabyss.idofront.messaging.toPlainText
 import io.papermc.paper.chat.ChatRenderer
+import io.papermc.paper.event.player.AsyncChatCommandDecorateEvent
 import io.papermc.paper.event.player.AsyncChatDecorateEvent
 import io.papermc.paper.event.player.AsyncChatEvent
 import net.kyori.adventure.audience.Audience
@@ -34,16 +36,19 @@ class ChatListener : Listener {
         }
     }
 
+    @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
+    fun AsyncChatCommandDecorateEvent.onCommandPreview() {
+        val player = player() ?: return
+        result(originalMessage().toPlainText().parseTagsInString(player))
+    }
+
     @EventHandler(priority = EventPriority.NORMAL)
     fun AsyncChatDecorateEvent.onChatPreview() {
         val player = player() ?: return
         player.verifyPlayerChannel()
-        val channelId = player.chattyData.channelId
-        val channel = getChannelFromId(channelId) ?: return
-        val formatted =
-            if (player.checkPermission(chattyConfig.chat.bypassFormatPermission)) originalMessage().fixLegacy().serialize()
-            else originalMessage().serialize().verifyChatStyling(player)
-        result("<reset>".miniMsg().append(translatePlaceholders(player, channel.format + formatted)))
+        val channel = getChannelFromId(player.chattyData.channelId) ?: return
+        val formatted = originalMessage().toPlainText().parseTagsInString(player)
+        result(translatePlaceholders(player, channel.format).append(formatted))
     }
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
@@ -75,17 +80,9 @@ class ChatListener : Listener {
         if (pingedPlayer == null && viewers().isEmpty()) {
             player.sendFormattedMessage(chattyMessages.channels.emptyChannelMessage)
             viewers().clear()
-        } else if (!chattyConfig.chat.enableChatSigning) {
+        } else if (!chattyConfig.chat.disableChatSigning) {
             viewers().forEach { a -> RendererExtension().render(player, player.displayName(), message(), a) }
             viewers().clear()
-        }
-    }
-
-    private fun String.verifyChatStyling(player: Player): String {
-        return if (this.getTags().all { tag -> tag in chattyConfig.chat.allowedTags }) this
-        else {
-            player.sendFormattedMessage(chattyMessages.other.disallowedStyling)
-            mm.stripTags(miniMsg().toPlainText())
         }
     }
 
@@ -103,7 +100,8 @@ class ChatListener : Listener {
                 })
             }
 
-            ChannelType.PERMISSION -> audiences.addAll(onlinePlayers.filter { p -> p.checkPermission(channel.permission) })
+            ChannelType.PERMISSION ->
+                audiences.addAll(onlinePlayers.filter { p -> p.hasPermission(channel.permission) })
             // Intended for Guilds etc., want to consider finding a non-permission way for this
             ChannelType.PRIVATE -> audiences.add(player)
         }

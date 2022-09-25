@@ -28,14 +28,15 @@ class ChattyPlugin : JavaPlugin() {
 
         ChattyCommands()
 
-        registerEvents(
-            ChatListener(),
-            PlayerListener()
-        )
+        registerEvents(ChatListener(), PlayerListener())
 
         // Register the proxy listener
-        server.messenger.registerIncomingPluginChannel(this, chattyProxyChannel, ChattyProxyListener())
-        server.messenger.registerOutgoingPluginChannel(this, chattyProxyChannel)
+        try {
+            server.messenger.registerIncomingPluginChannel(this, chattyProxyChannel, ChattyProxyListener())
+            server.messenger.registerOutgoingPluginChannel(this, chattyProxyChannel)
+        } catch (e: IllegalArgumentException) {
+            logger.warning("Could not register proxy channel. Is another plugin using it?")
+        }
 
         if (ChattyContext.isPlaceholderApiLoaded)
             PlaceholderHook().register()
@@ -54,23 +55,22 @@ class ChattyPlugin : JavaPlugin() {
         if (ChattyContext.isDiscordSRVLoaded)
             DiscordSRV.api.unsubscribe(DiscordListener())
     }
-}
 
-private fun saveDefaultMessages() {
-    if (!Path(chatty.dataFolder.path + "/messages.yml").toFile().exists()) {
-        chatty.saveResource("messages.yml", false)
+    private fun saveDefaultMessages() {
+        if (!Path(chatty.dataFolder.path + "/messages.yml").toFile().exists()) {
+            chatty.saveResource("messages.yml", false)
+        }
     }
-}
 
-
-private fun saveDefaultEmoteFixer() {
-    if (!Path(chatty.dataFolder.path + "/emotefixer.yml").toFile().exists()) {
-        chatty.saveResource("emotefixer.yml", false)
+    private fun saveDefaultEmoteFixer() {
+        if (!Path(chatty.dataFolder.path + "/emotefixer.yml").toFile().exists()) {
+            chatty.saveResource("emotefixer.yml", false)
+        }
     }
-}
 
-private fun saveDefaultAssets() {
-    chatty.saveResource("assets/minecraft/font/chatty_heads.json", true)
-    chatty.saveResource("assets/space/textures/ui/utils/null.png", true)
-    chatty.saveResource("assets/space/textures/ui/utils/whiteblank_4.png", true)
+    private fun saveDefaultAssets() {
+        chatty.saveResource("assets/minecraft/font/chatty_heads.json", true)
+        chatty.saveResource("assets/space/textures/ui/utils/null.png", true)
+        chatty.saveResource("assets/space/textures/ui/utils/whiteblank_4.png", true)
+    }
 }

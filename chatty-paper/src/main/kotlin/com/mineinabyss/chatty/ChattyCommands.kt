@@ -2,10 +2,7 @@ package com.mineinabyss.chatty
 
 import com.github.shynixn.mccoroutine.bukkit.asyncDispatcher
 import com.github.shynixn.mccoroutine.bukkit.launch
-import com.mineinabyss.chatty.components.ChannelType
-import com.mineinabyss.chatty.components.CommandSpy
-import com.mineinabyss.chatty.components.SpyOnChannels
-import com.mineinabyss.chatty.components.chattyData
+import com.mineinabyss.chatty.components.*
 import com.mineinabyss.chatty.helpers.*
 import com.mineinabyss.geary.papermc.access.toGeary
 import com.mineinabyss.idofront.commands.arguments.stringArg
@@ -13,6 +10,7 @@ import com.mineinabyss.idofront.commands.execution.IdofrontCommandExecutor
 import com.mineinabyss.idofront.commands.extensions.actions.ensureSenderIsPlayer
 import com.mineinabyss.idofront.commands.extensions.actions.playerAction
 import com.mineinabyss.idofront.messaging.miniMsg
+import com.mineinabyss.idofront.messaging.serialize
 import io.papermc.paper.chat.ChatRenderer
 import io.papermc.paper.event.player.AsyncChatEvent
 import kotlinx.coroutines.Job
@@ -77,65 +75,62 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
             ("nickname" / "nick") {
                 action {
                     val nickMessage = chattyMessages.nicknames
-                    val nickConfig = chattyConfig.nicknames
-                    val nick = arguments.joinToString(" ")
+                    val nick = arguments.toSentence()
                     val player = sender as? Player
-                    val bypassFormatPerm = player?.checkPermission(nickConfig.bypassFormatPermission) == true
+                    val bypassFormatPerm = player?.hasPermission(ChattyPermissions.NICKNAME_OTHERS) == true
 
                     when {
-                        player is Player && !player.checkPermission(nickConfig.permission) ->
+                        player is Player && !player.hasPermission(ChattyPermissions.NICKNAME) ->
                             player.sendFormattedMessage(nickMessage.selfDenied)
 
                         arguments.isEmpty() -> {
                             // Removes players displayname or sends error if sender is console
-                            player?.chattyData?.displayName = null
-                            player?.displayName(player.name.miniMsg())
+                            player?.toGeary()?.set(ChattyNickname(player.name()))
+                            if (chattyConfig.nicknames.useDisplayName)
+                                player?.displayName(player.name())
                             player?.sendFormattedMessage(nickMessage.selfEmpty)
                                 ?: sender.sendConsoleMessage(nickMessage.consoleNicknameSelf)
                         }
 
-                        arguments.first().startsWith(nickConfig.nickNameOtherPrefix) -> {
+                        arguments.first().startsWith(chattyConfig.nicknames.nickNameOtherPrefix) -> {
                             val otherPlayer = arguments.getPlayerToNick()
                             val otherNick = nick.removePlayerToNickFromString()
 
                             when {
-                                player?.checkPermission(nickConfig.nickOtherPermission) == false ->
+                                player?.hasPermission(ChattyPermissions.NICKNAME_OTHERS) == false ->
                                     player.sendFormattedMessage(nickMessage.otherDenied, otherPlayer)
 
                                 otherPlayer == null || otherPlayer !in Bukkit.getOnlinePlayers() ->
                                     player?.sendFormattedMessage(nickMessage.invalidPlayer, otherPlayer)
 
                                 otherNick.isEmpty() -> {
-                                    otherPlayer.chattyData.displayName = null
-                                    otherPlayer.displayName(player?.name?.miniMsg())
+                                    if (chattyConfig.nicknames.useDisplayName)
+                                        otherPlayer.displayName(otherPlayer.name())
                                     otherPlayer.sendFormattedMessage(nickMessage.selfEmpty)
                                     player?.sendFormattedMessage(nickMessage.otherEmpty, otherPlayer)
                                 }
-
-                                !bypassFormatPerm && !otherNick.verifyNickStyling() ->
-                                    player?.sendFormattedMessage(nickMessage.disallowedStyling)
 
                                 !bypassFormatPerm && !otherNick.verifyNickLength() ->
                                     player?.sendFormattedMessage(nickMessage.tooLong)
 
                                 otherNick.isNotEmpty() -> {
-                                    otherPlayer.chattyData.displayName = otherNick
-                                    otherPlayer.displayName(otherNick.miniMsg())
+                                    val parsedNickname = otherNick.parseTagsInString(otherPlayer)
+                                    if (chattyConfig.nicknames.useDisplayName)
+                                        otherPlayer.displayName(parsedNickname)
+                                    otherPlayer.toGeary().set(ChattyNickname(parsedNickname))
                                     player?.sendFormattedMessage(nickMessage.otherSuccess, otherPlayer)
                                 }
                             }
                         }
-
                         else -> {
-                            if (!bypassFormatPerm && !nick.verifyNickStyling()) {
-                                player?.sendFormattedMessage(nickMessage.disallowedStyling)
-                            } else if (!bypassFormatPerm && !nick.verifyNickLength()) {
+                            if (!bypassFormatPerm && !nick.verifyNickLength()) {
                                 player?.sendFormattedMessage(nickMessage.tooLong)
                             } else {
-                                player?.chattyData?.displayName = nick
-                                player?.displayName(nick.miniMsg())
-                                player?.chattyData?.displayName = nick
-                                player?.sendFormattedMessage(nickMessage.selfSuccess)
+                                val parsedNick = player?.let { nick.parseTagsInString(it) } ?: return@action
+                                player.toGeary().set(ChattyNickname(parsedNick))
+                                if (chattyConfig.nicknames.useDisplayName)
+                                    player.displayName(parsedNick)
+                                player.sendFormattedMessage(nickMessage.selfSuccess)
                             }
                         }
                     }
@@ -283,9 +278,9 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
         arguments: List<String>
     ) {
         val currentChannel = chattyData.channelId
-        val msg = arguments.joinToString(" ").miniMsg()
+        val msg = arguments.toSentence().miniMsg()
 
-        if (channel?.value?.permission?.isNotEmpty() == true && !checkPermission(channel.value.permission))
+        if (channel?.value?.permission?.isNotEmpty() == true && !hasPermission(channel.value.permission))
             sendFormattedMessage(chattyMessages.channels.missingChannelPermission)
         else if (channel?.key != null && arguments.isEmpty())
             swapChannelCommand(channel.key)

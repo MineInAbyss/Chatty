@@ -45,7 +45,6 @@ object ChattyMessages : IdofrontConfig<ChattyMessages.Messages>(chatty, Messages
         val otherEmpty: String = "<yellow>Removed nickname for %player_name%!",
         val invalidPlayer: String = "<red>That player doesn't exist!",
         val consoleNicknameSelf: String = "<red>Sadly console cannot have cool nickname :(",
-        val disallowedStyling: String = "<red>This nickname formatting you cannot use!",
         val tooLong: String = "<red>The nickname was too long!",
     )
 

@@ -13,81 +13,20 @@ privateMessages:
   messageSendSound: ""              # Empty for no sound
   messageReceiveSound: ""           # Empty for no sound
 
-# [enableChatSigning]: Sends messages with valid signatures to support 1.19.1+ chat reporting. Disabling this will disable reporting
-# [allowedTags]: # Available formats are:
-# [TEXTCOLOR, HEXCOLOR, GRADIENT, RAINBOW, UNDERLINE, STRIKETHROUGH, BOLD, ITALIC, OBFUSCATED]
-# [HOVER, CLICK, FONT, SPACES, INSERTION, RESET, TRANSITION, KEYBIND, TRANSLATABLE]
-# https://docs.adventure.kyori.net/minimessage/format.html
+# [disableChatSigning]: Sends messages with valid signatures to support 1.19.1+ chat reporting. Disabling this will disable reporting
 chat:
-  enableChatSigning: true
-  bypassFormatPermission: "chatty.chat.bypassformat"
+  disableChatSigning: true
   commandSpyFormat: "<gold>%chatty_player_displayname%</gold><yellow>: "
-  allowedTags:
-    - BOLD
-    - STRIKETHROUGH
-    - UNDERLINE
-    - ITALIC
-    - TEXTCOLOR
-    - HEXCOLOR
-    - RAINBOW
-    - GRADIENT
 
-# [useDisplayNameforAuthor]: Whether books should be signed using displayname or username of a player
-# [allowedTags]: # Available formats are:
-#   [TEXTCOLOR, HEXCOLOR, GRADIENT, RAINBOW, UNDERLINE, STRIKETHROUGH, BOLD, ITALIC, OBFUSCATED]
-#   [HOVER, CLICK, FONT, SPACES, INSERTION, RESET, TRANSITION, KEYBIND, TRANSLATABLE]
-#   https://docs.adventure.kyori.net/minimessage/format.html
-book:
-  useDisplayNameForAuthor: false
-  bypassFormatPermission: "chatty.chat.bypassformat"
-  allowedTags:
-    - BOLD
-    - STRIKETHROUGH
-    - UNDERLINE
-    - ITALIC
-    - OBFUSCATED
-    - TEXTCOLOR
-    - HEXCOLOR
-    - RAINBOW
-    - GRADIENT
-
-# [allowedTags]: # Available formats are:
-#   [TEXTCOLOR, HEXCOLOR, GRADIENT, RAINBOW, UNDERLINE, STRIKETHROUGH, BOLD, ITALIC, OBFUSCATED]
-#   [HOVER, CLICK, FONT, SPACES, INSERTION, RESET, TRANSITION, KEYBIND, TRANSLATABLE]
-#   https://docs.adventure.kyori.net/minimessage/format.html
-sign:
-  bypassFormatPermission: "chatty.chat.bypassformat"
-  allowedTags:
-    - BOLD
-    - STRIKETHROUGH
-    - UNDERLINE
-    - ITALIC
-    - OBFUSCATED
-    - TEXTCOLOR
-    - HEXCOLOR
-    - RAINBOW
-    - GRADIENT
-
+# [useDisplayName]: Stores the chatty nickname in players displayname aswell
 # [maxLength]: The max length a nickname can be, with or without tags, depending on [countTagsInLength]
 # [countTagsInLength]: If true, tags will be taken into account in [maxLength].
 # [nickNameOtherPrefix]: Prefix to specify you want to nickname another player: [/chatty nickname @player nickname]
 nicknames:
-  permission: "chatty.nickname"
-  nickOtherPermission: "chatty.nickname.other"
-  bypassFormatPermission: "chatty.nickname.bypassformat" #Permission to bypass all format checks
+  useDisplayName: true
   maxLength: 32
   countTagsInLength: false
   nickNameOtherPrefix: '@'
-  allowedTags:                # Available formats are:
-    - BOLD                    # [TEXTCOLOR, HEXCOLOR, GRADIENT, RAINBOW, UNDERLINE, STRIKETHROUGH, BOLD, ITALIC, OBFUSCATED]
-    - STRIKETHROUGH           # [HOVER, CLICK, FONT, SPACES, INSERTION, RESET, TRANSITION, KEYBIND, TRANSLATABLE]
-    - UNDERLINE
-    - ITALIC
-    - OBFUSCATED
-    - TEXTCOLOR
-    - HEXCOLOR
-    - RAINBOW
-    - GRADIENT
 
 join:
   enabled: false

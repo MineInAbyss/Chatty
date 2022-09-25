@@ -1,7 +1,6 @@
 package com.mineinabyss.chatty
 
 import com.mineinabyss.chatty.components.ChannelType
-import com.mineinabyss.chatty.helpers.ChattyTags
 import com.mineinabyss.idofront.config.IdofrontConfig
 import com.mineinabyss.idofront.serialization.DurationSerializer
 import kotlinx.serialization.Serializable
@@ -14,8 +13,6 @@ object ChattyConfig : IdofrontConfig<ChattyConfig.Data>(chatty, Data.serializer(
         val playerHeadFont: String = "minecraft:chatty_heads",
         val nicknames: Nickname = Nickname(),
         val chat: Chat = Chat(),
-        val book: Book = Book(),
-        val sign: Sign = Sign(),
         val ping: Ping = Ping(),
         val join: Join = Join(),
         val leave: Leave = Leave(),
@@ -28,10 +25,8 @@ object ChattyConfig : IdofrontConfig<ChattyConfig.Data>(chatty, Data.serializer(
 
     @Serializable
     data class Chat(
-        val enableChatSigning: Boolean = true,
-        val bypassFormatPermission: String = "chatty.chat.bypassformat",
+        val disableChatSigning: Boolean = false,
         val commandSpyFormat: String = "<gold>%chatty_player_displayname%: ",
-        val allowedTags: List<ChattyTags> = emptyList(),
     )
 
     @Serializable
@@ -47,13 +42,10 @@ object ChattyConfig : IdofrontConfig<ChattyConfig.Data>(chatty, Data.serializer(
 
     @Serializable
     data class Nickname(
-        val permission: String = "chatty.nickname",
-        val nickOtherPermission: String = "chatty.nickname.other",
-        val bypassFormatPermission: String = "chatty.nickname.bypassformat",
+        val useDisplayName: Boolean = true,
         val maxLength: Int = 32,
-        val countColorsInLength: Boolean = false,
+        val countTagsInLength: Boolean = false,
         val nickNameOtherPrefix: Char = '@',
-        val allowedTags: List<ChattyTags> = emptyList()
     )
 
     @Serializable
@@ -104,18 +96,5 @@ object ChattyConfig : IdofrontConfig<ChattyConfig.Data>(chatty, Data.serializer(
         val clickToReply: Boolean = true,
         val pingReceiveFormat: String = "<yellow><b>",
         val pingSendFormat: String = "<i>"
-    )
-
-    @Serializable
-    data class Book(
-        val useDisplayNameForAuthor: Boolean = false,
-        val bypassFormatPermission: String = "chatty.book.bypassformat",
-        val allowedTags: List<ChattyTags> = emptyList(),
-    )
-
-    @Serializable
-    data class Sign(
-        val bypassFormatPermission: String = "chatty.sign.bypassformat",
-        val allowedTags: List<ChattyTags> = emptyList(),
     )
 }
