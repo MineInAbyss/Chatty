@@ -2,10 +2,7 @@ package com.mineinabyss.chatty.listeners
 
 import com.mineinabyss.chatty.chatty
 import com.mineinabyss.chatty.chattyProxyChannel
-import com.mineinabyss.chatty.components.ChannelType
-import com.mineinabyss.chatty.components.CommandSpy
-import com.mineinabyss.chatty.components.SpyOnChannels
-import com.mineinabyss.chatty.components.chattyData
+import com.mineinabyss.chatty.components.*
 import com.mineinabyss.chatty.helpers.*
 import com.mineinabyss.geary.papermc.access.toGeary
 import com.mineinabyss.idofront.messaging.miniMsg
@@ -48,6 +45,8 @@ class ChatListener : Listener {
         player.verifyPlayerChannel()
         val channel = getChannelFromId(player.chattyData.channelId) ?: return
         val formatted = originalMessage().toPlainText().parseTagsInString(player)
+        // Whilst this solves the issue of appending componenttags from the end of the last message, it skips the parsetagsinstring component
+        //result((translatePlaceholders(player, channel.format).serialize() + formatted.serialize()).miniMsg())
         result(translatePlaceholders(player, channel.format).append(formatted))
     }
 
@@ -81,7 +80,7 @@ class ChatListener : Listener {
             player.sendFormattedMessage(chattyMessages.channels.emptyChannelMessage)
             viewers().clear()
         } else if (!chattyConfig.chat.disableChatSigning) {
-            viewers().forEach { a -> RendererExtension().render(player, player.displayName(), message(), a) }
+            viewers().forEach { a -> RendererExtension().render(player, player.chattyNickname ?: player.displayName(), message(), a) }
             viewers().clear()
         }
     }

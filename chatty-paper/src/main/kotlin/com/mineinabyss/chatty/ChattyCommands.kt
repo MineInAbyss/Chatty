@@ -315,7 +315,6 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
     }
 
     private val replyMap = mutableMapOf<Player, Job>()
-
     private fun Player.handleReplyTimer(): Job {
         if (this in replyMap) return replyMap[this]!!
         replyMap[this]?.cancel()
@@ -331,28 +330,29 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
         this.sendMessage(translatePlaceholders((optionalPlayer ?: this), message).serialize().miniMsg())
 
     private fun Player.handleSendingPrivateMessage(player: Player, arguments: List<String>, isReply: Boolean = false) {
-        if (!chattyConfig.privateMessages.enabled) {
-            this.sendFormattedMessage(chattyMessages.privateMessages.disabled)
-        } else if (isReply && this.chattyData.lastMessager == null) {
-            this.sendFormattedMessage(chattyMessages.privateMessages.emptyReply)
-        } else if (arguments.first().toPlayer() == null && !isReply) {
-            this.sendFormattedMessage(chattyMessages.privateMessages.invalidPlayer)
-        } else {
-            val msg = if (isReply) arguments.toSentence() else arguments.removeFirstArgumentOfStringList()
-            if (msg.isEmpty() || this == player) return
+        when {
+            !chattyConfig.privateMessages.enabled ->
+                sendFormattedMessage(chattyMessages.privateMessages.disabled)
+            isReply && this.chattyData.lastMessager == null ->
+                sendFormattedMessage(chattyMessages.privateMessages.emptyReply)
+            !isReply && arguments.first().toPlayer() == null ->
+                sendFormattedMessage(chattyMessages.privateMessages.invalidPlayer)
+            else -> {
+                val msg = if (isReply) arguments.toSentence() else arguments.removeFirstArgumentOfStringList()
+                if (msg.isEmpty() || this == player) return
 
-            replyMap[player] = player.handleReplyTimer()
+                replyMap[player] = player.handleReplyTimer()
 
-            this.sendFormattedPrivateMessage(chattyConfig.privateMessages.messageSendFormat, msg, player)
-            player.sendFormattedPrivateMessage(chattyConfig.privateMessages.messageReceiveFormat, msg, this)
-            player.chattyData.lastMessager = this
-            if (chattyConfig.privateMessages.messageSendSound.isNotEmpty())
-                this.playSound(player.location, chattyConfig.privateMessages.messageSendSound, 1f, 1f)
-            if (chattyConfig.privateMessages.messageReceivedSound.isNotEmpty())
-                player.playSound(player.location, chattyConfig.privateMessages.messageReceivedSound, 1f, 1f)
+                this.sendFormattedPrivateMessage(chattyConfig.privateMessages.messageSendFormat, msg, player)
+                player.sendFormattedPrivateMessage(chattyConfig.privateMessages.messageReceiveFormat, msg, this)
+                player.chattyData.lastMessager = this
+                if (chattyConfig.privateMessages.messageSendSound.isNotEmpty())
+                    this.playSound(player.location, chattyConfig.privateMessages.messageSendSound, 1f, 1f)
+                if (chattyConfig.privateMessages.messageReceivedSound.isNotEmpty())
+                    player.playSound(player.location, chattyConfig.privateMessages.messageReceivedSound, 1f, 1f)
+            }
         }
     }
-
 
     private fun Player.sendFormattedPrivateMessage(messageFormat: String, message: String, receiver: Player) =
         this.sendMessage((translatePlaceholders(receiver, messageFormat).serialize() + message).miniMsg())
