@@ -11,8 +11,6 @@ import com.mineinabyss.idofront.commands.extensions.actions.ensureSenderIsPlayer
 import com.mineinabyss.idofront.commands.extensions.actions.playerAction
 import com.mineinabyss.idofront.messaging.miniMsg
 import com.mineinabyss.idofront.messaging.serialize
-import io.papermc.paper.chat.ChatRenderer
-import io.papermc.paper.event.player.AsyncChatEvent
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import org.bukkit.Bukkit
@@ -122,6 +120,7 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
                                 }
                             }
                         }
+
                         else -> {
                             if (!bypassFormatPerm && !nick.verifyNickLength()) {
                                 player?.sendFormattedMessage(nickMessage.tooLong)
@@ -172,14 +171,18 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
                     when {
                         channel !in chattyConfig.channels.keys ->
                             player.sendFormattedMessage(chattyMessages.channels.noChannelWithName)
+
                         getChannelFromId(channel)?.channelType == ChannelType.GLOBAL ->
                             player.sendFormattedMessage(chattyMessages.spying.cannotSpyOnChannel)
+
                         !player.hasPermission(getChannelFromId(channel)?.permission.toString()) ->
                             player.sendFormattedMessage(chattyMessages.spying.cannotSpyOnChannel)
+
                         channel in spy.channels -> {
                             player.sendFormattedMessage(chattyMessages.spying.stopSpyingOnChannel)
                             spy.channels.remove(channel)
                         }
+
                         else -> {
                             spy.channels.add(channel)
                             player.sendFormattedMessage(chattyMessages.spying.startSpyingOnChannel)
@@ -253,19 +256,35 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
         val otherPrefix = chattyConfig.nicknames.nickNameOtherPrefix
         return if (command.name == "chatty") {
             when (args.size) {
-                1 -> listOf("message", "ping", "reload", "channels", "nickname", "spy", "commandspy").filter { s -> s.startsWith(args[0]) }
+                1 -> listOf(
+                    "message",
+                    "ping",
+                    "reload",
+                    "channels",
+                    "nickname",
+                    "spy",
+                    "commandspy"
+                ).filter { s -> s.startsWith(args[0]) }
+
                 2 -> when (args[0]) {
                     "ping" -> listOf("toggle", "sound").filter { s -> s.startsWith(args[1]) }
                     "message", "msg" -> onlinePlayers.filter { s -> s.startsWith(args[1], true) }
                     "spy" ->
-                        chattyConfig.channels.keys.toList().filter { s -> s.startsWith(args[1], true) && getChannelFromId(s)?.channelType != ChannelType.GLOBAL }
+                        chattyConfig.channels.keys.toList().filter { s ->
+                            s.startsWith(
+                                args[1],
+                                true
+                            ) && getChannelFromId(s)?.channelType != ChannelType.GLOBAL
+                        }
+
                     else -> emptyList()
                 }
+
                 3 -> when {
                     args[1] == "sound" -> getAlternativePingSounds.filter { s -> s.startsWith(args[2], true) }
                     args[1].startsWith(otherPrefix) -> onlinePlayers.filter { s ->
-                            s.replace(otherPrefix.toString(), "").startsWith(args[2], true)
-                        }
+                        s.replace(otherPrefix.toString(), "").startsWith(args[2], true)
+                    }
                     else -> emptyList()
                 }
                 else -> emptyList()
@@ -278,20 +297,19 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
         arguments: List<String>
     ) {
         val currentChannel = chattyData.channelId
-        val msg = arguments.toSentence().miniMsg()
+        when {
+            channel == null -> sendFormattedMessage(chattyMessages.channels.noChannelWithName)
+            channel.value.permission.isNotBlank() && !hasPermission(channel.value.permission) ->
+                sendFormattedMessage(chattyMessages.channels.missingChannelPermission)
 
-        if (channel?.value?.permission?.isNotEmpty() == true && !hasPermission(channel.value.permission))
-            sendFormattedMessage(chattyMessages.channels.missingChannelPermission)
-        else if (channel?.key != null && arguments.isEmpty())
-            swapChannelCommand(channel.key)
-        else if (channel?.key != null && arguments.isNotEmpty()) {
-            chattyData.channelId = channel.key
-            chattyData.lastChannelUsed = channel.key
-            chatty.launch(chatty.asyncDispatcher) {
-                AsyncChatEvent(
-                    true, this@shortcutCommand, mutableSetOf(), ChatRenderer.defaultRenderer(), msg, msg
-                ).callEvent()
-                chattyData.channelId = currentChannel
+            arguments.isEmpty() -> swapChannelCommand(channel.key)
+            else -> {
+                chattyData.channelId = channel.key
+                chattyData.lastChannelUsed = channel.key
+                chatty.launch(chatty.asyncDispatcher) {
+                    GenericChattyChatEvent(this@shortcutCommand, arguments.toSentence().miniMsg()).callEvent()
+                    chattyData.channelId = currentChannel
+                }
             }
         }
     }
@@ -334,7 +352,6 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
                 player.playSound(player.location, chattyConfig.privateMessages.messageReceivedSound, 1f, 1f)
         }
     }
-
 
 
     private fun Player.sendFormattedPrivateMessage(messageFormat: String, message: String, receiver: Player) =

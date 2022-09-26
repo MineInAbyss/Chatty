@@ -160,7 +160,7 @@ fun Player.swapChannelCommand(channelId: String) {
     when {
         newChannel == null ->
             sendFormattedMessage(chattyMessages.channels.noChannelWithName)
-        !hasPermission(newChannel.permission) ->
+        newChannel.permission.isNotBlank() && !hasPermission(newChannel.permission) ->
             sendFormattedMessage(chattyMessages.channels.missingChannelPermission)
         else -> {
             chattyData.channelId = channelId
