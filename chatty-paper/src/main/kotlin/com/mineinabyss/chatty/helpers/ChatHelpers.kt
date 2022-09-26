@@ -13,7 +13,6 @@ import me.clip.placeholderapi.PlaceholderAPI
 import net.kyori.adventure.key.Key
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.TextReplacementConfig
-import net.kyori.adventure.text.minimessage.MiniMessage
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver
 import org.bukkit.Bukkit
 import org.bukkit.Sound
@@ -79,7 +78,7 @@ fun String.parseTagsInString(player: Player): Component {
             tagResolver.resolver(tag)
     }
 
-    return MiniMessage.builder().tags(tagResolver.build()).build().deserialize(this)
+    return this.miniMsg(tagResolver.build())
 }
 
 fun getGlobalChat() =

@@ -9,14 +9,13 @@ import com.mineinabyss.idofront.messaging.serialize
 import org.bukkit.entity.Player
 
 fun chattyPlaceholders(player: Player, string: String) : Map<String, String> {
-    val data = player.chattyData
     val ping = chattyConfig.ping
     val channel = player.getChannelFromPlayer()
     val shift = Integer.parseInt(string.substringAfter("shift_", "0"))
 
     return mapOf(
         "available_channels" to getAllChannelNames().joinToString(", "),
-        "player_channel" to data.channelId,
+        "player_channel" to player.chattyData.channelId,
         "player_channel_permission" to channel?.permission.toString(),
         "player_channel_isdefault" to channel?.isDefaultChannel.toString(),
         "player_channel_type" to channel?.channelType.toString(),
@@ -33,8 +32,8 @@ fun chattyPlaceholders(player: Player, string: String) : Map<String, String> {
         "ping_clickreply" to ping.clickToReply.toString(),
         "ping_receiver_format" to ping.pingReceiveFormat,
         "ping_sender_format" to ping.pingSendFormat,
-        "player_ping_sound" to data.pingSound.toString(),
-        "player_ping_toggle" to (!data.disablePingSound).toString(),
+        "player_ping_sound" to player.chattyData.pingSound.toString(),
+        "player_ping_toggle" to (!player.chattyData.disablePingSound).toString(),
 
         "player_displayname" to (player.chattyNickname ?: player.name()).serialize(),
         "player_head" to player.translatePlayerHeadComponent().serialize(),
