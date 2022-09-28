@@ -26,6 +26,9 @@ class PlayerListener : Listener {
 
     @EventHandler(priority = EventPriority.NORMAL)
     fun PlayerJoinEvent.onJoin() {
+        player.translatePlayerHeadComponent()
+        player.translateFullPlayerSkinComponent()
+
         player.verifyPlayerChannel()
         if (player.chattyNickname != null)
             player.displayName(player.chattyNickname)
