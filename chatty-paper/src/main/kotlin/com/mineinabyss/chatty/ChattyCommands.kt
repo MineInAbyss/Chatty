@@ -138,12 +138,10 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
             ("reload" / "rl") {
                 action {
                     ChattyConfig.reload()
-                    ChattyConfig.load()
                     (sender as? Player)?.sendFormattedMessage(chattyMessages.other.configReloaded)
                         ?: sender.sendConsoleMessage(chattyMessages.other.configReloaded)
 
                     ChattyMessages.reload()
-                    ChattyMessages.load()
                     (sender as? Player)?.sendFormattedMessage(chattyMessages.other.messagesReloaded)
                         ?: sender.sendConsoleMessage(chattyMessages.other.messagesReloaded)
                 }
