@@ -5,7 +5,6 @@ import com.mineinabyss.chatty.chattyProxyChannel
 import com.mineinabyss.chatty.components.*
 import com.mineinabyss.chatty.helpers.*
 import com.mineinabyss.geary.papermc.access.toGeary
-import com.mineinabyss.idofront.messaging.broadcastVal
 import com.mineinabyss.idofront.messaging.miniMsg
 import com.mineinabyss.idofront.messaging.serialize
 import io.papermc.paper.chat.ChatRenderer
@@ -49,7 +48,6 @@ class ChatListener : Listener {
         val messageColor = TextColor.fromHexString(channel.messageColor) ?: NamedTextColor.NAMES.value(channel.messageColor) ?: NamedTextColor.WHITE
         val parsedMessage = originalMessage().serialize().parseTags(player).color(messageColor)
         result(parsedFormat.append(parsedMessage))
-        parsedMessage.broadcastVal()
     }
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
