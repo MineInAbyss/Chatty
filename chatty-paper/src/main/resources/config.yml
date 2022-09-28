@@ -88,7 +88,7 @@ channels:
     proxy: true
     logToConsole: true
     discordsrv: true
-    format: "%chatty_player_head% %luckperms_prefix %chatty_player_displayname%<white>: "
+    format: "%chatty_player_head% %luckperms_prefix% %chatty_player_displayname%<white>: "
     channelAliases:
       - "head"
 
@@ -97,7 +97,8 @@ channels:
     isDefaultChannel: false
     discordsrv: false
     logToConsole: true
-    format: ":survival:%chatty_shift_-4%%chatty_shift_-4%:local: <yellow>%chatty_player_displayname%<yellow>: "
+    format: ":survival:%chatty_shift_-8%:local: <yellow>%chatty_player_displayname%<yellow>: "
+    messageColor: "yellow"
     channelRadius: 500
     channelAliases:
       - "l"
@@ -111,6 +112,7 @@ channels:
     discordsrv: false
     proxy: true
     logToConsole: false
-    format: ":survival:%chatty_shift_-4%%chatty_shift_-4%:admin:%chatty_player_displayname%<red>: "
+    format: ":survival:%chatty_shift_-8%:admin:%chatty_player_displayname%<red>: "
+    messageColor: "red"
     channelAliases:
       - "a"

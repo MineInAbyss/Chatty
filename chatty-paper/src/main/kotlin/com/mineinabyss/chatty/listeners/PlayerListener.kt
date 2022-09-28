@@ -35,6 +35,10 @@ class PlayerListener : Listener {
 
     @EventHandler
     fun PlayerQuitEvent.onDisconnect() {
+        // Remove player incase they switch skins
+        playerHeadMapCache -= player
+        playerBodyMapCache -= player
+
         if (player.chattyNickname != null)
             player.displayName(player.chattyNickname)
         if (chattyConfig.leave.enabled && !player.toGeary().has<HideJoinLeave>())
@@ -45,18 +49,18 @@ class PlayerListener : Listener {
     fun PlayerEditBookEvent.onBookSign() {
         val meta = newBookMeta
 
-        meta.author(newBookMeta.author().serialize().parseTagsInString(player))
+        meta.author(newBookMeta.author().serialize().parseTags(player))
         if (meta.hasTitle())
-            meta.title(newBookMeta.title().serialize().parseTagsInString(player))
+            meta.title(newBookMeta.title().serialize().parseTags(player))
         if (meta.hasPages())
-            meta.pages(newBookMeta.pages().map { it.serialize().parseTagsInString(player) })
+            meta.pages(newBookMeta.pages().map { it.serialize().parseTags(player) })
         newBookMeta = meta
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     fun SignChangeEvent.onSign() {
         lines().forEachIndexed { index, line ->
-            line(index, line.serialize().parseTagsInString(player))
+            line(index, line.serialize().parseTags(player))
         }
     }
 }

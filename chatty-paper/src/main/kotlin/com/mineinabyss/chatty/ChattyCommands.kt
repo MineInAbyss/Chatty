@@ -112,7 +112,7 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
                                     player?.sendFormattedMessage(nickMessage.tooLong)
 
                                 otherNick.isNotEmpty() -> {
-                                    val parsedNickname = otherNick.parseTagsInString(otherPlayer)
+                                    val parsedNickname = otherNick.parseTags(otherPlayer)
                                     if (chattyConfig.nicknames.useDisplayName)
                                         otherPlayer.displayName(parsedNickname)
                                     otherPlayer.toGeary().set(ChattyNickname(parsedNickname))
@@ -125,7 +125,7 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
                             if (!bypassFormatPerm && !nick.verifyNickLength()) {
                                 player?.sendFormattedMessage(nickMessage.tooLong)
                             } else {
-                                val parsedNick = player?.let { nick.parseTagsInString(it) } ?: return@action
+                                val parsedNick = player?.let { nick.parseTags(it) } ?: return@action
                                 player.toGeary().set(ChattyNickname(parsedNick))
                                 if (chattyConfig.nicknames.useDisplayName)
                                     player.displayName(parsedNick)
@@ -324,9 +324,6 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
         }
     }
 
-    private fun Player.sendFormattedMessage(message: String, optionalPlayer: Player? = null) =
-        this.sendMessage(translatePlaceholders((optionalPlayer ?: this), message).serialize().miniMsg())
-
     private fun Player.handleSendingPrivateMessage(player: Player, arguments: List<String>, isReply: Boolean = false) {
         when {
             !chattyConfig.privateMessages.enabled ->
@@ -352,11 +349,14 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
         }
     }
 
+    private fun Player.sendFormattedMessage(message: String, optionalPlayer: Player? = null) =
+        this.sendMessage(translatePlaceholders((optionalPlayer ?: this), message).parseTags(this, true))
+
     private fun Player.sendFormattedPrivateMessage(messageFormat: String, message: String, receiver: Player) =
-        this.sendMessage((translatePlaceholders(receiver, messageFormat).serialize() + message).miniMsg())
+        this.sendMessage((translatePlaceholders(receiver, messageFormat).serialize() + message).parseTags(this, true))
+
+    private fun CommandSender.sendConsoleMessage(message: String) = this.sendMessage(message.parseTags(null, true))
 
     private fun List<String>.removeFirstArgumentOfStringList(): String =
         this.filter { it != this.first() }.toSentence()
-
-    private fun CommandSender.sendConsoleMessage(message: String) = this.sendMessage(message.miniMsg())
 }

@@ -81,6 +81,7 @@ object ChattyConfig : IdofrontConfig<ChattyConfig.Data>(chatty, Data.serializer(
         val isDefaultChannel: Boolean = false,
         val isStaffChannel: Boolean = false,
         val format: String = "",
+        val messageColor: String = "white",
         val channelRadius: Int = 0,
         val channelAliases: List<String> = listOf(),
     )

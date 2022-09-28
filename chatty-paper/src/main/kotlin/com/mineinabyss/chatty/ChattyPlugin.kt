@@ -4,7 +4,7 @@ import com.mineinabyss.chatty.listeners.ChatListener
 import com.mineinabyss.chatty.listeners.ChattyProxyListener
 import com.mineinabyss.chatty.listeners.DiscordListener
 import com.mineinabyss.chatty.listeners.PlayerListener
-import com.mineinabyss.chatty.placeholderapi.PlaceholderHook
+import com.mineinabyss.chatty.placeholders.PlaceholderAPIHook
 import com.mineinabyss.geary.addon.autoscan
 import com.mineinabyss.geary.papermc.dsl.gearyAddon
 import com.mineinabyss.idofront.platforms.IdofrontPlatforms
@@ -39,7 +39,7 @@ class ChattyPlugin : JavaPlugin() {
         }
 
         if (ChattyContext.isPlaceholderApiLoaded)
-            PlaceholderHook().register()
+            PlaceholderAPIHook().register()
 
         if (ChattyContext.isDiscordSRVLoaded)
             DiscordSRV.api.subscribe(DiscordListener())

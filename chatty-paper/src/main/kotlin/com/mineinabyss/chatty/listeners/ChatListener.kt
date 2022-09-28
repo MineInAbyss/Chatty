@@ -5,15 +5,17 @@ import com.mineinabyss.chatty.chattyProxyChannel
 import com.mineinabyss.chatty.components.*
 import com.mineinabyss.chatty.helpers.*
 import com.mineinabyss.geary.papermc.access.toGeary
+import com.mineinabyss.idofront.messaging.broadcastVal
 import com.mineinabyss.idofront.messaging.miniMsg
 import com.mineinabyss.idofront.messaging.serialize
-import com.mineinabyss.idofront.messaging.toPlainText
 import io.papermc.paper.chat.ChatRenderer
 import io.papermc.paper.event.player.AsyncChatCommandDecorateEvent
 import io.papermc.paper.event.player.AsyncChatDecorateEvent
 import io.papermc.paper.event.player.AsyncChatEvent
 import net.kyori.adventure.audience.Audience
 import net.kyori.adventure.text.Component
+import net.kyori.adventure.text.format.NamedTextColor
+import net.kyori.adventure.text.format.TextColor
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
@@ -35,8 +37,7 @@ class ChatListener : Listener {
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     fun AsyncChatCommandDecorateEvent.onCommandPreview() {
-        val player = player() ?: return
-        result(originalMessage().toPlainText().parseTagsInString(player))
+        result(originalMessage().serialize().parseTags(player() ?: return))
     }
 
     @EventHandler(priority = EventPriority.NORMAL)
@@ -44,10 +45,11 @@ class ChatListener : Listener {
         val player = player() ?: return
         player.verifyPlayerChannel()
         val channel = getChannelFromId(player.chattyData.channelId) ?: return
-        val formatted = originalMessage().toPlainText().parseTagsInString(player)
-        // Whilst this solves the issue of appending componenttags from the end of the last message, it skips the parsetagsinstring component
-        //result((translatePlaceholders(player, channel.format).serialize() + formatted.serialize()).miniMsg())
-        result(translatePlaceholders(player, channel.format).append(formatted))
+        val parsedFormat = translatePlaceholders(player, channel.format).parseTags(player, true)
+        val messageColor = TextColor.fromHexString(channel.messageColor) ?: NamedTextColor.NAMES.value(channel.messageColor) ?: NamedTextColor.WHITE
+        val parsedMessage = originalMessage().serialize().parseTags(player).color(messageColor)
+        result(parsedFormat.append(parsedMessage))
+        parsedMessage.broadcastVal()
     }
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
@@ -67,9 +69,10 @@ class ChatListener : Listener {
 
         if (channel.proxy) {
             //Append channel to give proxy info on what channel the message is from
-            val proxyMessage = ("${player.name}$ZERO_WIDTH$channelId$ZERO_WIDTH${
-                translatePlaceholders(player, channel.format).serialize()
-            }$ZERO_WIDTH ".miniMsg().append(message())).serialize().toByteArray()
+            val proxyMessage = (("${player.name}$ZERO_WIDTH$channelId$ZERO_WIDTH" +
+                    "${translatePlaceholders(player, channel.format).serialize()}$ZERO_WIDTH ").miniMsg()
+                .append(message().correctMessageStyle()))
+                .serialize().toByteArray()
             player.sendPluginMessage(chatty, chattyProxyChannel, proxyMessage)
         }
 
@@ -80,7 +83,9 @@ class ChatListener : Listener {
             player.sendFormattedMessage(chattyMessages.channels.emptyChannelMessage)
             viewers().clear()
         } else if (!chattyConfig.chat.disableChatSigning) {
-            viewers().forEach { a -> RendererExtension().render(player, player.chattyNickname ?: player.displayName(), message(), a) }
+            viewers().forEach { a ->
+                RendererExtension.render(player, player.chattyNickname ?: player.displayName(), message(), a)
+            }
             viewers().clear()
         }
     }
@@ -116,13 +121,9 @@ class ChatListener : Listener {
         this.sendMessage(translatePlaceholders((optionalPlayer ?: this), message.joinToString(" ")))
 }
 
-class RendererExtension : ChatRenderer {
+object RendererExtension : ChatRenderer {
     override fun render(source: Player, sourceDisplayName: Component, message: Component, viewer: Audience): Component {
-        if (viewer is Player) {
-            viewer.sendMessage(message)
-        } else {
-            Bukkit.getConsoleSender().sendMessage(message)
-        }
+        (viewer as? Player ?: Bukkit.getConsoleSender()).sendMessage(message)
         return message
     }
 }
