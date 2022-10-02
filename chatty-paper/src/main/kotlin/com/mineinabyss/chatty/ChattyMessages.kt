@@ -53,7 +53,7 @@ class ChattyMessages(
 
     @Serializable
     data class Channels(
-        val availableChannels: String = "<gold>Available channels are:<newline><yellow><chatty_available_channels>",
+        val availableChannels: String = "<gold>Available channels are:<newline><yellow><chatty_player_available_channels>",
         val channelChanged: String = "<red>You have changed to channel <yellow><chatty_player_channel><red>.",
         val noChannelWithName: String = "No channel by this name exists.",
         val missingChannelPermission: String = "You do not have permission to join this channel.",

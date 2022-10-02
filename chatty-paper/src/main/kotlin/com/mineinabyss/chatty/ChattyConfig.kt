@@ -23,7 +23,7 @@ data class ChattyConfig(
 
     @Serializable
     data class Chat(
-        val disableChatSigning: Boolean = false,
+        val disableChatSigning: Boolean = true,
         val commandSpyFormat: String = "<gold>%chatty_player_displayname%: ",
     )
 

@@ -28,15 +28,14 @@ class ChatListener : Listener {
 
     @EventHandler
     fun PlayerCommandPreprocessEvent.onPlayerCommand() {
-        Bukkit.getOnlinePlayers().filter { it.toGeary().has<CommandSpy>() }.forEach { p ->
-            if (p != player)
-                p.sendFormattedMessage(chattyConfig.chat.commandSpyFormat, message, optionalPlayer = player)
+        Bukkit.getOnlinePlayers().filter { it != player && it.toGeary().has<CommandSpy>() }.forEach { p ->
+            p.sendFormattedMessage(chattyConfig.chat.commandSpyFormat, message, optionalPlayer = player)
         }
     }
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     fun AsyncChatCommandDecorateEvent.onCommandPreview() {
-        result(originalMessage().serialize().parseTags(player() ?: return))
+        result(originalMessage().parseTags(player() ?: return))
     }
 
     @EventHandler(priority = EventPriority.NORMAL)
@@ -46,7 +45,7 @@ class ChatListener : Listener {
         val channel = getChannelFromId(player.chattyData.channelId) ?: return
         val parsedFormat = translatePlaceholders(player, channel.format).parseTags(player, true)
         val messageColor = TextColor.fromHexString(channel.messageColor) ?: NamedTextColor.NAMES.value(channel.messageColor) ?: NamedTextColor.WHITE
-        val parsedMessage = originalMessage().serialize().parseTags(player).color(messageColor)
+        val parsedMessage = originalMessage().parseTags(player).color(messageColor)
         result(parsedFormat.append(parsedMessage))
     }
 
@@ -80,7 +79,7 @@ class ChatListener : Listener {
         if (pingedPlayer == null && viewers().isEmpty()) {
             player.sendFormattedMessage(chattyMessages.channels.emptyChannelMessage)
             viewers().clear()
-        } else if (!chattyConfig.chat.disableChatSigning) {
+        } else if (chattyConfig.chat.disableChatSigning) {
             viewers().forEach { a ->
                 RendererExtension.render(player, player.chattyNickname ?: player.displayName(), message(), a)
             }
