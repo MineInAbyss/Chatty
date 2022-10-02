@@ -5,14 +5,18 @@ import com.combimagnetron.imageloader.Image.ColorType
 import com.combimagnetron.imageloader.ImageUtils
 import com.mineinabyss.chatty.components.ChannelType
 import com.mineinabyss.chatty.components.chattyData
-import com.mineinabyss.idofront.messaging.miniMsg
-import com.mineinabyss.idofront.messaging.serialize
+import com.mineinabyss.chatty.components.chattyNickname
+import com.mineinabyss.chatty.placeholders.chattyPlaceholderTags
+import com.mineinabyss.idofront.textcomponents.miniMsg
+import com.mineinabyss.idofront.textcomponents.serialize
+import com.mineinabyss.idofront.textcomponents.stripTags
 import me.clip.placeholderapi.PlaceholderAPI
 import net.kyori.adventure.key.Key
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.TextReplacementConfig
+import net.kyori.adventure.text.format.NamedTextColor
+import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver
 import org.bukkit.Bukkit
-import org.bukkit.ChatColor
 import org.bukkit.Sound
 import org.bukkit.SoundCategory
 import org.bukkit.entity.Player
@@ -32,7 +36,7 @@ fun String.checkForPlayerPings(channelId: String): Player? {
     if (channelId !in getPingEnabledChannels || ping.pingPrefix.isEmpty() || ping.pingPrefix !in this) return null
     val pingedName = this.substringAfter(ping.pingPrefix).split(" ")[0]
     return Bukkit.getOnlinePlayers().firstOrNull {
-        it.name == pingedName || it.displayName().toPlainText() == pingedName
+        it.name == pingedName || it.chattyNickname?.serialize().toString().stripTags() == pingedName
     }
 }
 
@@ -42,13 +46,13 @@ fun Component.handlePlayerPings(player: Player, pingedPlayer: Player) {
     val pingSound = pingedPlayer.chattyData.pingSound ?: ping.defaultPingSound
     val clickToReply =
         if (ping.clickToReply) "<insert:@${
-            player.displayName().toPlainText()
+            player.chattyNickname?.serialize().toString().stripTags()
         } ><hover:show_text:'<red>Shift + Click to mention!'>"
         else ""
     val pingMessage = this.replaceText(
         TextReplacementConfig.builder()
-            .match(ping.pingPrefix + pingedPlayer.chattyData.displayName)
-            .replacement((ping.pingReceiveFormat + clickToReply + ping.pingPrefix + pingedPlayer.chattyData.displayName).miniMsg())
+            .match(ping.pingPrefix + pingedPlayer.chattyNickname)
+            .replacement((ping.pingReceiveFormat + clickToReply + ping.pingPrefix + pingedPlayer.chattyNickname).miniMsg())
             .build()
     )
 
@@ -58,11 +62,35 @@ fun Component.handlePlayerPings(player: Player, pingedPlayer: Player) {
 
     val pingerMessage = this.replaceText(
         TextReplacementConfig.builder()
-            .match(ping.pingPrefix + pingedPlayer.chattyData.displayName)
-            .replacement((ping.pingSendFormat + ping.pingPrefix + pingedPlayer.chattyData.displayName).miniMsg())
+            .match(ping.pingPrefix + pingedPlayer.chattyNickname)
+            .replacement((ping.pingSendFormat + ping.pingPrefix + pingedPlayer.chattyNickname).miniMsg())
             .build()
     )
     player.sendMessage(pingerMessage)
+}
+
+/** Build a unique instance of MM with specific tagresolvers to format
+ * @param player Format tags based on a player's permission, or null to parse all tags
+ * @param ignorePermissions Whether to ignore permissions and parse all tags
+ */
+fun String.parseTags(player: Player? = null, ignorePermissions: Boolean = false): Component {
+    val tagResolver = TagResolver.builder()
+
+    // custom tags
+    tagResolver.resolver(player.chattyPlaceholderTags)
+
+    if (ignorePermissions || player == null || player.hasPermission(ChattyPermissions.BYPASS_TAG_PERM))
+        tagResolver.resolvers(ChattyPermissions.chatFormattingPerms.values)
+    else ChattyPermissions.chatFormattingPerms.forEach { (perm, tag) ->
+        if (player.hasPermission(perm))
+            tagResolver.resolver(tag)
+    }
+
+    return this.fixSerializedTags().miniMsg(tagResolver.build())
+}
+
+fun Component.parseTags(player: Player? = null, ignorePermissions: Boolean = false): Component {
+    return this.serialize().parseTags(player, ignorePermissions)
 }
 
 fun getGlobalChat() =
@@ -97,66 +125,67 @@ fun getAllChannelNames(): List<String> {
 }
 
 fun translatePlaceholders(player: Player, message: String): Component {
-    val msg = message.miniMsg().replaceText(
-        TextReplacementConfig.builder()
-            .match("%chatty_playerhead%")
-            .replacement(player.translatePlayerHeadComponent()).build()
-    ).serialize()
-    return PlaceholderAPI.setPlaceholders(player, msg).miniMsg().fixLegacy()
+    return PlaceholderAPI.setPlaceholders(player, message).fixLegacy()
 }
 
 val playerHeadMapCache = mutableMapOf<Player, Component>()
 fun Player.translatePlayerHeadComponent(): Component {
-    if (this !in playerHeadMapCache)
-        playerHeadMapCache[this] = getPlayerHeadTexture(ascent = -5).append("".miniMsg().font(Key.key("minecraft:default")))
+    if (this !in playerHeadMapCache || playerHeadMapCache[this]!!.font() != Key.key(chattyConfig.playerHeadFont)) {
+        playerHeadMapCache[this] = getPlayerHeadTexture(ascent = -5)
+    }
     return playerHeadMapCache[this]!!
 }
 
-fun Player.getPlayerHeadTexture(scale: Int = 1, ascent: Int = 0, colorType: ColorType = ColorType.MINIMESSAGE, font: Key = Key.key(chattyConfig.playerHeadFont)) : Component {
-    val image = avatarBuilder(this, scale, ascent, colorType).getBodyBufferedImage(scale).getSubimage(4,0,8,8)
-    return ImageUtils.generateStringFromImage(image, colorType, ascent).miniMsg().font(font)
+val playerBodyMapCache = mutableMapOf<Player, Component>()
+fun Player.translateFullPlayerSkinComponent(): Component {
+    if (this !in playerBodyMapCache || playerBodyMapCache[this]!!.font() != Key.key(chattyConfig.playerHeadFont)) {
+        playerBodyMapCache[this] = getFullPlayerBodyTexture(ascent = -5)
+    }
+    return playerBodyMapCache[this]!!
 }
 
-fun Player.getFullPlayerBodyTexture(scale: Int = 1, ascent: Int = 0, colorType: ColorType = ColorType.MINIMESSAGE, font: Key = Key.key(chattyConfig.playerHeadFont)) : Component {
+fun Player.getPlayerHeadTexture(
+    scale: Int = 1,
+    ascent: Int = 0,
+    colorType: ColorType = ColorType.MINIMESSAGE,
+    font: Key = Key.key(chattyConfig.playerHeadFont)
+): Component {
+    val image = avatarBuilder(this, scale, ascent, colorType).getBodyBufferedImage(scale).getSubimage(4, 0, 8, 8)
+    return ImageUtils.generateStringFromImage(image, colorType, ascent).miniMsg().font(font)
+        .append(Component.empty().font(Key.key("minecraft:default")).color(NamedTextColor.WHITE))
+}
+
+fun Player.getFullPlayerBodyTexture(
+    scale: Int = 1,
+    ascent: Int = 0,
+    colorType: ColorType = ColorType.MINIMESSAGE,
+    font: Key = Key.key(chattyConfig.playerHeadFont)
+): Component {
     val image = avatarBuilder(this, scale, ascent, colorType).getBodyBufferedImage(scale)
     return ImageUtils.generateStringFromImage(image, colorType, ascent).miniMsg().font(font)
 }
 
-private fun avatarBuilder(player: Player, scale: Int = 1, ascent: Int = 0, colorType: ColorType = ColorType.MINIMESSAGE) : Avatar {
-    return Avatar.builder().isSlim(player.playerProfile.textures.skinModel == SkinModel.SLIM).playerName(player.name).ascent(ascent).colorType(colorType).scale(scale).build()
+private fun avatarBuilder(
+    player: Player,
+    scale: Int = 1,
+    ascent: Int = 0,
+    colorType: ColorType = ColorType.MINIMESSAGE
+): Avatar {
+    return Avatar.builder().isSlim(player.playerProfile.textures.skinModel == SkinModel.SLIM).playerName(player.name)
+        .ascent(ascent).colorType(colorType).scale(scale).build()
 }
 
-fun Component.fixLegacy(): Component {
-    val string = this.serialize().replace("\\<", "<").replace("\\>", ">")
-    return if ("§" in serialize())
-        legacy.deserialize(string)
-    else string.miniMsg()
+fun Component.correctMessageStyle(): Component {
+    return this.font(Key.key("minecraft:default")).color(NamedTextColor.WHITE)
 }
 
-fun Component.serialize() = mm.serialize(this)
+fun String.fixSerializedTags(): String {
+    return this.replace("\\<", "<").replace("\\>", ">")
+}
 
-fun Component.toPlainText() = plainText.serialize(this)
-
-// Cache tagmap so as it is static
-private var cachedTags = mutableSetOf<String>()
-fun String.getTags(): Set<ChattyTags> {
-    val tags = mutableSetOf<ChattyTags>()
-    val allTags = cachedTags.takeIf { it.isNotEmpty() } ?: run {
-        cachedTags += ChattyTags.values().map { t -> "<${t.name.lowercase()}" }
-        cachedTags += ChatColor.values().map { c -> "<${c.name.lowercase()}" }
-        cachedTags
-    }
-
-    allTags.forEach {
-        val tag = it.replace("<", "")
-        if (tag.isNotBlank() && it in this) {
-            if (tag.uppercase() in ChattyTags.values().map { t -> t.name })
-                tags += ChattyTags.valueOf(tag.uppercase())
-            else if (tag.uppercase() in ChatColor.values().map { c -> c.name })
-                tags += ChattyTags.TEXTCOLOR
-        }
-    }
-    return tags
+fun String.fixLegacy(): Component {
+    return if ("§" in this) legacy.deserialize(this)
+    else this.fixSerializedTags().miniMsg()
 }
 
 fun List<String>.toSentence() = this.joinToString(" ")
@@ -167,19 +196,20 @@ fun String.toPlayer(): Player? {
 
 fun Player.swapChannelCommand(channelId: String) {
     val newChannel = getChannelFromId(channelId)
+    when {
+        newChannel == null ->
+            sendFormattedMessage(chattyMessages.channels.noChannelWithName)
 
-    if (newChannel == null) {
-        sendFormattedMessage(chattyMessages.channels.noChannelWithName)
-    } else if (!checkPermission(newChannel.permission)) {
-        sendFormattedMessage(chattyMessages.channels.missingChannelPermission)
-    } else {
-        chattyData.channelId = channelId
-        chattyData.lastChannelUsed = channelId
-        sendFormattedMessage(chattyMessages.channels.channelChanged)
+        newChannel.permission.isNotBlank() && !hasPermission(newChannel.permission) ->
+            sendFormattedMessage(chattyMessages.channels.missingChannelPermission)
+
+        else -> {
+            chattyData.channelId = channelId
+            chattyData.lastChannelUsed = channelId
+            sendFormattedMessage(chattyMessages.channels.channelChanged)
+        }
     }
 }
 
 fun Player.sendFormattedMessage(message: String) =
-    this.sendMessage(translatePlaceholders(this, message).serialize().miniMsg())
-
-
+    this.sendMessage(translatePlaceholders(this, message).parseTags(player, true))

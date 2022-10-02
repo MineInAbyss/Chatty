@@ -1,44 +1,52 @@
 package com.mineinabyss.chatty
 
+import com.mineinabyss.chatty.helpers.DiscordEmoteFixer
 import com.mineinabyss.chatty.listeners.ChatListener
 import com.mineinabyss.chatty.listeners.ChattyProxyListener
 import com.mineinabyss.chatty.listeners.DiscordListener
 import com.mineinabyss.chatty.listeners.PlayerListener
-import com.mineinabyss.chatty.placeholderapi.PlaceholderHook
+import com.mineinabyss.chatty.placeholders.PlaceholderAPIHook
 import com.mineinabyss.geary.addon.autoscan
 import com.mineinabyss.geary.papermc.dsl.gearyAddon
-import com.mineinabyss.idofront.platforms.IdofrontPlatforms
-import com.mineinabyss.idofront.plugin.registerEvents
+import com.mineinabyss.idofront.config.config
+import com.mineinabyss.idofront.config.singleConfig
+import com.mineinabyss.idofront.platforms.Platforms
+import com.mineinabyss.idofront.plugin.listeners
+import com.mineinabyss.idofront.plugin.startOrAppendKoin
 import github.scarsz.discordsrv.DiscordSRV
 import org.bukkit.plugin.java.JavaPlugin
-import kotlin.io.path.Path
+import org.koin.dsl.module
 
 class ChattyPlugin : JavaPlugin() {
     override fun onLoad() {
-        IdofrontPlatforms.load(this, "mineinabyss")
+        Platforms.load(this, "mineinabyss")
     }
 
     override fun onEnable() {
         saveDefaultAssets()
-        saveDefaultEmoteFixer()
-        saveDefaultMessages()
-        saveDefaultConfig()
-        reloadConfig()
-        ChattyConfig.load()
 
-        ChattyCommands()
-
-        registerEvents(
-            ChatListener(),
-            PlayerListener()
-        )
+        startOrAppendKoin(module {
+            singleConfig(config<ChattyConfig>("config") {
+                fromPluginPath(loadDefault = true)
+            })
+            singleConfig(config<ChattyMessages>("messages") {
+                fromPluginPath(loadDefault = true)
+            })
+            singleConfig(config<DiscordEmoteFixer>("emotefixer") {
+                fromPluginPath(loadDefault = true)
+            })
+        })
 
         // Register the proxy listener
-        server.messenger.registerIncomingPluginChannel(this, chattyProxyChannel, ChattyProxyListener())
-        server.messenger.registerOutgoingPluginChannel(this, chattyProxyChannel)
+        try {
+            server.messenger.registerIncomingPluginChannel(this, chattyProxyChannel, ChattyProxyListener())
+            server.messenger.registerOutgoingPluginChannel(this, chattyProxyChannel)
+        } catch (e: IllegalArgumentException) {
+            logger.warning("Could not register proxy channel. Is another plugin using it?")
+        }
 
         if (ChattyContext.isPlaceholderApiLoaded)
-            PlaceholderHook().register()
+            PlaceholderAPIHook().register()
 
         if (ChattyContext.isDiscordSRVLoaded)
             DiscordSRV.api.subscribe(DiscordListener())
@@ -47,6 +55,9 @@ class ChattyPlugin : JavaPlugin() {
             autoscan("com.mineinabyss") {
                 all()
             }
+            ChattyCommands()
+
+            listeners(ChatListener(), PlayerListener())
         }
     }
 
@@ -54,23 +65,10 @@ class ChattyPlugin : JavaPlugin() {
         if (ChattyContext.isDiscordSRVLoaded)
             DiscordSRV.api.unsubscribe(DiscordListener())
     }
-}
 
-private fun saveDefaultMessages() {
-    if (!Path(chatty.dataFolder.path + "/messages.yml").toFile().exists()) {
-        chatty.saveResource("messages.yml", false)
+    private fun saveDefaultAssets() {
+        chatty.saveResource("assets/minecraft/font/chatty_heads.json", true)
+        chatty.saveResource("assets/space/textures/ui/utils/null.png", true)
+        chatty.saveResource("assets/space/textures/ui/utils/whiteblank_4.png", true)
     }
-}
-
-
-private fun saveDefaultEmoteFixer() {
-    if (!Path(chatty.dataFolder.path + "/emotefixer.yml").toFile().exists()) {
-        chatty.saveResource("emotefixer.yml", false)
-    }
-}
-
-private fun saveDefaultAssets() {
-    chatty.saveResource("assets/minecraft/font/chatty_heads.json", true)
-    chatty.saveResource("assets/space/textures/ui/utils/null.png", true)
-    chatty.saveResource("assets/space/textures/ui/utils/whiteblank_4.png", true)
 }

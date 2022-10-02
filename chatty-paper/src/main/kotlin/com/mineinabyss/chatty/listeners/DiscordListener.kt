@@ -7,8 +7,8 @@ import com.mineinabyss.chatty.helpers.emoteFixer
 import com.mineinabyss.chatty.helpers.getChannelFromId
 import com.mineinabyss.chatty.helpers.getChannelFromPlayer
 import com.mineinabyss.chatty.helpers.translatePlayerHeadComponent
-import com.mineinabyss.idofront.messaging.miniMsg
-import com.mineinabyss.idofront.messaging.serialize
+import com.mineinabyss.idofront.textcomponents.miniMsg
+import com.mineinabyss.idofront.textcomponents.serialize
 import github.scarsz.discordsrv.api.ListenerPriority
 import github.scarsz.discordsrv.api.Subscribe
 import github.scarsz.discordsrv.api.events.*

@@ -2,10 +2,10 @@ package com.mineinabyss.chatty.listeners
 
 import com.mineinabyss.chatty.components.ChannelData
 import com.mineinabyss.chatty.components.HideJoinLeave
-import com.mineinabyss.chatty.components.chattyData
+import com.mineinabyss.chatty.components.chattyNickname
 import com.mineinabyss.chatty.helpers.*
 import com.mineinabyss.geary.papermc.access.toGeary
-import com.mineinabyss.idofront.messaging.miniMsg
+import com.mineinabyss.idofront.textcomponents.serialize
 import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
@@ -15,90 +15,55 @@ import org.bukkit.event.player.PlayerJoinEvent
 import org.bukkit.event.player.PlayerQuitEvent
 
 class PlayerListener : Listener {
-    //TODO Disable if proxy should handle this
+
     @EventHandler(priority = EventPriority.LOWEST)
     fun PlayerJoinEvent.onFirstJoin() {
         if (player.toGeary().has<ChannelData>()) return
         if (chattyConfig.join.enabled && chattyConfig.join.firstJoin.enabled) {
             joinMessage(translatePlaceholders(player, chattyMessages.joinLeave.firstJoinMessage))
-//            if (chattyConfig.join.firstJoin.enabled)
-//                player.sendPluginMessage(chatty, chattyProxyChannel, PlaceholderAPI.setPlaceholders(player, messages.joinLeave.joinMessage).toByteArray())
         }
     }
 
     @EventHandler(priority = EventPriority.NORMAL)
     fun PlayerJoinEvent.onJoin() {
+        player.translatePlayerHeadComponent()
+        player.translateFullPlayerSkinComponent()
+
         player.verifyPlayerChannel()
-        if (player.chattyData.displayName != null)
-            player.displayName(player.chattyData.displayName?.miniMsg())
+        if (player.chattyNickname != null)
+            player.displayName(player.chattyNickname)
         if (chattyConfig.join.enabled && !player.toGeary().has<HideJoinLeave>())
             joinMessage(translatePlaceholders(player, chattyMessages.joinLeave.joinMessage))
-//        if (chattyConfig.join.sendAcrossProxy)
-//            player.sendPluginMessage(chatty, chattyProxyChannel, PlaceholderAPI.setPlaceholders(player, messages.proxies.proxyJoin).toByteArray())
     }
 
     @EventHandler
     fun PlayerQuitEvent.onDisconnect() {
-        if (player.displayName() != player.name())
-            player.chattyData.displayName = player.displayName().serialize()
+        // Remove player incase they switch skins
+        playerHeadMapCache -= player
+        playerBodyMapCache -= player
+
+        if (player.chattyNickname != null)
+            player.displayName(player.chattyNickname)
         if (chattyConfig.leave.enabled && !player.toGeary().has<HideJoinLeave>())
             quitMessage(translatePlaceholders(player, chattyMessages.joinLeave.leaveMessage))
-//        if (chattyConfig.leave.sendAcrossProxy)
-//            Bukkit.getServer().sendPluginMessage(chatty, chattyProxyChannel, PlaceholderAPI.setPlaceholders(player, messages.proxies.proxyLeave).toByteArray())
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     fun PlayerEditBookEvent.onBookSign() {
         val meta = newBookMeta
-        val config = chattyConfig.book
-        if (player.checkPermission(chattyConfig.book.bypassFormatPermission)) {
-            if (meta.hasAuthor() && !config.useDisplayNameForAuthor)
-                meta.author(newBookMeta.author().fixLegacy())
-            else if (meta.hasAuthor() && config.useDisplayNameForAuthor)
-                meta.author(player.displayName())
-            if (meta.hasTitle())
-                meta.title(newBookMeta.title().fixLegacy())
-            if (meta.hasPages())
-                meta.pages(newBookMeta.pages().map { it.fixLegacy() })
-        } else {
-            if (meta.hasAuthor() && !config.useDisplayNameForAuthor)
-                meta.author(newBookMeta.author().serialize().verifyBookStyling().miniMsg())
-            else if (meta.hasAuthor() && config.useDisplayNameForAuthor)
-                meta.author(player.displayName().serialize().verifyBookStyling().miniMsg())
-            if (meta.hasTitle())
-                meta.title(newBookMeta.title().serialize().verifyBookStyling().miniMsg())
-            if (meta.hasPages())
-                meta.pages(newBookMeta.pages().map { it.serialize().verifyBookStyling().miniMsg() })
-        }
+
+        meta.author(newBookMeta.author().serialize().parseTags(player))
+        if (meta.hasTitle())
+            meta.title(newBookMeta.title().serialize().parseTags(player))
+        if (meta.hasPages())
+            meta.pages(newBookMeta.pages().map { it.serialize().parseTags(player) })
         newBookMeta = meta
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     fun SignChangeEvent.onSign() {
-        if (player.checkPermission(chattyConfig.sign.bypassFormatPermission)) {
-            lines().forEachIndexed { index, line ->
-                line(index, line.fixLegacy())
-            }
-        } else {
-            lines().forEachIndexed { index, line ->
-                line(index, line.serialize().verifySignStyling().miniMsg())
-            }
+        lines().forEachIndexed { index, line ->
+            line(index, line.serialize().parseTags(player))
         }
-    }
-
-    private fun String.verifyBookStyling(): String {
-        val finalString = this
-        this.getTags().filter { tag -> tag !in chattyConfig.book.allowedTags }.forEach { tag ->
-            finalString.replace(tag.toString().lowercase(), "\\<${tag.toString().lowercase()}")
-        }
-        return finalString
-    }
-
-    private fun String.verifySignStyling(): String {
-        val finalString = this
-        this.getTags().filter { tag -> tag !in chattyConfig.sign.allowedTags }.forEach { tag ->
-            finalString.replace(tag.toString().lowercase(), "\\<${tag.toString().lowercase()}")
-        }
-        return finalString
     }
 }
