@@ -7,6 +7,7 @@ plugins {
     kotlin("kapt")
     kotlin("plugin.serialization")
     id("com.github.johnrengelman.shadow")
+    id("com.mineinabyss.conventions.autoversion")
     `maven-publish`
 }
 
