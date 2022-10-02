@@ -29,7 +29,7 @@ ping:
   invalidPingSound: "<red>You must specify a valid sound to play."
 
 channels:
-  availableChannels: "<gold>Available channels are:<newline><yellow><chatty_available_channels>"
+  availableChannels: "<gold>Available channels are:<newline><yellow><chatty_player_available_channels>"
   channelChanged: "<red>You have changed to channel <yellow><chatty_player_channel><red>."
   noChannelWithName: "No channel by this name exists."
   missingChannelPermission: "You do not have permission to join this channel."

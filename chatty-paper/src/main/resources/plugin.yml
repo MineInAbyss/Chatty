@@ -5,7 +5,7 @@ main: com.mineinabyss.chatty.ChattyPlugin
 api-version: 1.18
 depend: [ Geary ]
 softdepend: [ BondrewdLikesHisEmotes, PlaceholderAPI, DiscordSRV ]
-description: TODO
+description: Highly customizable chat plugin
 
 commands:
   chatty:

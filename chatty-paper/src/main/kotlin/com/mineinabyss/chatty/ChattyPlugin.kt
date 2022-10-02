@@ -8,16 +8,18 @@ import com.mineinabyss.chatty.listeners.PlayerListener
 import com.mineinabyss.chatty.placeholders.PlaceholderAPIHook
 import com.mineinabyss.geary.addon.autoscan
 import com.mineinabyss.geary.papermc.dsl.gearyAddon
+import com.mineinabyss.idofront.config.IdofrontConfig
 import com.mineinabyss.idofront.config.config
-import com.mineinabyss.idofront.config.singleConfig
 import com.mineinabyss.idofront.platforms.Platforms
 import com.mineinabyss.idofront.plugin.listeners
-import com.mineinabyss.idofront.plugin.startOrAppendKoin
 import github.scarsz.discordsrv.DiscordSRV
 import org.bukkit.plugin.java.JavaPlugin
-import org.koin.dsl.module
 
 class ChattyPlugin : JavaPlugin() {
+    lateinit var config: IdofrontConfig<ChattyConfig>
+    lateinit var messages: IdofrontConfig<ChattyMessages>
+    lateinit var emoteFixer: IdofrontConfig<DiscordEmoteFixer>
+
     override fun onLoad() {
         Platforms.load(this, "mineinabyss")
     }
@@ -25,18 +27,9 @@ class ChattyPlugin : JavaPlugin() {
     override fun onEnable() {
         saveDefaultAssets()
 
-        startOrAppendKoin(module {
-            singleConfig(config<ChattyConfig>("config") {
-                fromPluginPath(loadDefault = true)
-            })
-            singleConfig(config<ChattyMessages>("messages") {
-                fromPluginPath(loadDefault = true)
-            })
-            singleConfig(config<DiscordEmoteFixer>("emotefixer") {
-                fromPluginPath(loadDefault = true)
-            })
-        })
-
+        config = config("config") { fromPluginPath(loadDefault = true) }
+        messages = config("messages") { fromPluginPath(loadDefault = true) }
+        emoteFixer = config("emotefixer") { fromPluginPath(loadDefault = false) }
         // Register the proxy listener
         try {
             server.messenger.registerIncomingPluginChannel(this, chattyProxyChannel, ChattyProxyListener())

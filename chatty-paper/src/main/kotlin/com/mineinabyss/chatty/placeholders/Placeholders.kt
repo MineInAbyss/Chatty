@@ -19,7 +19,8 @@ fun chattyPlaceholders(player: Player?, string: String? = null) : Map<String, St
     } catch (e: NumberFormatException) { 0 }
 
     return mapOf(
-        "available_channels" to getAllChannelNames().joinToString(", "),
+        "all_channels" to getAllChannelNames().joinToString(", "),
+        "player_available_channels" to getAllChannelNames().filter { player?.hasPermission(getChannelFromId(it)?.permission.toString()) != false }.joinToString(", "),
         "player_channel" to player?.chattyData?.channelId.toString(),
         "player_channel_permission" to channel?.permission.toString(),
         "player_channel_isdefault" to channel?.isDefaultChannel.toString(),
@@ -54,28 +55,4 @@ val Player?.chattyPlaceholderTags: TagResolver get() {
     }.forEach { tagResolver.resolver(it) }
 
     return tagResolver.build()
-
-    /*return TagResolver.resolver(
-        Placeholder.component("chatty:player_head", translatePlayerHeadComponent()),
-        Placeholder.component("chatty:player_skin", translateFullPlayerSkinComponent()),
-        Placeholder.component("chatty:nickname", chattyNickname ?: displayName()),
-
-        Placeholder.component("chatty:available_channels", getAllChannelNames().joinToString(", ").miniMsg()),
-        Placeholder.component("chatty:channel", chattyData.channelId.miniMsg()),
-        Placeholder.component("chatty:channel:permission", channel?.permission.toString().miniMsg()),
-        Placeholder.component("chatty:channel:isdefault", channel?.isDefaultChannel.toString().miniMsg()),
-        Placeholder.component("chatty:channel:type", channel?.channelType.toString().miniMsg()),
-        Placeholder.component("chatty:channel:format", channel?.channelRadius.toString().miniMsg()),
-        Placeholder.component("chatty:channel:aliases", channel?.format.toString().miniMsg()),
-        Placeholder.component("chatty:channel:proxy_enabled", channel?.proxy.toString().miniMsg()),
-        Placeholder.component("chatty:player_spy_last", toGeary().get<SpyOnChannels>()?.channels?.last().toString().miniMsg()),
-
-        Placeholder.component("chatty:ping_defaultsound", chattyConfig.ping.defaultPingSound.miniMsg()),
-        Placeholder.component("chatty:ping_volume", chattyConfig.ping.pingVolume.toString().miniMsg()),
-        Placeholder.component("chatty:ping_pitch", chattyConfig.ping.pingPitch.toString().miniMsg()),
-        Placeholder.component("chatty:ping_prefix", chattyConfig.ping.pingPrefix.miniMsg()),
-        Placeholder.component("chatty:ping_clickreply", chattyConfig.ping.clickToReply.toString().miniMsg()),
-        Placeholder.component("chatty:ping_receiver_format", chattyConfig.ping.pingReceiveFormat.miniMsg()),
-        Placeholder.component("chatty:ping_sender_format", chattyConfig.ping.pingSendFormat.miniMsg()),
-    )*/
 }

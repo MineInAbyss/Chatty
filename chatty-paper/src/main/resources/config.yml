@@ -4,18 +4,25 @@
 # Please note: This is not the most performance friendly feature so use the placeholder sparingly.
 playerHeadFont: "minecraft:chatty_heads"
 
+# [proxy]: Currently not supported
+# [messageReplyTime]: Duration a reply should be active for; t: Ticks, s: Seconds, m: Minutes, h: Hours, d: Days, w: Weeks, mo: Months
+# [messageSendFormat]: Format of the message sent by the messenger
+# [messageReceiveFormat]: Format of the message received by the receiver
+# [messageSendSound]: Sound to play when sending a message, "" to disable
+# [messageReceiveSound]: Sound to play when receiving a message, "" to disable
 privateMessages:
   enabled: true
-  proxy: true                       # Not currently supported
-  messageReplyTime: 20s              # t: Ticks, s: Seconds, m: Minutes, h: Hours, d: Days, w: Weeks, mo: Months
+  proxy: true
+  messageReplyTime: 2m
   messageSendFormat: "<gold>You -> %chatty_player_displayname%</gold><gold>: "
   messageReceiveFormat: "<gold>%chatty_player_displayname% -> You</gold><gold>: "
-  messageSendSound: ""              # Empty for no sound
-  messageReceiveSound: ""           # Empty for no sound
+  messageSendSound: ""
+  messageReceiveSound: ""
 
 # [disableChatSigning]: Sends messages with valid signatures to support 1.19.1+ chat reporting. Disabling this will disable reporting
+# [commandSpyFormat]: Format for the command spy message
 chat:
-  disableChatSigning: false
+  disableChatSigning: true
   commandSpyFormat: "<gold>%chatty_player_displayname%</gold><yellow>: "
 
 # [useDisplayName]: Stores the chatty nickname in players displayname aswell
@@ -69,6 +76,7 @@ ping:
 # [logToConsole]: Specify if messages in this channel should be sent to the console
 # [discordsrv]: Specify if messages sent in this channel should also be sent to Discord via DiscordSRV
 # [format]: The format to use for this channel, this is what is added before the message itself
+# [messageColor]: The color to use for the message itself, white by default
 # [channelAliases]: List of aliases for this channel, these can be used to switch to this channel
 channels:
   global:
@@ -77,7 +85,7 @@ channels:
     proxy: true
     logToConsole: true
     discordsrv: true
-    format: ":survival: %luckperms_prefix% %chatty_player_displayname%<white>: "
+    format: ":survival: %luckperms_prefix% <chatty_nickname><white>: "
     channelAliases:
       - "g"
 
@@ -88,7 +96,7 @@ channels:
     proxy: true
     logToConsole: true
     discordsrv: true
-    format: "%chatty_player_head% %luckperms_prefix% %chatty_player_displayname%<white>: "
+    format: "%chatty_player_head% %luckperms_prefix% <chatty_nickname><white>: "
     channelAliases:
       - "head"
 
@@ -97,7 +105,7 @@ channels:
     isDefaultChannel: false
     discordsrv: false
     logToConsole: true
-    format: ":survival:%chatty_shift_-8%:local: <yellow>%chatty_player_displayname%<yellow>: "
+    format: ":survival:%chatty_shift_-8%:local: <yellow><chatty_nickname><yellow>: "
     messageColor: "yellow"
     channelRadius: 500
     channelAliases:
@@ -112,7 +120,7 @@ channels:
     discordsrv: false
     proxy: true
     logToConsole: false
-    format: ":survival:%chatty_shift_-8%:admin:%chatty_player_displayname%<red>: "
+    format: ":survival:%chatty_shift_-8%:admin:<chatty_nickname><red>: "
     messageColor: "red"
     channelAliases:
       - "a"

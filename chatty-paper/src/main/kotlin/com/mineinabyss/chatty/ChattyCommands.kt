@@ -5,10 +5,12 @@ import com.github.shynixn.mccoroutine.bukkit.launch
 import com.mineinabyss.chatty.components.*
 import com.mineinabyss.chatty.helpers.*
 import com.mineinabyss.geary.papermc.access.toGeary
+import com.mineinabyss.idofront.commands.arguments.optionArg
 import com.mineinabyss.idofront.commands.arguments.stringArg
 import com.mineinabyss.idofront.commands.execution.IdofrontCommandExecutor
 import com.mineinabyss.idofront.commands.extensions.actions.ensureSenderIsPlayer
 import com.mineinabyss.idofront.commands.extensions.actions.playerAction
+import com.mineinabyss.idofront.config.config
 import com.mineinabyss.idofront.textcomponents.miniMsg
 import com.mineinabyss.idofront.textcomponents.serialize
 import kotlinx.coroutines.Job
@@ -18,10 +20,42 @@ import org.bukkit.command.Command
 import org.bukkit.command.CommandSender
 import org.bukkit.command.TabCompleter
 import org.bukkit.entity.Player
+import kotlin.collections.component1
+import kotlin.collections.component2
+import kotlin.collections.set
 
 class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
     override val commands = commands(chatty) {
         "chatty"(desc = "Chatty commands") {
+            "reload" {
+                val option by optionArg(listOf("all", "config", "messages", "emotefixer")) { default = "all" }
+                action {
+                    when (option) {
+                        "all" -> {
+                            chatty.config = config("config") { chatty.fromPluginPath(loadDefault = true) }
+                            chatty.messages = config("messages") { chatty.fromPluginPath(loadDefault = true) }
+                            chatty.emoteFixer = config("emotefixer") { chatty.fromPluginPath(loadDefault = false) }
+                            sender.sendConsoleMessage("<green>Reloaded everything!")
+                        }
+                        "config" -> {
+                            chatty.config = config("config") { chatty.fromPluginPath(loadDefault = true) }
+                            sender.sendConsoleMessage("<green>Reloaded configs!")
+                        }
+                        "messages" -> {
+                            chatty.messages = config("messages") { chatty.fromPluginPath(loadDefault = true) }
+                            sender.sendConsoleMessage("<green>Reloaded messages!")
+                        }
+                        "emotefixer" -> {
+                            chatty.emoteFixer = config("emotefixer") { chatty.fromPluginPath(loadDefault = false) }
+                            sender.sendConsoleMessage("<green>Reloaded emotefixer!")
+                        }
+                    }
+                }
+                // chatty.config.reload() is a thing but does not regen or remove stuff so
+//                    chatty.config.reload()
+//                    chatty.messages.reload()
+//                    chatty.emoteFixer.reload()
+            }
             ("message" / "msg")(desc = "Private message another player") {
                 ensureSenderIsPlayer()
                 val player by stringArg()
@@ -262,7 +296,7 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
                                 true
                             ) && getChannelFromId(s)?.channelType != ChannelType.GLOBAL
                         }
-
+                    "reload", "rl" -> listOf("all", "config", "messages", "emotefixer").filter { s -> s.startsWith(args[1]) }
                     else -> emptyList()
                 }
 
