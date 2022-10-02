@@ -5,7 +5,7 @@ import com.mineinabyss.chatty.components.HideJoinLeave
 import com.mineinabyss.chatty.components.chattyNickname
 import com.mineinabyss.chatty.helpers.*
 import com.mineinabyss.geary.papermc.access.toGeary
-import com.mineinabyss.idofront.messaging.serialize
+import com.mineinabyss.idofront.textcomponents.serialize
 import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener

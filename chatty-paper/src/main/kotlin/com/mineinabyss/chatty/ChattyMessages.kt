@@ -1,22 +1,18 @@
 package com.mineinabyss.chatty
 
-import com.mineinabyss.idofront.config.IdofrontConfig
 import kotlinx.serialization.Serializable
-import kotlin.io.path.div
 
-object ChattyMessages : IdofrontConfig<ChattyMessages.Messages>(chatty, Messages.serializer(), file = (chatty.dataFolder.toPath() / "messages.yml")) {
-
-    @Serializable
-    data class Messages(
-        val nicknames: Nicknames = Nicknames(),
-        val privateMessages: PrivateMessages = PrivateMessages(),
-        val spying: Spying = Spying(),
-        val ping: Pings = Pings(),
-        val channels: Channels = Channels(),
-        val proxies: Proxies = Proxies(),
-        val joinLeave: JoinLeave = JoinLeave(),
-        val other: Other = Other()
-    )
+@Serializable
+class ChattyMessages(
+    val nicknames: Nicknames = Nicknames(),
+    val privateMessages: PrivateMessages = PrivateMessages(),
+    val spying: Spying = Spying(),
+    val ping: Pings = Pings(),
+    val channels: Channels = Channels(),
+    val proxies: Proxies = Proxies(),
+    val joinLeave: JoinLeave = JoinLeave(),
+    val other: Other = Other()
+) {
 
     @Serializable
     data class PrivateMessages(

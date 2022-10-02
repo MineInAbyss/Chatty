@@ -1,6 +1,6 @@
 package com.mineinabyss.chatty.helpers
 
-import com.mineinabyss.idofront.messaging.stripTags
+import com.mineinabyss.idofront.textcomponents.stripTags
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
 

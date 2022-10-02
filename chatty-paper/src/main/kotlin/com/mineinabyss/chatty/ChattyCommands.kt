@@ -9,8 +9,8 @@ import com.mineinabyss.idofront.commands.arguments.stringArg
 import com.mineinabyss.idofront.commands.execution.IdofrontCommandExecutor
 import com.mineinabyss.idofront.commands.extensions.actions.ensureSenderIsPlayer
 import com.mineinabyss.idofront.commands.extensions.actions.playerAction
-import com.mineinabyss.idofront.messaging.miniMsg
-import com.mineinabyss.idofront.messaging.serialize
+import com.mineinabyss.idofront.textcomponents.miniMsg
+import com.mineinabyss.idofront.textcomponents.serialize
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import org.bukkit.Bukkit
@@ -134,18 +134,6 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
                         }
                     }
                 }
-            }
-            ("reload" / "rl") {
-                action {
-                    ChattyConfig.reload()
-                    (sender as? Player)?.sendFormattedMessage(chattyMessages.other.configReloaded)
-                        ?: sender.sendConsoleMessage(chattyMessages.other.configReloaded)
-
-                    ChattyMessages.reload()
-                    (sender as? Player)?.sendFormattedMessage(chattyMessages.other.messagesReloaded)
-                        ?: sender.sendConsoleMessage(chattyMessages.other.messagesReloaded)
-                }
-
             }
             "commandspy" {
                 playerAction {

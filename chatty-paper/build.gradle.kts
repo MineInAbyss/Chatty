@@ -4,6 +4,7 @@ plugins {
     id("com.mineinabyss.conventions.copyjar")
     id("com.mineinabyss.conventions.publication")
     id("com.mineinabyss.conventions.testing")
+    id("com.mineinabyss.conventions.autoversion")
     kotlin("plugin.serialization")
 }
 
@@ -23,7 +24,6 @@ dependencies {
 
     // Other plugins
     compileOnly(chattyLibs.geary.papermc.core)
-    compileOnly(chattyLibs.bondrewdlikeshisemotes)
 
     /// Third-party plugins
     compileOnly(chattyLibs.placeholderapi)
@@ -31,6 +31,5 @@ dependencies {
 
     // Shaded
     implementation(chattyLibs.imageloader)
-    implementation(libs.idofront.core)
-//    compileOnly(libs.idofront.nms)
+    implementation(libs.bundles.idofront.core)
 }

@@ -8,10 +8,9 @@ import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
 import org.bukkit.entity.Player
 
-//val bondrewd = BondrewdLikesHisEmotes.getPlugin(BondrewdLikesHisEmotes::class.java)
-val chattyConfig get() = ChattyConfig.data
-val chattyMessages get() = ChattyMessages.data
-val emoteFixer = DiscordEmoteFixer.data
+val chattyConfig get() = ChattyConfig()
+val chattyMessages get() = ChattyMessages()
+val emoteFixer = DiscordEmoteFixer()
 val legacy = LegacyComponentSerializer.builder().useUnusualXRepeatedCharacterHexFormat().build()
 fun GenericChattyChatEvent(player: Player, msg: Component) =
     AsyncChatEvent(true, player, mutableSetOf(), ChatRenderer.defaultRenderer(), msg, msg)
