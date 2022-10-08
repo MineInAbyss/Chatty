@@ -36,6 +36,6 @@ This feature essentially relies on DiscordSRV and is built around BondrewdLikesH
 #### Note: Only required on the servers, not the proxy
 
 ## Recommended addons
-- [BondrewdLikesHisEmotes](https://github.com/MineInAbyss/BondrewdLikesHisEmotes) - Emojis/GIFs & everything else with unicodes  
+- [Emojy](https://github.com/MineInAbyss/Emojy) - Emojis/GIFs & everything else with unicodes  
 - [PlaceholderAPI](https://github.com/PlaceholderAPI/PlaceholderAPI) - For common placeholders (Recommend devbuild [5.0.1](https://ci.dmulloy2.net/job/ProtocolLib/lastSuccessfulBuild/artifact/target/ProtocolLib.jar))
 - [DiscordSRV](https://github.com/DiscordSRV/DiscordSRV) - Send messages from Minecraft Chat to a Discord Server

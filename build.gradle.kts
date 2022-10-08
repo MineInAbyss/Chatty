@@ -5,6 +5,7 @@ plugins {
     id("com.mineinabyss.conventions.papermc")
     id("com.mineinabyss.conventions.publication")
     id("com.mineinabyss.conventions.testing")
+    id("com.mineinabyss.conventions.autoversion")
 }
 
 dependencies {
