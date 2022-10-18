@@ -15,6 +15,7 @@ import net.kyori.adventure.key.Key
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.TextReplacementConfig
 import net.kyori.adventure.text.format.NamedTextColor
+import net.kyori.adventure.text.format.TextColor
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver
 import org.bukkit.Bukkit
 import org.bukkit.Sound
@@ -89,9 +90,8 @@ fun String.parseTags(player: Player? = null, ignorePermissions: Boolean = false)
     return this.fixSerializedTags().miniMsg(tagResolver.build())
 }
 
-fun Component.parseTags(player: Player? = null, ignorePermissions: Boolean = false): Component {
-    return this.serialize().parseTags(player, ignorePermissions)
-}
+fun Component.parseTags(player: Player? = null, ignorePermissions: Boolean = false) =
+    this.serialize().parseTags(player, ignorePermissions)
 
 fun getGlobalChat() =
     chattyConfig.channels.entries.firstOrNull { it.value.channelType == ChannelType.GLOBAL }
@@ -175,13 +175,10 @@ private fun avatarBuilder(
         .ascent(ascent).colorType(colorType).scale(scale).build()
 }
 
-fun Component.correctMessageStyle(): Component {
-    return this.font(Key.key("minecraft:default")).color(NamedTextColor.WHITE)
-}
+fun Component.correctMessageStyle() =
+    this.font(Key.key("minecraft:default")).color(NamedTextColor.WHITE)
 
-fun String.fixSerializedTags(): String {
-    return this.replace("\\<", "<").replace("\\>", ">")
-}
+fun String.fixSerializedTags(): String = this.replace("\\<", "<").replace("\\>", ">")
 
 fun String.fixLegacy(): Component {
     return if ("§" in this) legacy.deserialize(this)
@@ -190,9 +187,7 @@ fun String.fixLegacy(): Component {
 
 fun List<String>.toSentence() = this.joinToString(" ")
 
-fun String.toPlayer(): Player? {
-    return Bukkit.getPlayer(this)
-}
+fun String.toPlayer() = Bukkit.getPlayer(this)
 
 fun Player.swapChannelCommand(channelId: String) {
     val newChannel = getChannelFromId(channelId)
@@ -213,3 +208,13 @@ fun Player.swapChannelCommand(channelId: String) {
 
 fun Player.sendFormattedMessage(message: String) =
     this.sendMessage(translatePlaceholders(this, message).parseTags(player, true))
+
+fun formattedResult(player: Player?, message: Component): Component {
+    player?.verifyPlayerChannel() ?: return message
+    val channel = player.getChannelFromPlayer() ?: return message
+    val parsedFormat = translatePlaceholders(player, channel.format).parseTags(player, true)
+    val messageColor = TextColor.fromHexString(channel.messageColor) ?: NamedTextColor.NAMES.value(channel.messageColor) ?: NamedTextColor.WHITE
+    val parsedMessage = message.parseTags(player).color(messageColor)
+
+    return parsedFormat.append(parsedMessage)
+}

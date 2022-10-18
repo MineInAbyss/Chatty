@@ -13,8 +13,6 @@ import io.papermc.paper.event.player.AsyncChatDecorateEvent
 import io.papermc.paper.event.player.AsyncChatEvent
 import net.kyori.adventure.audience.Audience
 import net.kyori.adventure.text.Component
-import net.kyori.adventure.text.format.NamedTextColor
-import net.kyori.adventure.text.format.TextColor
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
@@ -38,15 +36,9 @@ class ChatListener : Listener {
         result(originalMessage().parseTags(player() ?: return))
     }
 
-    @EventHandler(priority = EventPriority.NORMAL)
+    @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     fun AsyncChatDecorateEvent.onChatPreview() {
-        val player = player() ?: return
-        player.verifyPlayerChannel()
-        val channel = getChannelFromId(player.chattyData.channelId) ?: return
-        val parsedFormat = translatePlaceholders(player, channel.format).parseTags(player, true)
-        val messageColor = TextColor.fromHexString(channel.messageColor) ?: NamedTextColor.NAMES.value(channel.messageColor) ?: NamedTextColor.WHITE
-        val parsedMessage = originalMessage().parseTags(player).color(messageColor)
-        result(parsedFormat.append(parsedMessage))
+        result(formattedResult(player() ?: return, originalMessage()))
     }
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
