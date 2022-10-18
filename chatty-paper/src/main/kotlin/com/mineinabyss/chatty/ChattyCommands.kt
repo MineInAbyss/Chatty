@@ -1,3 +1,5 @@
+@file:Suppress("UnstableApiUsage")
+
 package com.mineinabyss.chatty
 
 import com.github.shynixn.mccoroutine.bukkit.asyncDispatcher
@@ -11,8 +13,10 @@ import com.mineinabyss.idofront.commands.execution.IdofrontCommandExecutor
 import com.mineinabyss.idofront.commands.extensions.actions.ensureSenderIsPlayer
 import com.mineinabyss.idofront.commands.extensions.actions.playerAction
 import com.mineinabyss.idofront.config.config
+import com.mineinabyss.idofront.events.call
 import com.mineinabyss.idofront.textcomponents.miniMsg
 import com.mineinabyss.idofront.textcomponents.serialize
+import io.papermc.paper.event.player.AsyncChatDecorateEvent
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import org.bukkit.Bukkit
@@ -37,14 +41,17 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
                             chatty.emoteFixer = config("emotefixer") { chatty.fromPluginPath(loadDefault = false) }
                             sender.sendConsoleMessage("<green>Reloaded everything!")
                         }
+
                         "config" -> {
                             chatty.config = config("config") { chatty.fromPluginPath(loadDefault = true) }
                             sender.sendConsoleMessage("<green>Reloaded configs!")
                         }
+
                         "messages" -> {
                             chatty.messages = config("messages") { chatty.fromPluginPath(loadDefault = true) }
                             sender.sendConsoleMessage("<green>Reloaded messages!")
                         }
+
                         "emotefixer" -> {
                             chatty.emoteFixer = config("emotefixer") { chatty.fromPluginPath(loadDefault = false) }
                             sender.sendConsoleMessage("<green>Reloaded emotefixer!")
@@ -296,7 +303,14 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
                                 true
                             ) && getChannelFromId(s)?.channelType != ChannelType.GLOBAL
                         }
-                    "reload", "rl" -> listOf("all", "config", "messages", "emotefixer").filter { s -> s.startsWith(args[1]) }
+
+                    "reload", "rl" -> listOf(
+                        "all",
+                        "config",
+                        "messages",
+                        "emotefixer"
+                    ).filter { s -> s.startsWith(args[1]) }
+
                     else -> emptyList()
                 }
 
@@ -305,8 +319,10 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
                     args[1].startsWith(otherPrefix) -> onlinePlayers.filter { s ->
                         s.replace(otherPrefix.toString(), "").startsWith(args[2], true)
                     }
+
                     else -> emptyList()
                 }
+
                 else -> emptyList()
             }
         } else emptyList()
@@ -327,7 +343,12 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
                 chattyData.channelId = channel.key
                 chattyData.lastChannelUsed = channel.key
                 chatty.launch(chatty.asyncDispatcher) {
-                    GenericChattyChatEvent(this@shortcutCommand, arguments.toSentence().miniMsg()).callEvent()
+                    GenericChattyDecorateEvent(this@shortcutCommand, arguments.toSentence().miniMsg()).call {
+                        GenericChattyChatEvent(
+                            this@shortcutCommand,
+                            (this as AsyncChatDecorateEvent).result()
+                        ).callEvent()
+                    }
                     chattyData.channelId = currentChannel
                 }
             }
@@ -350,10 +371,13 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
         when {
             !chattyConfig.privateMessages.enabled ->
                 sendFormattedMessage(chattyMessages.privateMessages.disabled)
+
             isReply && this.chattyData.lastMessager == null ->
                 sendFormattedMessage(chattyMessages.privateMessages.emptyReply)
+
             !isReply && arguments.first().toPlayer() == null ->
                 sendFormattedMessage(chattyMessages.privateMessages.invalidPlayer)
+
             else -> {
                 val msg = if (isReply) arguments.toSentence() else arguments.removeFirstArgumentOfStringList()
                 if (msg.isEmpty() || this == player) return
