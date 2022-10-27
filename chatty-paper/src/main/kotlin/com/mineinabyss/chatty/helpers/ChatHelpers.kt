@@ -130,10 +130,11 @@ fun translatePlaceholders(player: Player, message: String): Component {
 
 val playerHeadMapCache = mutableMapOf<Player, Component>()
 fun Player.translatePlayerHeadComponent(): Component {
+    playerHeadMapCache.clear()
     if (this !in playerHeadMapCache || playerHeadMapCache[this]!!.font() != Key.key(chattyConfig.playerHeadFont)) {
         playerHeadMapCache[this] = getPlayerHeadTexture(ascent = -5)
     }
-    return playerHeadMapCache[this]!!
+    return playerHeadMapCache[this]!!.run { Bukkit.broadcastMessage(this.serialize()); this }
 }
 
 val playerBodyMapCache = mutableMapOf<Player, Component>()
@@ -151,8 +152,7 @@ fun Player.getPlayerHeadTexture(
     font: Key = Key.key(chattyConfig.playerHeadFont)
 ): Component {
     val image = avatarBuilder(this, scale, ascent, colorType).getBodyBufferedImage(scale).getSubimage(4, 0, 8, 8)
-    return ImageUtils.generateStringFromImage(image, colorType, ascent).miniMsg().font(font)
-        .append(Component.empty().font(Key.key("minecraft:default")).color(NamedTextColor.WHITE))
+    return ImageUtils.generateStringFromImage(image, colorType, ascent).miniMsg().font(font).append(Component.text("</font>"))
 }
 
 fun Player.getFullPlayerBodyTexture(
