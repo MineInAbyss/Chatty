@@ -134,7 +134,7 @@ fun Player.translatePlayerHeadComponent(): Component {
     if (this !in playerHeadMapCache || playerHeadMapCache[this]!!.font() != Key.key(chattyConfig.playerHeadFont)) {
         playerHeadMapCache[this] = getPlayerHeadTexture(ascent = -5)
     }
-    return playerHeadMapCache[this]!!.run { Bukkit.broadcastMessage(this.serialize()); this }
+    return playerHeadMapCache[this]!!
 }
 
 val playerBodyMapCache = mutableMapOf<Player, Component>()
