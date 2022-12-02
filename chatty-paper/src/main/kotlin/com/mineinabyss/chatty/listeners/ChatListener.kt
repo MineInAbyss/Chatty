@@ -33,12 +33,12 @@ class ChatListener : Listener {
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     fun AsyncChatCommandDecorateEvent.onCommandPreview() {
-        result(originalMessage().parseTags(player() ?: return))
+        player()?.let { result(originalMessage().parseTags(it)) }
     }
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     fun AsyncChatDecorateEvent.onChatPreview() {
-        result(formattedResult(player() ?: return, originalMessage()))
+        player()?.let { result(formattedResult(it, originalMessage())) }
     }
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
@@ -65,15 +65,19 @@ class ChatListener : Listener {
             player.sendPluginMessage(chatty, chattyProxyChannel, proxyMessage)
         }
 
-        if (channel.logToConsole)
-            Bukkit.getConsoleSender().sendMessage(message())
+        if (channel.logToConsole) {
+            if (channel.simpleConsoleMessages)
+                Bukkit.getConsoleSender().sendMessage((player.chattyNickname + ": ").miniMsg().append(originalMessage()))
+            else Bukkit.getConsoleSender().sendMessage(message())
+        }
 
         if (pingedPlayer == null && viewers().isEmpty()) {
             player.sendFormattedMessage(chattyMessages.channels.emptyChannelMessage)
             viewers().clear()
         } else if (chattyConfig.chat.disableChatSigning) {
+            val displayName = player.chattyNickname?.miniMsg() ?: player.displayName()
             viewers().forEach { a ->
-                RendererExtension.render(player, player.chattyNickname ?: player.displayName(), message(), a)
+                RendererExtension.render(player, displayName, message(), a)
             }
             viewers().clear()
         }

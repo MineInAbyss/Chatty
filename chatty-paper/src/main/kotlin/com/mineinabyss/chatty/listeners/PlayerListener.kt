@@ -2,7 +2,6 @@ package com.mineinabyss.chatty.listeners
 
 import com.mineinabyss.chatty.components.ChannelData
 import com.mineinabyss.chatty.components.HideJoinLeave
-import com.mineinabyss.chatty.components.chattyNickname
 import com.mineinabyss.chatty.helpers.*
 import com.mineinabyss.geary.papermc.access.toGeary
 import com.mineinabyss.idofront.textcomponents.serialize
@@ -30,8 +29,6 @@ class PlayerListener : Listener {
         player.translateFullPlayerSkinComponent()
 
         player.verifyPlayerChannel()
-        if (player.chattyNickname != null)
-            player.displayName(player.chattyNickname)
         if (chattyConfig.join.enabled && !player.toGeary().has<HideJoinLeave>())
             joinMessage(translatePlaceholders(player, chattyMessages.joinLeave.joinMessage))
     }
@@ -42,8 +39,6 @@ class PlayerListener : Listener {
         playerHeadMapCache -= player
         playerBodyMapCache -= player
 
-        if (player.chattyNickname != null)
-            player.displayName(player.chattyNickname)
         if (chattyConfig.leave.enabled && !player.toGeary().has<HideJoinLeave>())
             quitMessage(translatePlaceholders(player, chattyMessages.joinLeave.leaveMessage))
     }

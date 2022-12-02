@@ -124,9 +124,7 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
 
                         arguments.isEmpty() -> {
                             // Removes players displayname or sends error if sender is console
-                            player?.toGeary()?.set(ChattyNickname(player.name()))
-                            if (chattyConfig.nicknames.useDisplayName)
-                                player?.displayName(player.name())
+                            player?.chattyNickname = null
                             player?.sendFormattedMessage(nickMessage.selfEmpty)
                                 ?: sender.sendConsoleMessage(nickMessage.consoleNicknameSelf)
                         }
@@ -143,8 +141,7 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
                                     player?.sendFormattedMessage(nickMessage.invalidPlayer, otherPlayer)
 
                                 otherNick.isEmpty() -> {
-                                    if (chattyConfig.nicknames.useDisplayName)
-                                        otherPlayer.displayName(otherPlayer.name())
+                                    otherPlayer.chattyNickname = null
                                     otherPlayer.sendFormattedMessage(nickMessage.selfEmpty)
                                     player?.sendFormattedMessage(nickMessage.otherEmpty, otherPlayer)
                                 }
@@ -153,10 +150,7 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
                                     player?.sendFormattedMessage(nickMessage.tooLong)
 
                                 otherNick.isNotEmpty() -> {
-                                    val parsedNickname = otherNick.parseTags(otherPlayer)
-                                    if (chattyConfig.nicknames.useDisplayName)
-                                        otherPlayer.displayName(parsedNickname)
-                                    otherPlayer.toGeary().set(ChattyNickname(parsedNickname))
+                                    otherPlayer.chattyNickname = otherNick
                                     player?.sendFormattedMessage(nickMessage.otherSuccess, otherPlayer)
                                 }
                             }
@@ -166,11 +160,8 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
                             if (!bypassFormatPerm && !nick.verifyNickLength()) {
                                 player?.sendFormattedMessage(nickMessage.tooLong)
                             } else {
-                                val parsedNick = player?.let { nick.parseTags(it) } ?: return@action
-                                player.toGeary().set(ChattyNickname(parsedNick))
-                                if (chattyConfig.nicknames.useDisplayName)
-                                    player.displayName(parsedNick)
-                                player.sendFormattedMessage(nickMessage.selfSuccess)
+                                player?.chattyNickname = nick
+                                player?.sendFormattedMessage(nickMessage.selfSuccess)
                             }
                         }
                     }

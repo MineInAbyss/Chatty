@@ -74,6 +74,7 @@ data class ChattyConfig(
         val channelType: ChannelType,
         val permission: String = "",
         val logToConsole: Boolean = true,
+        val simpleConsoleMessages: Boolean = false,
         val proxy: Boolean = false,
         val discordsrv: Boolean = true,
         val isDefaultChannel: Boolean = false,
