@@ -15,7 +15,6 @@ import net.kyori.adventure.key.Key
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.TextReplacementConfig
 import net.kyori.adventure.text.format.NamedTextColor
-import net.kyori.adventure.text.format.TextColor
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver
 import org.bukkit.Bukkit
 import org.bukkit.Sound
@@ -213,8 +212,7 @@ fun formattedResult(player: Player, message: Component): Component {
     player.verifyPlayerChannel()
     val channel = player.getChannelFromPlayer() ?: return message
     val parsedFormat = translatePlaceholders(player, channel.format).parseTags(player, true)
-    val messageColor = TextColor.fromHexString(channel.messageColor) ?: NamedTextColor.NAMES.value(channel.messageColor) ?: NamedTextColor.WHITE
-    val parsedMessage = message.parseTags(player).color(messageColor)
+    val parsedMessage = message.parseTags(player).color(channel.messageColor)
 
     return parsedFormat.append(parsedMessage)
 }

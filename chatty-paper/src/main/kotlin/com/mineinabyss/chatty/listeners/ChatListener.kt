@@ -1,5 +1,6 @@
 package com.mineinabyss.chatty.listeners
 
+import com.mineinabyss.chatty.ChattyConfig
 import com.mineinabyss.chatty.chatty
 import com.mineinabyss.chatty.chattyProxyChannel
 import com.mineinabyss.chatty.components.*
@@ -65,9 +66,14 @@ class ChatListener : Listener {
             player.sendPluginMessage(chatty, chattyProxyChannel, proxyMessage)
         }
 
+        val displayName = player.chattyNickname?.miniMsg() ?: player.displayName()
         if (channel.logToConsole) {
             if (channel.simpleConsoleMessages)
-                Bukkit.getConsoleSender().sendMessage((player.chattyNickname + ": ").miniMsg().append(originalMessage()))
+                Bukkit.getConsoleSender().sendMessage(
+                    displayName.append(
+                        Component.text(": ").append(message().stripMessageFormat(player, channel))
+                    )
+                )
             else Bukkit.getConsoleSender().sendMessage(message())
         }
 
@@ -75,7 +81,6 @@ class ChatListener : Listener {
             player.sendFormattedMessage(chattyMessages.channels.emptyChannelMessage)
             viewers().clear()
         } else if (chattyConfig.chat.disableChatSigning) {
-            val displayName = player.chattyNickname?.miniMsg() ?: player.displayName()
             viewers().forEach { a ->
                 RendererExtension.render(player, displayName, message(), a)
             }
@@ -112,6 +117,11 @@ class ChatListener : Listener {
 
     private fun Player.sendFormattedMessage(vararg message: String, optionalPlayer: Player? = null) =
         this.sendMessage(translatePlaceholders((optionalPlayer ?: this), message.joinToString(" ")))
+
+    private fun Component.stripMessageFormat(player: Player, channel: ChattyConfig.ChattyChannel) =
+        this.serialize().fixSerializedTags().replace(
+            translatePlaceholders(player, channel.format).parseTags(player).serialize().fixSerializedTags(), ""
+        ).miniMsg()
 }
 
 object RendererExtension : ChatRenderer {

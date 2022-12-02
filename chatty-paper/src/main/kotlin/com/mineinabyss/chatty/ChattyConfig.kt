@@ -2,7 +2,10 @@ package com.mineinabyss.chatty
 
 import com.mineinabyss.chatty.components.ChannelType
 import com.mineinabyss.idofront.serialization.DurationSerializer
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import net.kyori.adventure.text.format.NamedTextColor
+import net.kyori.adventure.text.format.TextColor
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
 
@@ -80,10 +83,13 @@ data class ChattyConfig(
         val isDefaultChannel: Boolean = false,
         val isStaffChannel: Boolean = false,
         val format: String = "",
-        val messageColor: String = "white",
+        @SerialName("messageColor") val _messageColor: String = "white",
         val channelRadius: Int = 0,
         val channelAliases: List<String> = listOf(),
-    )
+    ) {
+        val messageColor: TextColor
+            get() = TextColor.fromHexString(_messageColor) ?: NamedTextColor.NAMES.value(_messageColor) ?: NamedTextColor.WHITE
+    }
 
     @Serializable
     data class Ping(
