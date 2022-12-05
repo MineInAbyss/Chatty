@@ -14,8 +14,8 @@ privateMessages:
   enabled: true
   proxy: true
   messageReplyTime: 2m
-  messageSendFormat: "<gold>You -> %chatty_player_displayname%</gold><gold>: "
-  messageReceiveFormat: "<gold>%chatty_player_displayname% -> You</gold><gold>: "
+  messageSendFormat: "<gold>You -> <chatty_nickname></gold><gold>: "
+  messageReceiveFormat: "<gold><chatty_nickname> -> You</gold><gold>: "
   messageSendSound: ""
   messageReceiveSound: ""
 
@@ -23,7 +23,7 @@ privateMessages:
 # [commandSpyFormat]: Format for the command spy message
 chat:
   disableChatSigning: true
-  commandSpyFormat: "<gold>%chatty_player_displayname%</gold><yellow>: "
+  commandSpyFormat: "<gold><chatty_nickname></gold><yellow>: "
 
 # [useDisplayName]: Stores the chatty nickname in players displayname aswell
 # [maxLength]: The max length a nickname can be, with or without tags, depending on [countTagsInLength]
@@ -74,6 +74,7 @@ ping:
 # [isDefaultChannel]: Specify if this is the channel players should be put in by default
 # [proxy]: Specify if messages sent in this channel should be sent across a proxy network (BungeeCord / Velocity)
 # [logToConsole]: Specify if messages in this channel should be sent to the console
+# [simpleConsoleMessages]: Specify if messages in this channel should be sent to the console in a simple format, aka "name: message"
 # [discordsrv]: Specify if messages sent in this channel should also be sent to Discord via DiscordSRV
 # [format]: The format to use for this channel, this is what is added before the message itself
 # [messageColor]: The color to use for the message itself, white by default
@@ -84,6 +85,7 @@ channels:
     isDefaultChannel: true
     proxy: true
     logToConsole: true
+    simpleConsoleMessages: false
     discordsrv: true
     format: ":survival: %luckperms_prefix% <chatty_nickname><white>: "
     channelAliases:
@@ -95,6 +97,7 @@ channels:
     isDefaultChannel: false
     proxy: true
     logToConsole: true
+    simpleConsoleMessages: true
     discordsrv: true
     format: "%chatty_player_head% %luckperms_prefix% <chatty_nickname><white>: "
     channelAliases:

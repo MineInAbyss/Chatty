@@ -1,5 +1,6 @@
 package com.mineinabyss.chatty.listeners
 
+import com.mineinabyss.chatty.ChattyConfig
 import com.mineinabyss.chatty.chatty
 import com.mineinabyss.chatty.chattyProxyChannel
 import com.mineinabyss.chatty.components.*
@@ -33,12 +34,12 @@ class ChatListener : Listener {
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     fun AsyncChatCommandDecorateEvent.onCommandPreview() {
-        result(originalMessage().parseTags(player() ?: return))
+        player()?.let { result(originalMessage().parseTags(it)) }
     }
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     fun AsyncChatDecorateEvent.onChatPreview() {
-        result(formattedResult(player() ?: return, originalMessage()))
+        player()?.let { result(formattedResult(it, originalMessage())) }
     }
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
@@ -65,15 +66,23 @@ class ChatListener : Listener {
             player.sendPluginMessage(chatty, chattyProxyChannel, proxyMessage)
         }
 
-        if (channel.logToConsole)
-            Bukkit.getConsoleSender().sendMessage(message())
+        val displayName = player.chattyNickname?.miniMsg() ?: player.displayName()
+        if (channel.logToConsole) {
+            if (channel.simpleConsoleMessages)
+                Bukkit.getConsoleSender().sendMessage(
+                    displayName.append(
+                        Component.text(": ").append(message().stripMessageFormat(player, channel))
+                    )
+                )
+            else Bukkit.getConsoleSender().sendMessage(message())
+        }
 
         if (pingedPlayer == null && viewers().isEmpty()) {
             player.sendFormattedMessage(chattyMessages.channels.emptyChannelMessage)
             viewers().clear()
         } else if (chattyConfig.chat.disableChatSigning) {
             viewers().forEach { a ->
-                RendererExtension.render(player, player.chattyNickname ?: player.displayName(), message(), a)
+                RendererExtension.render(player, displayName, message(), a)
             }
             viewers().clear()
         }
@@ -108,6 +117,11 @@ class ChatListener : Listener {
 
     private fun Player.sendFormattedMessage(vararg message: String, optionalPlayer: Player? = null) =
         this.sendMessage(translatePlaceholders((optionalPlayer ?: this), message.joinToString(" ")))
+
+    private fun Component.stripMessageFormat(player: Player, channel: ChattyConfig.ChattyChannel) =
+        this.serialize().fixSerializedTags().replace(
+            translatePlaceholders(player, channel.format).parseTags(player).serialize().fixSerializedTags(), ""
+        ).miniMsg()
 }
 
 object RendererExtension : ChatRenderer {

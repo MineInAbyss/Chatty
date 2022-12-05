@@ -15,7 +15,6 @@ import net.kyori.adventure.key.Key
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.TextReplacementConfig
 import net.kyori.adventure.text.format.NamedTextColor
-import net.kyori.adventure.text.format.TextColor
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver
 import org.bukkit.Bukkit
 import org.bukkit.Sound
@@ -37,7 +36,7 @@ fun String.checkForPlayerPings(channelId: String): Player? {
     if (channelId !in getPingEnabledChannels || ping.pingPrefix.isEmpty() || ping.pingPrefix !in this) return null
     val pingedName = this.substringAfter(ping.pingPrefix).split(" ")[0]
     return Bukkit.getOnlinePlayers().firstOrNull {
-        it.name == pingedName || it.chattyNickname?.serialize().toString().stripTags() == pingedName
+        it.name == pingedName || it.chattyNickname?.stripTags() == pingedName
     }
 }
 
@@ -47,7 +46,7 @@ fun Component.handlePlayerPings(player: Player, pingedPlayer: Player) {
     val pingSound = pingedPlayer.chattyData.pingSound ?: ping.defaultPingSound
     val clickToReply =
         if (ping.clickToReply) "<insert:@${
-            player.chattyNickname?.serialize().toString().stripTags()
+            player.chattyNickname?.stripTags()
         } ><hover:show_text:'<red>Shift + Click to mention!'>"
         else ""
     val pingMessage = this.replaceText(
@@ -209,12 +208,11 @@ fun Player.swapChannelCommand(channelId: String) {
 fun Player.sendFormattedMessage(message: String) =
     this.sendMessage(translatePlaceholders(this, message).parseTags(player, true))
 
-fun formattedResult(player: Player?, message: Component): Component {
-    player?.verifyPlayerChannel() ?: return message
+fun formattedResult(player: Player, message: Component): Component {
+    player.verifyPlayerChannel()
     val channel = player.getChannelFromPlayer() ?: return message
     val parsedFormat = translatePlaceholders(player, channel.format).parseTags(player, true)
-    val messageColor = TextColor.fromHexString(channel.messageColor) ?: NamedTextColor.NAMES.value(channel.messageColor) ?: NamedTextColor.WHITE
-    val parsedMessage = message.parseTags(player).color(messageColor)
+    val parsedMessage = message.parseTags(player).color(channel.messageColor)
 
     return parsedFormat.append(parsedMessage)
 }

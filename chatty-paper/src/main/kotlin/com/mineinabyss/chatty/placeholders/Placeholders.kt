@@ -41,7 +41,7 @@ fun chattyPlaceholders(player: Player?, string: String? = null) : Map<String, St
         "player_ping_sound" to player?.chattyData?.pingSound.toString(),
         "player_ping_toggle" to (player?.chattyData?.disablePingSound?.not() ?: "false").toString(),
 
-        "nickname" to (player?.chattyNickname ?: player?.displayName())?.serialize().toString(),
+        "nickname" to (player?.chattyNickname ?: player?.displayName()?.serialize() ?: player?.name.toString()),
         "player_head" to player?.translatePlayerHeadComponent()?.serialize().toString(),
         "player_full_skin" to player?.translateFullPlayerSkinComponent()?.serialize().toString(),
         "shift_$shift" to Space.of(shift)

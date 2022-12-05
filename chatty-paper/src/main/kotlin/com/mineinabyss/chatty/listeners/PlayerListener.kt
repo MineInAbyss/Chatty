@@ -2,7 +2,6 @@ package com.mineinabyss.chatty.listeners
 
 import com.mineinabyss.chatty.components.ChannelData
 import com.mineinabyss.chatty.components.HideJoinLeave
-import com.mineinabyss.chatty.components.chattyNickname
 import com.mineinabyss.chatty.helpers.*
 import com.mineinabyss.geary.papermc.access.toGeary
 import com.mineinabyss.idofront.textcomponents.serialize
@@ -30,8 +29,6 @@ class PlayerListener : Listener {
         player.translateFullPlayerSkinComponent()
 
         player.verifyPlayerChannel()
-        if (player.chattyNickname != null)
-            player.displayName(player.chattyNickname)
         if (chattyConfig.join.enabled && !player.toGeary().has<HideJoinLeave>())
             joinMessage(translatePlaceholders(player, chattyMessages.joinLeave.joinMessage))
     }
@@ -42,22 +39,20 @@ class PlayerListener : Listener {
         playerHeadMapCache -= player
         playerBodyMapCache -= player
 
-        if (player.chattyNickname != null)
-            player.displayName(player.chattyNickname)
         if (chattyConfig.leave.enabled && !player.toGeary().has<HideJoinLeave>())
             quitMessage(translatePlaceholders(player, chattyMessages.joinLeave.leaveMessage))
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     fun PlayerEditBookEvent.onBookSign() {
-        val meta = newBookMeta
-
-        meta.author(newBookMeta.author().serialize().parseTags(player))
-        if (meta.hasTitle())
-            meta.title(newBookMeta.title().serialize().parseTags(player))
-        if (meta.hasPages())
-            meta.pages(newBookMeta.pages().map { it.serialize().parseTags(player) })
-        newBookMeta = meta
+        newBookMeta = newBookMeta.apply {
+            if (hasAuthor())
+                author(author().parseTags(player))
+            if (hasTitle())
+                title(title().parseTags(player))
+            if (hasPages())
+                pages(pages().map { it.parseTags(player) })
+        }
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
