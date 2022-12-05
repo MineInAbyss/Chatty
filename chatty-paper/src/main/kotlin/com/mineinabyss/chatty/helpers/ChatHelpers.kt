@@ -7,6 +7,7 @@ import com.mineinabyss.chatty.components.ChannelType
 import com.mineinabyss.chatty.components.chattyData
 import com.mineinabyss.chatty.components.chattyNickname
 import com.mineinabyss.chatty.placeholders.chattyPlaceholderTags
+import com.mineinabyss.idofront.messaging.logVal
 import com.mineinabyss.idofront.textcomponents.miniMsg
 import com.mineinabyss.idofront.textcomponents.serialize
 import com.mineinabyss.idofront.textcomponents.stripTags
@@ -214,5 +215,5 @@ fun formattedResult(player: Player, message: Component): Component {
     val parsedFormat = translatePlaceholders(player, channel.format).parseTags(player, true)
     val parsedMessage = message.parseTags(player).color(channel.messageColor)
 
-    return parsedFormat.append(parsedMessage)
+    return parsedFormat.append(parsedMessage).run { this.serialize().logVal(); this }
 }
