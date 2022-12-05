@@ -1,12 +1,10 @@
 package com.mineinabyss.chatty.listeners
 
+import com.mineinabyss.chatty.ChattyConfig
 import com.mineinabyss.chatty.chatty
 import com.mineinabyss.chatty.chattyProxyChannel
 import com.mineinabyss.chatty.components.chattyData
-import com.mineinabyss.chatty.helpers.emoteFixer
-import com.mineinabyss.chatty.helpers.getChannelFromId
-import com.mineinabyss.chatty.helpers.getChannelFromPlayer
-import com.mineinabyss.chatty.helpers.translatePlayerHeadComponent
+import com.mineinabyss.chatty.helpers.*
 import com.mineinabyss.idofront.textcomponents.miniMsg
 import com.mineinabyss.idofront.textcomponents.serialize
 import github.scarsz.discordsrv.api.ListenerPriority
@@ -17,25 +15,25 @@ import github.scarsz.discordsrv.dependencies.jda.api.entities.Message
 import github.scarsz.discordsrv.dependencies.jda.api.entities.MessageEmbed
 import github.scarsz.discordsrv.dependencies.jda.api.entities.MessageEmbed.Field
 import github.scarsz.discordsrv.dependencies.kyori.adventure.text.Component
-import github.scarsz.discordsrv.dependencies.kyori.adventure.text.TextReplacementConfig
 import github.scarsz.discordsrv.dependencies.kyori.adventure.text.minimessage.MiniMessage
+import github.scarsz.discordsrv.dependencies.kyori.adventure.text.minimessage.tag.resolver.TagResolver
 import github.scarsz.discordsrv.dependencies.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
 import github.scarsz.discordsrv.dependencies.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer
 import github.scarsz.discordsrv.objects.MessageFormat
-import me.clip.placeholderapi.PlaceholderAPI
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
 
 
 class DiscordListener {
 
-    private val mm = MiniMessage.builder().build()
+    private val mm = MiniMessage.miniMessage()
     private val plainText = PlainTextComponentSerializer.plainText()
     private val legacy = LegacyComponentSerializer.builder().useUnusualXRepeatedCharacterHexFormat().build()
 
     @Subscribe(priority = ListenerPriority.HIGHEST)
     fun DiscordGuildMessagePostProcessEvent.sendDiscordToProxy() {
-        minecraftMessage = (minecraftMessage.serialize().substringBefore(message.contentRaw) + mm.stripTags(message.contentStripped)).miniMessage()
+        minecraftMessage = (minecraftMessage.serialize()
+            .substringBefore(message.contentRaw) + mm.stripTags(message.contentStripped)).miniMessage()
         Bukkit.getServer().sendPluginMessage(chatty, chattyProxyChannel, minecraftMessage.serialize().toByteArray())
     }
 
@@ -43,15 +41,19 @@ class DiscordListener {
     fun GameChatMessagePreProcessEvent.onChat() {
         val channel = getChannelFromId(player.chattyData.channelId) ?: return
         val lastUsedChannel = getChannelFromId(player.chattyData.lastChannelUsed) ?: return
-        if (isCancelled) return
-        else if (!channel.discordsrv || (channel != lastUsedChannel && !lastUsedChannel.discordsrv))
-            isCancelled = true
-        else {
-            val format = plainText.serialize(translatePlaceholders(player, player.getChannelFromPlayer()?.format.toString()))
-            val msg = plainText.serialize(messageComponent).replace(format, "")
-            messageComponent = msg.miniMessage().translateEmoteIDsToComponent()
+
+        when {
+            isCancelled -> return
+            !channel.discordsrv || (channel != lastUsedChannel && !lastUsedChannel.discordsrv) -> isCancelled = true
+            else -> messageComponent = messageComponent.stripFormat(player, player.getChannelFromPlayer() ?: return)
         }
     }
+
+    // Parse the DSRV Component through the Chatty normal MM instance to format <chatty> tags, then serialize/deserialize it back to DSRV Component
+    fun Component.stripFormat(player: Player, channel: ChattyConfig.ChattyChannel) =
+        this.serialize().miniMsg().serialize()
+            .replace(translatePlaceholders(player, channel.format).parseTags(player).serialize(), "")
+            .miniMsg().serialize().miniMessage()
 
     @Subscribe
     fun DeathMessagePreProcessEvent.onDeath() {
@@ -73,21 +75,7 @@ class DiscordListener {
         discordMessage = discordMessage.translatePostFormat()
     }
 
-    private fun translatePlaceholders(player: Player, message: String): Component {
-        val msg = message.miniMsg().replaceText(
-            net.kyori.adventure.text.TextReplacementConfig.builder()
-                .match("%chatty_playerhead%")
-                .replacement(player.translatePlayerHeadComponent()).build()
-        ).serialize()
-        return PlaceholderAPI.setPlaceholders(player, msg).miniMessage().fixLegacy()
-    }
-
-    private fun Component.fixLegacy(): Component {
-        val string = this.serialize().replace("\\<", "<").replace("\\>", ">")
-        return if ("§" in serialize())
-            legacy.deserialize(string)
-        else mm.deserialize(string)
-    }
+    fun String.fixSerializedTags(): String = this.replace("\\<", "<").replace("\\>", ">")
 
     private fun Message.translatePostFormat(): Message {
         val message = this
@@ -129,10 +117,6 @@ class DiscordListener {
         return format
     }
 
-    private fun Component.cleanUpHackyFix() =
-        this.replaceText(TextReplacementConfig.builder().match("<<").replacement("<").build())
-
-
     private fun String.cleanUpHackyFix() =
         plainText.serialize(this.miniMessage()).replace("\\<", "<").replace("<<", "<")
 
@@ -147,24 +131,11 @@ class DiscordListener {
         return translated.cleanUpHackyFix()
     }
 
-    private fun Component.translateEmoteIDsToComponent(): Component {
-        var translated = this
-        emoteFixer.emotes.entries.forEach { (emoteId, replacement) ->
-            val id = ":$emoteId:"
-            if (id in translated.serialize()) {
-                translated = translated.replaceText(
-                    TextReplacementConfig.builder().match(id)
-                        .replacement("<$replacement".miniMessage()).build()
-                )
-            }
-        }
-        return translated.cleanUpHackyFix()
-    }
     private fun Component.serialize(): String {
         return mm.serialize(this)
     }
 
-    private fun String.miniMessage(): Component {
-        return mm.deserialize(this)
+    private fun String.miniMessage(tagResolver: TagResolver = TagResolver.standard()): Component {
+        return mm.deserialize(this, tagResolver)
     }
 }
