@@ -29,9 +29,10 @@ class ChattyProxyListener : PluginMessageListener {
         val decoded = message.decodeToString()
         val senderName = decoded.substringBefore(ZERO_WIDTH)
         val channelId = decoded.substringAfter(ZERO_WIDTH).split(ZERO_WIDTH).first()
-        val channelFormat = decoded.substringAfter(channelId + ZERO_WIDTH).split("$ZERO_WIDTH ").first()
+        val channelFormat = decoded.substringAfter(channelId + ZERO_WIDTH).split(ZERO_WIDTH).first()
         val channel = getChannelFromId(channelId)
-        val proxyMessage = decoded.substringAfter(channelFormat).replaceFirst("$ZERO_WIDTH ", "")
+        val proxyMessage = decoded.substringAfterLast(ZERO_WIDTH)
+
         val onlinePlayers = Bukkit.getOnlinePlayers().filter { it.server == Bukkit.getServer() }
         val canSpy = onlinePlayers.filter {
             it.toGeary().get<SpyOnChannels>()?.channels?.contains(player.chattyData.channelId) == true

@@ -14,6 +14,7 @@ import io.papermc.paper.event.player.AsyncChatDecorateEvent
 import io.papermc.paper.event.player.AsyncChatEvent
 import net.kyori.adventure.audience.Audience
 import net.kyori.adventure.text.Component
+import net.kyori.adventure.text.minimessage.MiniMessage
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
@@ -60,9 +61,8 @@ class ChatListener : Listener {
         if (channel.proxy) {
             //Append channel to give proxy info on what channel the message is from
             val proxyMessage = (("${player.name}$ZERO_WIDTH$channelId$ZERO_WIDTH" +
-                    "${translatePlaceholders(player, channel.format).serialize()}$ZERO_WIDTH ").miniMsg()
-                .append(message().correctMessageStyle()))
-                .serialize().toByteArray()
+                    MiniMessage.miniMessage().escapeTags(translatePlaceholders(player, channel.format).serialize()) +
+                    ZERO_WIDTH).miniMsg().append(message())).serialize().toByteArray()
             player.sendPluginMessage(chatty, chattyProxyChannel, proxyMessage)
         }
 
