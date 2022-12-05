@@ -45,14 +45,14 @@ class PlayerListener : Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     fun PlayerEditBookEvent.onBookSign() {
-        val meta = newBookMeta
-
-        meta.author(newBookMeta.author().serialize().parseTags(player))
-        if (meta.hasTitle())
-            meta.title(newBookMeta.title().serialize().parseTags(player))
-        if (meta.hasPages())
-            meta.pages(newBookMeta.pages().map { it.serialize().parseTags(player) })
-        newBookMeta = meta
+        newBookMeta = newBookMeta.apply {
+            if (hasAuthor())
+                author(author().parseTags(player))
+            if (hasTitle())
+                title(title().parseTags(player))
+            if (hasPages())
+                pages(pages().map { it.parseTags(player) })
+        }
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
