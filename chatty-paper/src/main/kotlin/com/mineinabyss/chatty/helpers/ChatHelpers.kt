@@ -7,14 +7,14 @@ import com.mineinabyss.chatty.components.ChannelType
 import com.mineinabyss.chatty.components.chattyData
 import com.mineinabyss.chatty.components.chattyNickname
 import com.mineinabyss.chatty.placeholders.chattyPlaceholderTags
-import com.mineinabyss.idofront.textcomponents.miniMsg
-import com.mineinabyss.idofront.textcomponents.serialize
-import com.mineinabyss.idofront.textcomponents.stripTags
+import com.mineinabyss.idofront.messaging.miniMsg
+import com.mineinabyss.idofront.messaging.serialize
 import me.clip.placeholderapi.PlaceholderAPI
 import net.kyori.adventure.key.Key
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.TextReplacementConfig
 import net.kyori.adventure.text.format.NamedTextColor
+import net.kyori.adventure.text.minimessage.MiniMessage
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver
 import org.bukkit.Bukkit
 import org.bukkit.Sound
@@ -35,8 +35,8 @@ fun String.checkForPlayerPings(channelId: String): Player? {
     val ping = chattyConfig.ping
     if (channelId !in getPingEnabledChannels || ping.pingPrefix.isEmpty() || ping.pingPrefix !in this) return null
     val pingedName = this.substringAfter(ping.pingPrefix).split(" ")[0]
-    return Bukkit.getOnlinePlayers().firstOrNull {
-        it.name == pingedName || it.chattyNickname?.stripTags() == pingedName
+    return Bukkit.getOnlinePlayers().firstOrNull { player ->
+        player.name == pingedName || player.chattyNickname?.let { MiniMessage.miniMessage().stripTags(it) } == pingedName
     }
 }
 
@@ -46,7 +46,7 @@ fun Component.handlePlayerPings(player: Player, pingedPlayer: Player) {
     val pingSound = pingedPlayer.chattyData.pingSound ?: ping.defaultPingSound
     val clickToReply =
         if (ping.clickToReply) "<insert:@${
-            player.chattyNickname?.stripTags()
+            player.chattyNickname?.let { MiniMessage.miniMessage().stripTags(it) }
         } ><hover:show_text:'<red>Shift + Click to mention!'>"
         else ""
     val pingMessage = this.replaceText(
@@ -86,7 +86,7 @@ fun String.parseTags(player: Player? = null, ignorePermissions: Boolean = false)
             tagResolver.resolver(tag)
     }
 
-    return this.fixSerializedTags().miniMsg(tagResolver.build())
+    return MiniMessage.miniMessage().deserialize(this.fixSerializedTags(), tagResolver.build())
 }
 
 fun Component.parseTags(player: Player? = null, ignorePermissions: Boolean = false) =

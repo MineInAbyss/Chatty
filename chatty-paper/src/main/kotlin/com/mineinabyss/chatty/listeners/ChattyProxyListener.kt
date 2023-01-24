@@ -7,7 +7,7 @@ import com.mineinabyss.chatty.components.SpyOnChannels
 import com.mineinabyss.chatty.components.chattyData
 import com.mineinabyss.chatty.helpers.*
 import com.mineinabyss.geary.papermc.access.toGeary
-import com.mineinabyss.idofront.textcomponents.miniMsg
+import com.mineinabyss.idofront.messaging.miniMsg
 import github.scarsz.discordsrv.Debug
 import github.scarsz.discordsrv.DiscordSRV
 import github.scarsz.discordsrv.dependencies.jda.api.Permission

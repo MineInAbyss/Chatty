@@ -4,7 +4,7 @@ plugins {
     id("com.mineinabyss.conventions.copyjar")
     id("com.mineinabyss.conventions.publication")
     id("com.mineinabyss.conventions.testing")
-    id("com.mineinabyss.conventions.autoversion")
+    //id("com.mineinabyss.conventions.autoversion")
     kotlin("plugin.serialization")
 }
 
@@ -31,5 +31,5 @@ dependencies {
 
     // Shaded
     implementation(chattyLibs.imageloader)
-    implementation(libs.bundles.idofront.core)
+    implementation(libs.idofront.core)
 }
