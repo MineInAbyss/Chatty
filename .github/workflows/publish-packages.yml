@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - master
+      - backport-master
     paths-ignore:
       - '**.md'
 
