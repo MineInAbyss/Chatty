@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - master
-      - backport-master
+      - backport_master
     paths-ignore:
       - '**.md'
   pull_request:
