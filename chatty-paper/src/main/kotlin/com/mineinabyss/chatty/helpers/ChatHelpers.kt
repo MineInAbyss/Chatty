@@ -7,6 +7,7 @@ import com.mineinabyss.chatty.components.ChannelType
 import com.mineinabyss.chatty.components.chattyData
 import com.mineinabyss.chatty.components.chattyNickname
 import com.mineinabyss.chatty.placeholders.chattyPlaceholderTags
+import com.mineinabyss.chatty.tags.ChattyTags
 import com.mineinabyss.idofront.messaging.miniMsg
 import com.mineinabyss.idofront.messaging.serialize
 import me.clip.placeholderapi.PlaceholderAPI
@@ -78,6 +79,7 @@ fun String.parseTags(player: Player? = null, ignorePermissions: Boolean = false)
 
     // custom tags
     tagResolver.resolver(player.chattyPlaceholderTags)
+    tagResolver.resolver(ChattyTags.RESOLVER)
 
     if (ignorePermissions || player == null || player.hasPermission(ChattyPermissions.BYPASS_TAG_PERM))
         tagResolver.resolvers(ChattyPermissions.chatFormattingPerms.values)
@@ -129,7 +131,6 @@ fun translatePlaceholders(player: Player, message: String): Component {
 
 val playerHeadMapCache = mutableMapOf<Player, Component>()
 fun Player.translatePlayerHeadComponent(): Component {
-    playerHeadMapCache.clear()
     if (this !in playerHeadMapCache || playerHeadMapCache[this]!!.font() != Key.key(chattyConfig.playerHeadFont)) {
         playerHeadMapCache[this] = getPlayerHeadTexture(ascent = -5)
     }
@@ -151,7 +152,7 @@ fun Player.getPlayerHeadTexture(
     font: Key = Key.key(chattyConfig.playerHeadFont)
 ): Component {
     val image = avatarBuilder(this, scale, ascent, colorType).getBodyBufferedImage(scale).getSubimage(4, 0, 8, 8)
-    return ImageUtils.generateStringFromImage(image, colorType, ascent).miniMsg().font(font).append(Component.text("</font>"))
+    return "<font:$font>${ImageUtils.generateStringFromImage(image, colorType, ascent)}</font>".miniMsg()
 }
 
 fun Player.getFullPlayerBodyTexture(
