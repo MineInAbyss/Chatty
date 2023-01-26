@@ -74,20 +74,21 @@ fun Component.handlePlayerPings(player: Player, pingedPlayer: Player) {
  * @param ignorePermissions Whether to ignore permissions and parse all tags
  */
 fun String.parseTags(player: Player? = null, ignorePermissions: Boolean = false): Component {
+    //TODO Figure out why this doesn't respect denied standard perms?
+    return MiniMessage.miniMessage().deserialize(this.fixSerializedTags(), player.buildTagResolver(ignorePermissions))
+}
+
+fun Player?.buildTagResolver(ignorePermissions: Boolean = false): TagResolver {
     val tagResolver = TagResolver.builder()
 
-    // custom tags
-    tagResolver.resolver(player.chattyPlaceholderTags)
-    //tagResolver.resolver(ChattyTags.RESOLVER)
-
-    if (ignorePermissions || player == null || player.hasPermission(ChattyPermissions.BYPASS_TAG_PERM))
+    if (ignorePermissions || this?.hasPermission(ChattyPermissions.BYPASS_TAG_PERM) != false) {
+        // custom tags
+        tagResolver.resolver(chattyPlaceholderTags)
         tagResolver.resolvers(ChattyPermissions.chatFormattingPerms.values)
-    else ChattyPermissions.chatFormattingPerms.forEach { (perm, tag) ->
-        if (player.hasPermission(perm))
-            tagResolver.resolver(tag)
     }
+    else tagResolver.resolvers(ChattyPermissions.chatFormattingPerms.filter { hasPermission(it.key) }.map { it.value })
 
-    return MiniMessage.miniMessage().deserialize(this.fixSerializedTags(), tagResolver.build())
+    return tagResolver.build()
 }
 
 fun Component.parseTags(player: Player? = null, ignorePermissions: Boolean = false) =
@@ -212,7 +213,7 @@ fun formattedResult(player: Player, message: Component): Component {
     player.verifyPlayerChannel()
     val channel = player.getChannelFromPlayer() ?: return message
     val parsedFormat = translatePlaceholders(player, channel.format).parseTags(player, true)
-    val parsedMessage = message.parseTags(player).color(channel.messageColor)
+    val parsedMessage = message.parseTags(player, false).color(channel.messageColor)
 
     return parsedFormat.append(parsedMessage)
 }

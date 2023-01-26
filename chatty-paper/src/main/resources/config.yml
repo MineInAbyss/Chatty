@@ -108,7 +108,7 @@ channels:
     isDefaultChannel: false
     discordsrv: false
     logToConsole: true
-    format: ":survival:%chatty_shift_-8%:local: <yellow><chatty_nickname><yellow>: "
+    format: ":survival:<shift:-8>:local: <yellow><chatty_nickname><yellow>: "
     messageColor: "yellow"
     channelRadius: 500
     channelAliases:
@@ -123,7 +123,7 @@ channels:
     discordsrv: false
     proxy: true
     logToConsole: false
-    format: ":survival:%chatty_shift_-8%:admin:<chatty_nickname><red>: "
+    format: ":survival:<shift:-8>:admin:<red><chatty_nickname><red>: "
     messageColor: "red"
     channelAliases:
       - "a"

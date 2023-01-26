@@ -37,7 +37,7 @@ class ChatListener : Listener {
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     fun AsyncChatCommandDecorateEvent.onCommandPreview() {
-        player()?.let { result(originalMessage().parseTags(it)) }
+        player()?.let { result(originalMessage().parseTags(it, false)) }
     }
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
@@ -122,7 +122,7 @@ class ChatListener : Listener {
 
     private fun Component.stripMessageFormat(player: Player, channel: ChattyConfig.Data.ChattyChannel) =
         plainText.serialize(this)
-            .replace(plainText.serialize(translatePlaceholders(player, channel.format).parseTags(player)), "").miniMsg()
+            .replace(plainText.serialize(translatePlaceholders(player, channel.format).parseTags(player, true)), "").miniMsg().parseTags(player, false)
 }
 
 object RendererExtension : ChatRenderer {
