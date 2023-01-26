@@ -7,7 +7,6 @@ import com.mineinabyss.chatty.components.ChannelType
 import com.mineinabyss.chatty.components.chattyData
 import com.mineinabyss.chatty.components.chattyNickname
 import com.mineinabyss.chatty.placeholders.chattyPlaceholderTags
-import com.mineinabyss.chatty.tags.ChattyTags
 import com.mineinabyss.idofront.messaging.miniMsg
 import com.mineinabyss.idofront.messaging.serialize
 import me.clip.placeholderapi.PlaceholderAPI
@@ -79,7 +78,7 @@ fun String.parseTags(player: Player? = null, ignorePermissions: Boolean = false)
 
     // custom tags
     tagResolver.resolver(player.chattyPlaceholderTags)
-    tagResolver.resolver(ChattyTags.RESOLVER)
+    //tagResolver.resolver(ChattyTags.RESOLVER)
 
     if (ignorePermissions || player == null || player.hasPermission(ChattyPermissions.BYPASS_TAG_PERM))
         tagResolver.resolvers(ChattyPermissions.chatFormattingPerms.values)

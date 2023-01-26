@@ -1,5 +1,6 @@
 package com.mineinabyss.chatty.helpers
 
+import com.mineinabyss.chatty.tags.ChattyTags
 import net.kyori.adventure.text.format.TextDecoration
 import net.kyori.adventure.text.minimessage.tag.standard.StandardTags
 import org.bukkit.permissions.Permission
@@ -22,5 +23,7 @@ object ChattyPermissions {
         Permission("chatty.tags.click") to StandardTags.clickEvent(),
         Permission("chatty.tags.hover") to StandardTags.hoverEvent(),
         Permission("chatty.tags.reset") to StandardTags.reset(),
+        Permission("chatty.tags.shift") to ChattyTags.SHIFT_RESOLVER,
+        Permission("chatty.tags.head") to ChattyTags.HEAD_RESOLVER,
     )
 }
