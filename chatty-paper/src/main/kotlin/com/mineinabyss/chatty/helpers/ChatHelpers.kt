@@ -9,12 +9,12 @@ import com.mineinabyss.chatty.components.chattyNickname
 import com.mineinabyss.chatty.placeholders.chattyPlaceholderTags
 import com.mineinabyss.idofront.textcomponents.miniMsg
 import com.mineinabyss.idofront.textcomponents.serialize
-import com.mineinabyss.idofront.textcomponents.stripTags
 import me.clip.placeholderapi.PlaceholderAPI
 import net.kyori.adventure.key.Key
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.TextReplacementConfig
 import net.kyori.adventure.text.format.NamedTextColor
+import net.kyori.adventure.text.minimessage.MiniMessage
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver
 import org.bukkit.Bukkit
 import org.bukkit.Sound
@@ -35,8 +35,8 @@ fun String.checkForPlayerPings(channelId: String): Player? {
     val ping = chattyConfig.ping
     if (channelId !in getPingEnabledChannels || ping.pingPrefix.isEmpty() || ping.pingPrefix !in this) return null
     val pingedName = this.substringAfter(ping.pingPrefix).split(" ")[0]
-    return Bukkit.getOnlinePlayers().firstOrNull {
-        it.name == pingedName || it.chattyNickname?.stripTags() == pingedName
+    return Bukkit.getOnlinePlayers().firstOrNull { player ->
+        player.name == pingedName || player.chattyNickname?.let { MiniMessage.miniMessage().stripTags(it) } == pingedName
     }
 }
 
@@ -46,7 +46,7 @@ fun Component.handlePlayerPings(player: Player, pingedPlayer: Player) {
     val pingSound = pingedPlayer.chattyData.pingSound ?: ping.defaultPingSound
     val clickToReply =
         if (ping.clickToReply) "<insert:@${
-            player.chattyNickname?.stripTags()
+            player.chattyNickname?.let { MiniMessage.miniMessage().stripTags(it) }
         } ><hover:show_text:'<red>Shift + Click to mention!'>"
         else ""
     val pingMessage = this.replaceText(
@@ -69,24 +69,25 @@ fun Component.handlePlayerPings(player: Player, pingedPlayer: Player) {
     player.sendMessage(pingerMessage)
 }
 
-/** Build a unique instance of MM with specific tagresolvers to format
+/** Build a unique instance of MiniMessage with an empty TagResolver and deserializes with a generated one that takes permissions into account
  * @param player Format tags based on a player's permission, or null to parse all tags
  * @param ignorePermissions Whether to ignore permissions and parse all tags
  */
 fun String.parseTags(player: Player? = null, ignorePermissions: Boolean = false): Component {
+    return MiniMessage.builder().tags(TagResolver.empty()).build().deserialize(this.fixSerializedTags(), player.buildTagResolver(ignorePermissions))
+}
+
+fun Player?.buildTagResolver(ignorePermissions: Boolean = false): TagResolver {
     val tagResolver = TagResolver.builder()
 
-    // custom tags
-    tagResolver.resolver(player.chattyPlaceholderTags)
-
-    if (ignorePermissions || player == null || player.hasPermission(ChattyPermissions.BYPASS_TAG_PERM))
+    if (ignorePermissions || this?.hasPermission(ChattyPermissions.BYPASS_TAG_PERM) != false) {
+        // custom tags
+        tagResolver.resolver(chattyPlaceholderTags)
         tagResolver.resolvers(ChattyPermissions.chatFormattingPerms.values)
-    else ChattyPermissions.chatFormattingPerms.forEach { (perm, tag) ->
-        if (player.hasPermission(perm))
-            tagResolver.resolver(tag)
     }
+    else tagResolver.resolvers(ChattyPermissions.chatFormattingPerms.filter { hasPermission(it.key) }.map { it.value })
 
-    return this.fixSerializedTags().miniMsg(tagResolver.build())
+    return tagResolver.build()
 }
 
 fun Component.parseTags(player: Player? = null, ignorePermissions: Boolean = false) =
@@ -129,7 +130,6 @@ fun translatePlaceholders(player: Player, message: String): Component {
 
 val playerHeadMapCache = mutableMapOf<Player, Component>()
 fun Player.translatePlayerHeadComponent(): Component {
-    playerHeadMapCache.clear()
     if (this !in playerHeadMapCache || playerHeadMapCache[this]!!.font() != Key.key(chattyConfig.playerHeadFont)) {
         playerHeadMapCache[this] = getPlayerHeadTexture(ascent = -5)
     }
@@ -151,7 +151,7 @@ fun Player.getPlayerHeadTexture(
     font: Key = Key.key(chattyConfig.playerHeadFont)
 ): Component {
     val image = avatarBuilder(this, scale, ascent, colorType).getBodyBufferedImage(scale).getSubimage(4, 0, 8, 8)
-    return ImageUtils.generateStringFromImage(image, colorType, ascent).miniMsg().font(font).append(Component.text("</font>"))
+    return "<font:$font>${ImageUtils.generateStringFromImage(image, colorType, ascent)}</font>".miniMsg()
 }
 
 fun Player.getFullPlayerBodyTexture(
@@ -212,7 +212,7 @@ fun formattedResult(player: Player, message: Component): Component {
     player.verifyPlayerChannel()
     val channel = player.getChannelFromPlayer() ?: return message
     val parsedFormat = translatePlaceholders(player, channel.format).parseTags(player, true)
-    val parsedMessage = message.parseTags(player).color(channel.messageColor)
+    val parsedMessage = message.color(channel.messageColor).parseTags(player, false)
 
     return parsedFormat.append(parsedMessage)
 }

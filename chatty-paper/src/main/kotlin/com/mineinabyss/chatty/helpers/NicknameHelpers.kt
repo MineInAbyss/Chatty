@@ -1,9 +1,9 @@
 package com.mineinabyss.chatty.helpers
 
-import com.mineinabyss.idofront.textcomponents.stripTags
+import net.kyori.adventure.text.minimessage.MiniMessage
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
-
+fun String.stripTags() = MiniMessage.miniMessage().stripTags(this)
 fun String.verifyNickLength(): Boolean {
     return when (chattyConfig.nicknames.countTagsInLength) {
         true -> this.length <= chattyConfig.nicknames.maxLength

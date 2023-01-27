@@ -15,6 +15,7 @@ import io.papermc.paper.event.player.AsyncChatEvent
 import net.kyori.adventure.audience.Audience
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.minimessage.MiniMessage
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
@@ -25,6 +26,7 @@ import kotlin.math.sqrt
 
 @Suppress("UnstableApiUsage")
 class ChatListener : Listener {
+    val plainText = PlainTextComponentSerializer.plainText()
 
     @EventHandler
     fun PlayerCommandPreprocessEvent.onPlayerCommand() {
@@ -35,7 +37,7 @@ class ChatListener : Listener {
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     fun AsyncChatCommandDecorateEvent.onCommandPreview() {
-        player()?.let { result(originalMessage().parseTags(it)) }
+        player()?.let { result(originalMessage().parseTags(it, false)) }
     }
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
@@ -119,9 +121,8 @@ class ChatListener : Listener {
         this.sendMessage(translatePlaceholders((optionalPlayer ?: this), message.joinToString(" ")))
 
     private fun Component.stripMessageFormat(player: Player, channel: ChattyConfig.ChattyChannel) =
-        this.serialize().fixSerializedTags().replace(
-            translatePlaceholders(player, channel.format).parseTags(player).serialize().fixSerializedTags(), ""
-        ).miniMsg()
+        plainText.serialize(this)
+            .replace(plainText.serialize(translatePlaceholders(player, channel.format).parseTags(player, true)), "").miniMsg().parseTags(player, false)
 }
 
 object RendererExtension : ChatRenderer {
