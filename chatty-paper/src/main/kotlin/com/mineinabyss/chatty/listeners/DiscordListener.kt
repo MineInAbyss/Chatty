@@ -50,7 +50,7 @@ class DiscordListener {
 
     // Parse the DSRV Component through the Chatty normal MM instance to format <chatty> tags, then serialize/deserialize it back to DSRV Component
     fun Component.stripFormat(player: Player, channel: ChattyConfig.Data.ChattyChannel) =
-        plainText.serialize(this).replace(plainText.serialize(translatePlaceholders(player, channel.format).parseTags(player).serialize().miniMessage()), "").miniMessage()
+        plainText.serialize(this).replace(plainText.serialize(translatePlaceholders(player, channel.format).parseTags(player, true).serialize().miniMessage()), "").miniMessage()
 
     @Subscribe
     fun DeathMessagePreProcessEvent.onDeath() {
