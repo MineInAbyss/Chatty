@@ -27,7 +27,7 @@ data class ChattyConfig(
     @Serializable
     data class Chat(
         val disableChatSigning: Boolean = true,
-        val commandSpyFormat: String = "<gold>%chatty_player_displayname%: ",
+        val commandSpyFormat: String = "<gold><chatty_nickname>: ",
     )
 
     @Serializable
@@ -35,8 +35,8 @@ data class ChattyConfig(
         val enabled: Boolean = true,
         val proxy: Boolean = true,
         val messageReplyTime: @Serializable(with = DurationSerializer::class) Duration = 5.minutes,
-        val messageSendFormat: String = "<gold>You -> %%chatty_player_displayname%: ",
-        val messageReceiveFormat: String = "<gold>%%chatty_player_displayname% -> You: ",
+        val messageSendFormat: String = "<gold>You -> <chatty_nickname>: ",
+        val messageReceiveFormat: String = "<gold><chatty_nickname> -> You: ",
         val messageSendSound: String = "",
         val messageReceivedSound: String = "",
     )

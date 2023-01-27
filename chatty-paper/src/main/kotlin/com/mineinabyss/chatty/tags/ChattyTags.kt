@@ -5,6 +5,7 @@ import com.mineinabyss.chatty.helpers.translatePlayerHeadComponent
 import com.mineinabyss.idofront.font.Space
 import com.mineinabyss.idofront.textcomponents.miniMsg
 import net.kyori.adventure.text.Component
+import net.kyori.adventure.text.format.NamedTextColor
 import net.kyori.adventure.text.minimessage.Context
 import net.kyori.adventure.text.minimessage.internal.serializer.SerializableResolver
 import net.kyori.adventure.text.minimessage.tag.Tag
@@ -15,6 +16,7 @@ object ChattyTags {
 
     private val SHIFT = "shift"
     private val HEAD = "head"
+    private val WHITE = "white"
 
     val SHIFT_RESOLVER: TagResolver = SerializableResolver.claimingComponent(
         SHIFT, { args: ArgumentQueue, ctx: Context -> create(args, ctx, SHIFT) },
@@ -24,6 +26,9 @@ object ChattyTags {
         HEAD, { args: ArgumentQueue, ctx: Context -> create(args, ctx, HEAD) },
         { component: Component? -> emit(component) }
     )
+
+    val WHITE_RESOLVER: TagResolver = SerializableResolver.claimingComponent(WHITE, { args: ArgumentQueue, ctx: Context -> create(args, ctx, WHITE) },
+        { component: Component? -> emit(component) })
 
     private fun create(args: ArgumentQueue, ctx: Context, tag: String): Tag {
         when (tag) {
@@ -35,6 +40,7 @@ object ChattyTags {
                 args.popOr("A player name is needed").value().toPlayer()?.translatePlayerHeadComponent()
                     ?: Component.empty()
             ) else Tag.selfClosingInserting(Component.empty())
+            WHITE -> Tag.selfClosingInserting(Component.empty().color(NamedTextColor.WHITE))
         }
 
         return Tag.inserting(Component.empty())
