@@ -69,13 +69,12 @@ fun Component.handlePlayerPings(player: Player, pingedPlayer: Player) {
     player.sendMessage(pingerMessage)
 }
 
-/** Build a unique instance of MM with specific tagresolvers to format
+/** Build a unique instance of MiniMessage with an empty TagResolver and deserializes with a generated one that takes permissions into account
  * @param player Format tags based on a player's permission, or null to parse all tags
  * @param ignorePermissions Whether to ignore permissions and parse all tags
  */
 fun String.parseTags(player: Player? = null, ignorePermissions: Boolean = false): Component {
-    //TODO Figure out why this doesn't respect denied standard perms?
-    return MiniMessage.miniMessage().deserialize(this.fixSerializedTags(), player.buildTagResolver(ignorePermissions))
+    return MiniMessage.builder().tags(TagResolver.empty()).build().deserialize(this.fixSerializedTags(), player.buildTagResolver(ignorePermissions))
 }
 
 fun Player?.buildTagResolver(ignorePermissions: Boolean = false): TagResolver {
