@@ -213,7 +213,7 @@ fun formattedResult(player: Player, message: Component): Component {
     player.verifyPlayerChannel()
     val channel = player.getChannelFromPlayer() ?: return message
     val parsedFormat = translatePlaceholders(player, channel.format).parseTags(player, true)
-    val parsedMessage = message.parseTags(player, false).color(channel.messageColor)
+    val parsedMessage = message.color(channel.messageColor).parseTags(player, false)
 
     return parsedFormat.append(parsedMessage)
 }
