@@ -118,7 +118,7 @@ class ChatListener : Listener {
     }
 
     private fun Player.sendFormattedMessage(vararg message: String, optionalPlayer: Player? = null) =
-        this.sendMessage(translatePlaceholders((optionalPlayer ?: this), message.joinToString(" ")))
+        this.sendMessage(translatePlaceholders((optionalPlayer ?: this), message.joinToString(" ")).parseTags(optionalPlayer ?: this, true))
 
     private fun Component.stripMessageFormat(player: Player, channel: ChattyConfig.Data.ChattyChannel) =
         plainText.serialize(this)
