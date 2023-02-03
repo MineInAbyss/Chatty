@@ -29,7 +29,7 @@ fun chattyPlaceholders(player: Player?, string: String? = null) : Map<String, St
         "player_channel_format" to channel?.format.toString(),
         "player_channel_aliases" to channel?.channelAliases.toString(),
         "player_channel_proxy_enabled" to channel?.proxy.toString(),
-        "player_spy_last" to player?.toGeary()?.get<SpyOnChannels>()?.channels?.last().toString(),
+        "player_spy_last" to player?.toGeary()?.get<SpyOnChannels>()?.channels?.lastOrNull().toString(),
 
         "ping_defaultsound" to chattyConfig.ping.defaultPingSound,
         "ping_volume" to chattyConfig.ping.pingVolume.toString(),
