@@ -14,10 +14,10 @@ import me.clip.placeholderapi.PlaceholderAPI
 import net.kyori.adventure.key.Key
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.TextReplacementConfig
-import net.kyori.adventure.text.format.NamedTextColor
 import net.kyori.adventure.text.minimessage.MiniMessage
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver
 import org.bukkit.Bukkit
+import org.bukkit.OfflinePlayer
 import org.bukkit.Sound
 import org.bukkit.SoundCategory
 import org.bukkit.entity.Player
@@ -130,23 +130,23 @@ fun translatePlaceholders(player: Player, message: String): Component {
     return PlaceholderAPI.setPlaceholders(player, message).fixLegacy()
 }
 
-val playerHeadMapCache = mutableMapOf<Player, Component>()
-fun Player.translatePlayerHeadComponent(): Component {
+val playerHeadMapCache = mutableMapOf<OfflinePlayer, Component>()
+fun OfflinePlayer.translatePlayerHeadComponent(): Component {
     if (this !in playerHeadMapCache || playerHeadMapCache[this]!!.font() != Key.key(chattyConfig.playerHeadFont)) {
-        playerHeadMapCache[this] = getPlayerHeadTexture(ascent = -5)
+        playerHeadMapCache[this] = runCatching { getPlayerHeadTexture(ascent = -5) }.getOrDefault(Component.empty())
     }
-    return playerHeadMapCache[this]!!
+    return playerHeadMapCache[this] ?: Component.empty()
 }
 
-val playerBodyMapCache = mutableMapOf<Player, Component>()
-fun Player.translateFullPlayerSkinComponent(): Component {
+val playerBodyMapCache = mutableMapOf<OfflinePlayer, Component>()
+fun OfflinePlayer.translateFullPlayerSkinComponent(): Component {
     if (this !in playerBodyMapCache || playerBodyMapCache[this]!!.font() != Key.key(chattyConfig.playerHeadFont)) {
-        playerBodyMapCache[this] = getFullPlayerBodyTexture(ascent = -5)
+        playerBodyMapCache[this] = runCatching { getFullPlayerBodyTexture(ascent = -5) }.getOrDefault(Component.empty())
     }
-    return playerBodyMapCache[this]!!
+    return playerBodyMapCache[this] ?: Component.empty()
 }
 
-fun Player.getPlayerHeadTexture(
+fun OfflinePlayer.getPlayerHeadTexture(
     scale: Int = 1,
     ascent: Int = 0,
     colorType: ColorType = ColorType.MINIMESSAGE,
@@ -156,7 +156,7 @@ fun Player.getPlayerHeadTexture(
     return "<font:$font>${ImageUtils.generateStringFromImage(image, colorType, ascent)}</font>".miniMsg()
 }
 
-fun Player.getFullPlayerBodyTexture(
+fun OfflinePlayer.getFullPlayerBodyTexture(
     scale: Int = 1,
     ascent: Int = 0,
     colorType: ColorType = ColorType.MINIMESSAGE,
@@ -167,17 +167,14 @@ fun Player.getFullPlayerBodyTexture(
 }
 
 private fun avatarBuilder(
-    player: Player,
+    player: OfflinePlayer,
     scale: Int = 1,
     ascent: Int = 0,
     colorType: ColorType = ColorType.MINIMESSAGE
 ): Avatar {
-    return Avatar.builder().isSlim(player.playerProfile.textures.skinModel == SkinModel.SLIM).playerName(player.name)
+    return Avatar.builder().isSlim(player.playerProfile.apply { this.update() }.textures.skinModel == SkinModel.SLIM).playerName(player.name)
         .ascent(ascent).colorType(colorType).scale(scale).build()
 }
-
-fun Component.correctMessageStyle() =
-    this.font(Key.key("minecraft:default")).color(NamedTextColor.WHITE)
 
 fun String.fixSerializedTags(): String = this.replace("\\<", "<").replace("\\>", ">")
 
