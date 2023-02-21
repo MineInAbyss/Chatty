@@ -164,7 +164,7 @@ fun OfflinePlayer.getFullPlayerBodyTexture(
     font: Key = Key.key(chattyConfig.playerHeadFont)
 ): Component {
     val image = avatarBuilder(this, scale, ascent, colorType).getBodyBufferedImage(scale)
-    return ImageUtils.generateStringFromImage(image, colorType, ascent).miniMsg().font(font)
+    return "<font:$font>${ImageUtils.generateStringFromImage(image, colorType, ascent)}</font>".miniMsg()
 }
 
 private fun avatarBuilder(
