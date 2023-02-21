@@ -8,7 +8,6 @@ plugins {
     kotlin("plugin.serialization")
     id("com.github.johnrengelman.shadow")
     //id("com.mineinabyss.conventions.autoversion")
-    `maven-publish`
 }
 
 repositories {
@@ -25,26 +24,11 @@ dependencies {
     implementation("net.kyori:adventure-extra-kotlin:4.11.0")
 
     compileOnly(chattyLibs.velocity)
-    kapt(chattyLibs.velocity)
 }
 
 tasks.build {
     dependsOn(tasks.shadowJar.get())
-    dependsOn("generateTemplates")
 }
-
-val templateSource = file("src/main/templates")
-val templateDest = layout.buildDirectory.dir("generated/sources/templates")
-tasks.create<Copy>("generateTemplates") {
-    val props = mapOf(
-        "version" to project.version
-    )
-    inputs.properties(props)
-    from(templateSource)
-    into(templateDest)
-    expand(props)
-}
-
 
 val copyJar: String? by project
 val pluginPath = project.findProperty("velocity_plugin_path")
@@ -62,12 +46,6 @@ if(copyJar != "false" && pluginPath != null) {
         named<DefaultTask>("build") {
             dependsOn("copyJar")
         }
-    }
-}
-
-sourceSets.main {
-    java {
-        srcDir(templateDest)
     }
 }
 
