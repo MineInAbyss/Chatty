@@ -20,7 +20,6 @@ dependencies {
     compileOnly(libs.kotlinx.serialization.kaml)
     compileOnly(libs.kotlinx.coroutines)
     compileOnly(libs.minecraft.mccoroutine)
-    compileOnly(libs.koin.core)
 
     // Other plugins
     compileOnly(chattyLibs.geary.papermc.core)

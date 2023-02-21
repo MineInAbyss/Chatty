@@ -4,7 +4,6 @@ val coroutinesVersion: String by project
 
 plugins {
     kotlin("jvm")
-    kotlin("kapt")
     kotlin("plugin.serialization")
     id("com.github.johnrengelman.shadow")
     //id("com.mineinabyss.conventions.autoversion")
@@ -16,12 +15,11 @@ repositories {
 }
 
 dependencies {
-    implementation(kotlin("reflect"))
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.0")
-    api(platform("org.jetbrains.kotlinx:kotlinx-coroutines-bom:$coroutinesVersion"))
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:$coroutinesVersion")
-    implementation("net.kyori:adventure-extra-kotlin:4.11.0")
+    // MineInAbyss platform
+    compileOnly(libs.kotlinx.serialization.json)
+    compileOnly(libs.kotlinx.serialization.kaml)
+    compileOnly(libs.kotlinx.coroutines)
+    compileOnly(libs.minecraft.mccoroutine)
 
     compileOnly(chattyLibs.velocity)
 }
@@ -45,14 +43,6 @@ if(copyJar != "false" && pluginPath != null) {
 
         named<DefaultTask>("build") {
             dependsOn("copyJar")
-        }
-    }
-}
-
-publishing {
-    publications {
-        create<MavenPublication>("mavenJava") {
-            artifact(tasks.shadowJar.get())
         }
     }
 }
