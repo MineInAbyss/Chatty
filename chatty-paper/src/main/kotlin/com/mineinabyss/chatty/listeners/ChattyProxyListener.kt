@@ -39,11 +39,7 @@ class ChattyProxyListener : PluginMessageListener {
         }
 
         // If the channel is not found, it is discord
-        if (channel == null) {
-            onlinePlayers.forEach {
-                //it.sendMessage(decoded.miniMsg())
-            }
-        } else {
+        if (channel != null) {
             if (channel.logToConsole)
                 Bukkit.getConsoleSender().sendMessage(proxyMessage.miniMsg())
 

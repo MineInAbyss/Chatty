@@ -70,7 +70,7 @@ object ChattyConfig : IdofrontConfig<ChattyConfig.Data>(chatty, Data.serializer(
         data class Proxy(
             val enableProxySwitchMessages: Boolean = true,
             val discordSrvChannelID: String = "Global",
-            val sendProxyMessagesToDiscord: Boolean = false,
+            val sendProxyMessagesToDiscord: Boolean = true,
         )
 
         @Serializable
