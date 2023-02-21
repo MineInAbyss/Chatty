@@ -389,7 +389,7 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
         this.sendMessage(translatePlaceholders((optionalPlayer ?: this), message).parseTags(this, true))
 
     private fun Player.sendFormattedPrivateMessage(messageFormat: String, message: String, receiver: Player) =
-        this.sendMessage((translatePlaceholders(receiver, messageFormat).serialize() + message).parseTags(this, true))
+        this.sendMessage((translatePlaceholders(receiver, messageFormat).serialize() + message).parseTags(receiver, true))
 
     private fun CommandSender.sendConsoleMessage(message: String) = this.sendMessage(message.parseTags(null, true))
 
