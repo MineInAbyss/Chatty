@@ -7,7 +7,6 @@ import com.mineinabyss.chatty.components.ChannelType
 import com.mineinabyss.chatty.components.chattyData
 import com.mineinabyss.chatty.components.chattyNickname
 import com.mineinabyss.chatty.placeholders.chattyPlaceholderTags
-import com.mineinabyss.chatty.tags.ChattyTags.WHITE_RESOLVER
 import com.mineinabyss.idofront.messaging.miniMsg
 import com.mineinabyss.idofront.messaging.serialize
 import me.clip.placeholderapi.PlaceholderAPI
@@ -37,7 +36,9 @@ fun String.checkForPlayerPings(channelId: String): Player? {
     if (channelId !in getPingEnabledChannels || ping.pingPrefix.isEmpty() || ping.pingPrefix !in this) return null
     val pingedName = this.substringAfter(ping.pingPrefix).split(" ")[0]
     return Bukkit.getOnlinePlayers().firstOrNull { player ->
-        player.name == pingedName || player.chattyNickname?.let { MiniMessage.miniMessage().stripTags(it) } == pingedName
+        player.name == pingedName || player.chattyNickname?.let {
+            MiniMessage.miniMessage().stripTags(it)
+        } == pingedName
     }
 }
 
@@ -75,7 +76,8 @@ fun Component.handlePlayerPings(player: Player, pingedPlayer: Player) {
  * @param ignorePermissions Whether to ignore permissions and parse all tags
  */
 fun String.parseTags(player: Player? = null, ignorePermissions: Boolean = false): Component {
-    return MiniMessage.builder().tags(TagResolver.empty()).build().deserialize(this.fixSerializedTags(), player.buildTagResolver(ignorePermissions))
+    val mm = if (ignorePermissions) MiniMessage.miniMessage() else MiniMessage.builder().tags(TagResolver.empty()).build()
+    return mm.deserialize(this.fixSerializedTags(), player.buildTagResolver(ignorePermissions))
 }
 
 fun Player?.buildTagResolver(ignorePermissions: Boolean = false): TagResolver {
@@ -88,7 +90,6 @@ fun Player?.buildTagResolver(ignorePermissions: Boolean = false): TagResolver {
     }
     else tagResolver.resolvers(ChattyPermissions.chatFormattingPerms.filter { hasPermission(it.key) }.map { it.value })
 
-    tagResolver.resolvers(WHITE_RESOLVER)
     return tagResolver.build()
 }
 
@@ -172,7 +173,8 @@ private fun avatarBuilder(
     ascent: Int = 0,
     colorType: ColorType = ColorType.MINIMESSAGE
 ): Avatar {
-    return Avatar.builder().isSlim(player.playerProfile.apply { this.update() }.textures.skinModel == SkinModel.SLIM).playerName(player.name)
+    return Avatar.builder().isSlim(player.playerProfile.apply { this.update() }.textures.skinModel == SkinModel.SLIM)
+        .playerName(player.name)
         .ascent(ascent).colorType(colorType).scale(scale).build()
 }
 
@@ -211,7 +213,7 @@ fun formattedResult(player: Player, message: Component): Component {
     player.verifyPlayerChannel()
     val channel = player.getChannelFromPlayer() ?: return message
     val parsedFormat = translatePlaceholders(player, channel.format).parseTags(player, true)
-    val parsedMessage = message.color(channel.messageColor).parseTags(player, false)
+    val parsedMessage = Component.text("").color(channel.messageColor).append(message.parseTags(player, false))
 
     return parsedFormat.append(parsedMessage)
 }
