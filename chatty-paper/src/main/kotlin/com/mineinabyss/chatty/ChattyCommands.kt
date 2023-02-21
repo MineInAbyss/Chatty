@@ -35,6 +35,9 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
                 action {
                     when (option) {
                         "all" -> {
+                            ChattyConfig.reload()
+                            ChattyMessages.reload()
+                            DiscordEmoteFixer.reload()
                             chattyConfig = ChattyConfig.data
                             chattyMessages = ChattyMessages.data
                             emoteFixer = DiscordEmoteFixer.data
@@ -42,16 +45,19 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
                         }
 
                         "config" -> {
+                            ChattyConfig.reload()
                             chattyConfig = ChattyConfig.data
                             sender.sendConsoleMessage("<green>Reloaded configs!")
                         }
 
                         "messages" -> {
+                            ChattyMessages.reload()
                             chattyMessages = ChattyMessages.data
                             sender.sendConsoleMessage("<green>Reloaded messages!")
                         }
 
                         "emotefixer" -> {
+                            DiscordEmoteFixer.reload()
                             emoteFixer = DiscordEmoteFixer.data
                             sender.sendConsoleMessage("<green>Reloaded emotefixer!")
                         }
