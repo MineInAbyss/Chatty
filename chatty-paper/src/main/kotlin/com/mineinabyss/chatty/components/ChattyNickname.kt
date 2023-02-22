@@ -13,6 +13,6 @@ data class ChattyNickname(val nickname: String)
 var Player.chattyNickname
     get() = this.toGeary().get<ChattyNickname>()?.nickname
     set(value) = this.toGeary().run {
-        if (chattyConfig.nicknames.useDisplayName) this@chattyNickname.displayName(value?.parseTags(this@chattyNickname))
-        value?.let { setPersisting(ChattyNickname(it)) }
+        if (chattyConfig.nicknames.useDisplayName) this@chattyNickname.displayName(value?.parseTags(this@chattyNickname) ?: name())
+        value?.let { setPersisting(ChattyNickname(it)) } ?: remove<ChattyNickname>()
     }
