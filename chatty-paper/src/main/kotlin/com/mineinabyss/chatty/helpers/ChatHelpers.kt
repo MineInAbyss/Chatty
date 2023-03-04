@@ -140,6 +140,10 @@ fun OfflinePlayer.translatePlayerHeadComponent(): Component {
 }
 
 val playerBodyMapCache = mutableMapOf<OfflinePlayer, Component>()
+fun Player.refreshSkinInCaches() {
+    playerBodyMapCache -= this
+    playerHeadMapCache -= this
+}
 fun OfflinePlayer.translateFullPlayerSkinComponent(): Component {
     if (this !in playerBodyMapCache || playerBodyMapCache[this]!!.font() != Key.key(chattyConfig.playerHeadFont)) {
         playerBodyMapCache[this] = runCatching { getFullPlayerBodyTexture(ascent = -5) }.getOrDefault(Component.empty())

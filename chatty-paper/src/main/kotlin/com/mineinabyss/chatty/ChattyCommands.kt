@@ -340,13 +340,10 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
                 chattyData.lastChannelUsed = channel.key
                 chatty.launch(chatty.asyncDispatcher) {
                     GenericChattyDecorateEvent(this@shortcutCommand, arguments.toSentence().miniMsg()).call {
-                        GenericChattyChatEvent(
-                            this@shortcutCommand,
-                            (this as AsyncChatDecorateEvent).result()
-                        ).callEvent()
+                        GenericChattyChatEvent(this@shortcutCommand, (this as AsyncChatDecorateEvent).result()).callEvent()
                     }
-                    chattyData.channelId = currentChannel
                 }
+                chattyData.channelId = currentChannel
             }
         }
     }
