@@ -1,11 +1,6 @@
 package com.mineinabyss.chatty.tags
 
 import com.mineinabyss.chatty.helpers.toPlayer
-import com.mineinabyss.chatty.helpers.translatePlayerHeadComponent
-import com.mineinabyss.idofront.font.Space
-import com.mineinabyss.idofront.textcomponents.miniMsg
-import net.kyori.adventure.text.Component
-import net.kyori.adventure.text.format.NamedTextColor
 import com.mineinabyss.chatty.helpers.translateFullPlayerSkinComponent
 import com.mineinabyss.chatty.helpers.translatePlayerHeadComponent
 import com.mineinabyss.idofront.font.Space
