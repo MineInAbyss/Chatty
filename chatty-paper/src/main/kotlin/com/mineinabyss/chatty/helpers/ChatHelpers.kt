@@ -7,17 +7,16 @@ import com.mineinabyss.chatty.components.ChannelType
 import com.mineinabyss.chatty.components.chattyData
 import com.mineinabyss.chatty.components.chattyNickname
 import com.mineinabyss.chatty.placeholders.chattyPlaceholderTags
-import com.mineinabyss.chatty.tags.ChattyTags.WHITE_RESOLVER
-import com.mineinabyss.idofront.textcomponents.miniMsg
-import com.mineinabyss.idofront.textcomponents.serialize
+import com.mineinabyss.idofront.messaging.miniMsg
+import com.mineinabyss.idofront.messaging.serialize
 import me.clip.placeholderapi.PlaceholderAPI
 import net.kyori.adventure.key.Key
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.TextReplacementConfig
-import net.kyori.adventure.text.format.NamedTextColor
 import net.kyori.adventure.text.minimessage.MiniMessage
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver
 import org.bukkit.Bukkit
+import org.bukkit.OfflinePlayer
 import org.bukkit.Sound
 import org.bukkit.SoundCategory
 import org.bukkit.entity.Player
@@ -37,7 +36,9 @@ fun String.checkForPlayerPings(channelId: String): Player? {
     if (channelId !in getPingEnabledChannels || ping.pingPrefix.isEmpty() || ping.pingPrefix !in this) return null
     val pingedName = this.substringAfter(ping.pingPrefix).split(" ")[0]
     return Bukkit.getOnlinePlayers().firstOrNull { player ->
-        player.name == pingedName || player.chattyNickname?.let { MiniMessage.miniMessage().stripTags(it) } == pingedName
+        player.name == pingedName || player.chattyNickname?.let {
+            MiniMessage.miniMessage().stripTags(it)
+        } == pingedName
     }
 }
 
@@ -75,7 +76,8 @@ fun Component.handlePlayerPings(player: Player, pingedPlayer: Player) {
  * @param ignorePermissions Whether to ignore permissions and parse all tags
  */
 fun String.parseTags(player: Player? = null, ignorePermissions: Boolean = false): Component {
-    return MiniMessage.builder().tags(TagResolver.empty()).build().deserialize(this.fixSerializedTags(), player.buildTagResolver(ignorePermissions))
+    val mm = if (ignorePermissions) MiniMessage.miniMessage() else MiniMessage.builder().tags(TagResolver.empty()).build()
+    return mm.deserialize(this.fixSerializedTags(), player.buildTagResolver(ignorePermissions))
 }
 
 fun Player?.buildTagResolver(ignorePermissions: Boolean = false): TagResolver {
@@ -130,23 +132,27 @@ fun translatePlaceholders(player: Player, message: String): Component {
     return PlaceholderAPI.setPlaceholders(player, message).fixLegacy()
 }
 
-val playerHeadMapCache = mutableMapOf<Player, Component>()
-fun Player.translatePlayerHeadComponent(): Component {
+val playerHeadMapCache = mutableMapOf<OfflinePlayer, Component>()
+fun OfflinePlayer.translatePlayerHeadComponent(): Component {
     if (this !in playerHeadMapCache || playerHeadMapCache[this]!!.font() != Key.key(chattyConfig.playerHeadFont)) {
-        playerHeadMapCache[this] = getPlayerHeadTexture(ascent = -5)
+        playerHeadMapCache[this] = runCatching { getPlayerHeadTexture(ascent = -5) }.getOrDefault(Component.empty())
     }
-    return playerHeadMapCache[this]!!
+    return playerHeadMapCache[this] ?: Component.empty()
 }
 
-val playerBodyMapCache = mutableMapOf<Player, Component>()
-fun Player.translateFullPlayerSkinComponent(): Component {
+val playerBodyMapCache = mutableMapOf<OfflinePlayer, Component>()
+fun Player.refreshSkinInCaches() {
+    playerBodyMapCache -= this
+    playerHeadMapCache -= this
+}
+fun OfflinePlayer.translateFullPlayerSkinComponent(): Component {
     if (this !in playerBodyMapCache || playerBodyMapCache[this]!!.font() != Key.key(chattyConfig.playerHeadFont)) {
-        playerBodyMapCache[this] = getFullPlayerBodyTexture(ascent = -5)
+        playerBodyMapCache[this] = runCatching { getFullPlayerBodyTexture(ascent = -5) }.getOrDefault(Component.empty())
     }
-    return playerBodyMapCache[this]!!
+    return playerBodyMapCache[this] ?: Component.empty()
 }
 
-fun Player.getPlayerHeadTexture(
+fun OfflinePlayer.getPlayerHeadTexture(
     scale: Int = 1,
     ascent: Int = 0,
     colorType: ColorType = ColorType.MINIMESSAGE,
@@ -156,28 +162,26 @@ fun Player.getPlayerHeadTexture(
     return "<font:$font>${ImageUtils.generateStringFromImage(image, colorType, ascent)}</font>".miniMsg()
 }
 
-fun Player.getFullPlayerBodyTexture(
+fun OfflinePlayer.getFullPlayerBodyTexture(
     scale: Int = 1,
     ascent: Int = 0,
     colorType: ColorType = ColorType.MINIMESSAGE,
     font: Key = Key.key(chattyConfig.playerHeadFont)
 ): Component {
     val image = avatarBuilder(this, scale, ascent, colorType).getBodyBufferedImage(scale)
-    return ImageUtils.generateStringFromImage(image, colorType, ascent).miniMsg().font(font)
+    return "<font:$font>${ImageUtils.generateStringFromImage(image, colorType, ascent)}</font>".miniMsg()
 }
 
 private fun avatarBuilder(
-    player: Player,
+    player: OfflinePlayer,
     scale: Int = 1,
     ascent: Int = 0,
     colorType: ColorType = ColorType.MINIMESSAGE
 ): Avatar {
-    return Avatar.builder().isSlim(player.playerProfile.textures.skinModel == SkinModel.SLIM).playerName(player.name)
+    return Avatar.builder().isSlim(player.playerProfile.apply { this.update() }.textures.skinModel == SkinModel.SLIM)
+        .playerName(player.name)
         .ascent(ascent).colorType(colorType).scale(scale).build()
 }
-
-fun Component.correctMessageStyle() =
-    this.font(Key.key("minecraft:default")).color(NamedTextColor.WHITE)
 
 fun String.fixSerializedTags(): String = this.replace("\\<", "<").replace("\\>", ">")
 
@@ -214,7 +218,7 @@ fun formattedResult(player: Player, message: Component): Component {
     player.verifyPlayerChannel()
     val channel = player.getChannelFromPlayer() ?: return message
     val parsedFormat = translatePlaceholders(player, channel.format).parseTags(player, true)
-    val parsedMessage = message.color(channel.messageColor).parseTags(player, false)
+    val parsedMessage = Component.text("").color(channel.messageColor).append(message.parseTags(player, false))
 
     return parsedFormat.append(parsedMessage)
 }

@@ -5,7 +5,7 @@ import com.mineinabyss.chatty.chatty
 import com.mineinabyss.chatty.chattyProxyChannel
 import com.mineinabyss.chatty.components.chattyData
 import com.mineinabyss.chatty.helpers.*
-import com.mineinabyss.idofront.textcomponents.serialize
+import com.mineinabyss.idofront.messaging.serialize
 import github.scarsz.discordsrv.api.ListenerPriority
 import github.scarsz.discordsrv.api.Subscribe
 import github.scarsz.discordsrv.api.events.*
@@ -49,7 +49,7 @@ class DiscordListener {
     }
 
     // Parse the DSRV Component through the Chatty normal MM instance to format <chatty> tags, then serialize/deserialize it back to DSRV Component
-    fun Component.stripFormat(player: Player, channel: ChattyConfig.ChattyChannel) =
+    fun Component.stripFormat(player: Player, channel: ChattyConfig.Data.ChattyChannel) =
         plainText.serialize(this).replace(plainText.serialize(translatePlaceholders(player, channel.format).parseTags(player, true).serialize().miniMessage()), "").miniMessage()
 
     @Subscribe

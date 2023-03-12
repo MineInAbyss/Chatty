@@ -6,8 +6,8 @@ import com.mineinabyss.chatty.chattyProxyChannel
 import com.mineinabyss.chatty.components.*
 import com.mineinabyss.chatty.helpers.*
 import com.mineinabyss.geary.papermc.access.toGeary
-import com.mineinabyss.idofront.textcomponents.miniMsg
-import com.mineinabyss.idofront.textcomponents.serialize
+import com.mineinabyss.idofront.messaging.miniMsg
+import com.mineinabyss.idofront.messaging.serialize
 import io.papermc.paper.chat.ChatRenderer
 import io.papermc.paper.event.player.AsyncChatCommandDecorateEvent
 import io.papermc.paper.event.player.AsyncChatDecorateEvent
@@ -120,7 +120,7 @@ class ChatListener : Listener {
     private fun Player.sendFormattedMessage(vararg message: String, optionalPlayer: Player? = null) =
         this.sendMessage(translatePlaceholders((optionalPlayer ?: this), message.joinToString(" ")).parseTags(optionalPlayer ?: this, true))
 
-    private fun Component.stripMessageFormat(player: Player, channel: ChattyConfig.ChattyChannel) =
+    private fun Component.stripMessageFormat(player: Player, channel: ChattyConfig.Data.ChattyChannel) =
         plainText.serialize(this)
             .replace(plainText.serialize(translatePlaceholders(player, channel.format).parseTags(player, true)), "").miniMsg().parseTags(player, false)
 }

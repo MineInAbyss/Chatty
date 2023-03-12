@@ -1,6 +1,5 @@
 package com.mineinabyss.chatty
 
-import com.mineinabyss.chatty.helpers.DiscordEmoteFixer
 import com.mineinabyss.chatty.listeners.ChatListener
 import com.mineinabyss.chatty.listeners.ChattyProxyListener
 import com.mineinabyss.chatty.listeners.DiscordListener
@@ -8,28 +7,23 @@ import com.mineinabyss.chatty.listeners.PlayerListener
 import com.mineinabyss.chatty.placeholders.PlaceholderAPIHook
 import com.mineinabyss.geary.addon.autoscan
 import com.mineinabyss.geary.papermc.dsl.gearyAddon
-import com.mineinabyss.idofront.config.IdofrontConfig
-import com.mineinabyss.idofront.config.config
-import com.mineinabyss.idofront.platforms.Platforms
-import com.mineinabyss.idofront.plugin.listeners
+import com.mineinabyss.idofront.platforms.IdofrontPlatforms
+import com.mineinabyss.idofront.plugin.registerEvents
 import github.scarsz.discordsrv.DiscordSRV
 import org.bukkit.plugin.java.JavaPlugin
 
 class ChattyPlugin : JavaPlugin() {
-    lateinit var config: IdofrontConfig<ChattyConfig>
-    lateinit var messages: IdofrontConfig<ChattyMessages>
-    lateinit var emoteFixer: IdofrontConfig<DiscordEmoteFixer>
 
     override fun onLoad() {
-        Platforms.load(this, "mineinabyss")
+        IdofrontPlatforms.load(this, "mineinabyss")
     }
 
     override fun onEnable() {
         saveDefaultAssets()
+        saveResource("config.yml", false)
+        saveResource("emotefixer.yml", false)
+        saveResource("messages.yml", false)
 
-        config = config("config") { fromPluginPath(loadDefault = true) }
-        messages = config("messages") { fromPluginPath(loadDefault = true) }
-        emoteFixer = config("emotefixer") { fromPluginPath(loadDefault = false) }
         // Register the proxy listener
         try {
             server.messenger.registerIncomingPluginChannel(this, chattyProxyChannel, ChattyProxyListener())
@@ -50,7 +44,7 @@ class ChattyPlugin : JavaPlugin() {
             }
             ChattyCommands()
 
-            listeners(ChatListener(), PlayerListener())
+            registerEvents(ChatListener(), PlayerListener())
         }
     }
 

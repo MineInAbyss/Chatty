@@ -4,7 +4,7 @@ import com.mineinabyss.chatty.components.ChannelData
 import com.mineinabyss.chatty.components.HideJoinLeave
 import com.mineinabyss.chatty.helpers.*
 import com.mineinabyss.geary.papermc.access.toGeary
-import com.mineinabyss.idofront.textcomponents.serialize
+import com.mineinabyss.idofront.messaging.serialize
 import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
@@ -25,9 +25,6 @@ class PlayerListener : Listener {
 
     @EventHandler(priority = EventPriority.NORMAL)
     fun PlayerJoinEvent.onJoin() {
-        player.translatePlayerHeadComponent()
-        player.translateFullPlayerSkinComponent()
-
         player.verifyPlayerChannel()
         if (chattyConfig.join.enabled && !player.toGeary().has<HideJoinLeave>())
             joinMessage(translatePlaceholders(player, chattyMessages.joinLeave.joinMessage))
@@ -36,8 +33,7 @@ class PlayerListener : Listener {
     @EventHandler
     fun PlayerQuitEvent.onDisconnect() {
         // Remove player incase they switch skins
-        playerHeadMapCache -= player
-        playerBodyMapCache -= player
+        player.refreshSkinInCaches()
 
         if (chattyConfig.leave.enabled && !player.toGeary().has<HideJoinLeave>())
             quitMessage(translatePlaceholders(player, chattyMessages.joinLeave.leaveMessage))

@@ -49,7 +49,7 @@ leave:
 proxy:
   enableProxySwitchMessages: false
   discordSrvChannelID: "Global"
-  sendProxyMessagesToDiscord: false
+  sendProxyMessagesToDiscord: true
 
 # [enabledChannels]: List of all channelIds to enable pings for ("all" or "*" for all channels)
 # [clickToReply]: Whether shift+clicking a ping should reply for a player

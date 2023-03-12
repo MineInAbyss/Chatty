@@ -6,8 +6,8 @@ import com.mineinabyss.chatty.components.chattyNickname
 import com.mineinabyss.chatty.helpers.*
 import com.mineinabyss.geary.papermc.access.toGeary
 import com.mineinabyss.idofront.font.Space
-import com.mineinabyss.idofront.textcomponents.miniMsg
-import com.mineinabyss.idofront.textcomponents.serialize
+import com.mineinabyss.idofront.messaging.miniMsg
+import com.mineinabyss.idofront.messaging.serialize
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver
 import org.bukkit.entity.Player
@@ -29,7 +29,7 @@ fun chattyPlaceholders(player: Player?, string: String? = null) : Map<String, St
         "player_channel_format" to channel?.format.toString(),
         "player_channel_aliases" to channel?.channelAliases.toString(),
         "player_channel_proxy_enabled" to channel?.proxy.toString(),
-        "player_spy_last" to player?.toGeary()?.get<SpyOnChannels>()?.channels?.last().toString(),
+        "player_spy_last" to player?.toGeary()?.get<SpyOnChannels>()?.channels?.lastOrNull().toString(),
 
         "ping_defaultsound" to chattyConfig.ping.defaultPingSound,
         "ping_volume" to chattyConfig.ping.pingVolume.toString(),
