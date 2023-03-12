@@ -1,13 +1,18 @@
 package com.mineinabyss.chatty.listeners
 
 import com.mineinabyss.chatty.ChattyContext
+import com.mineinabyss.chatty.chattyConfig
+import com.mineinabyss.chatty.chattyEmoteFixer
 import com.mineinabyss.chatty.chattyProxyChannel
 import com.mineinabyss.chatty.components.ChannelType
 import com.mineinabyss.chatty.components.SpyOnChannels
 import com.mineinabyss.chatty.components.chattyData
-import com.mineinabyss.chatty.helpers.*
+import com.mineinabyss.chatty.helpers.ZERO_WIDTH
+import com.mineinabyss.chatty.helpers.getChannelFromId
+import com.mineinabyss.chatty.helpers.getChannelFromPlayer
+import com.mineinabyss.chatty.helpers.toPlayer
 import com.mineinabyss.geary.papermc.access.toGeary
-import com.mineinabyss.idofront.messaging.miniMsg
+import com.mineinabyss.idofront.textcomponents.miniMsg
 import github.scarsz.discordsrv.Debug
 import github.scarsz.discordsrv.DiscordSRV
 import github.scarsz.discordsrv.dependencies.jda.api.Permission
@@ -95,7 +100,7 @@ class ChattyProxyListener : PluginMessageListener {
         if (!ChattyContext.isDiscordSRVLoaded) false else DiscordSRV.config().getBoolean("DiscordChatChannelTranslateMentions")
     private fun String.translateEmoteIDsToComponent(): String {
         var translated = this
-        emoteFixer.emotes.entries.forEach { (emoteId, replacement) ->
+        chattyEmoteFixer.emotes.entries.forEach { (emoteId, replacement) ->
             val id = ":$emoteId:"
             if (id in translated)
                 translated = translated.replace(id, "<$replacement")

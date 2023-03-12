@@ -31,5 +31,5 @@ dependencies {
 
     // Shaded
     implementation(chattyLibs.imageloader)
-    implementation(libs.idofront.core)
+    implementation(libs.bundles.idofront.core)
 }

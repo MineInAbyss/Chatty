@@ -12,9 +12,10 @@ import com.mineinabyss.idofront.commands.arguments.stringArg
 import com.mineinabyss.idofront.commands.execution.IdofrontCommandExecutor
 import com.mineinabyss.idofront.commands.extensions.actions.ensureSenderIsPlayer
 import com.mineinabyss.idofront.commands.extensions.actions.playerAction
+import com.mineinabyss.idofront.config.config
 import com.mineinabyss.idofront.events.call
-import com.mineinabyss.idofront.messaging.miniMsg
-import com.mineinabyss.idofront.messaging.serialize
+import com.mineinabyss.idofront.textcomponents.miniMsg
+import com.mineinabyss.idofront.textcomponents.serialize
 import io.papermc.paper.event.player.AsyncChatDecorateEvent
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -35,30 +36,24 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
                 action {
                     when (option) {
                         "all" -> {
-                            ChattyConfig.reload()
-                            ChattyMessages.reload()
-                            DiscordEmoteFixer.reload()
-                            chattyConfig = ChattyConfig.data
-                            chattyMessages = ChattyMessages.data
-                            emoteFixer = DiscordEmoteFixer.data
+                            chatty.config = config("config") { chatty.fromPluginPath(loadDefault = true) }
+                            chatty.messages = config("messages") { chatty.fromPluginPath(loadDefault = true) }
+                            chatty.emotefixer = config("emotefixer") { chatty.fromPluginPath(loadDefault = true) }
                             sender.sendConsoleMessage("<green>Reloaded everything!")
                         }
 
                         "config" -> {
-                            ChattyConfig.reload()
-                            chattyConfig = ChattyConfig.data
+                            chatty.config = config("config") { chatty.fromPluginPath(loadDefault = true) }
                             sender.sendConsoleMessage("<green>Reloaded configs!")
                         }
 
                         "messages" -> {
-                            ChattyMessages.reload()
-                            chattyMessages = ChattyMessages.data
+                            chatty.messages = config("messages") { chatty.fromPluginPath(loadDefault = true) }
                             sender.sendConsoleMessage("<green>Reloaded messages!")
                         }
 
                         "emotefixer" -> {
-                            DiscordEmoteFixer.reload()
-                            emoteFixer = DiscordEmoteFixer.data
+                            chatty.emotefixer = config("emotefixer") { chatty.fromPluginPath(loadDefault = true) }
                             sender.sendConsoleMessage("<green>Reloaded emotefixer!")
                         }
                     }
@@ -325,7 +320,7 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
     }
 
     private fun Player.shortcutCommand(
-        channel: Map.Entry<String, ChattyConfig.Data.ChattyChannel>?,
+        channel: Map.Entry<String, ChattyConfig.ChattyChannel>?,
         arguments: List<String>
     ) {
         val currentChannel = chattyData.channelId

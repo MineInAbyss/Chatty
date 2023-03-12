@@ -2,10 +2,14 @@ package com.mineinabyss.chatty.listeners
 
 import com.mineinabyss.chatty.ChattyConfig
 import com.mineinabyss.chatty.chatty
+import com.mineinabyss.chatty.chattyEmoteFixer
 import com.mineinabyss.chatty.chattyProxyChannel
 import com.mineinabyss.chatty.components.chattyData
-import com.mineinabyss.chatty.helpers.*
-import com.mineinabyss.idofront.messaging.serialize
+import com.mineinabyss.chatty.helpers.getChannelFromId
+import com.mineinabyss.chatty.helpers.getChannelFromPlayer
+import com.mineinabyss.chatty.helpers.parseTags
+import com.mineinabyss.chatty.helpers.translatePlaceholders
+import com.mineinabyss.idofront.textcomponents.serialize
 import github.scarsz.discordsrv.api.ListenerPriority
 import github.scarsz.discordsrv.api.Subscribe
 import github.scarsz.discordsrv.api.events.*
@@ -49,7 +53,7 @@ class DiscordListener {
     }
 
     // Parse the DSRV Component through the Chatty normal MM instance to format <chatty> tags, then serialize/deserialize it back to DSRV Component
-    fun Component.stripFormat(player: Player, channel: ChattyConfig.Data.ChattyChannel) =
+    fun Component.stripFormat(player: Player, channel: ChattyConfig.ChattyChannel) =
         plainText.serialize(this).replace(plainText.serialize(translatePlaceholders(player, channel.format).parseTags(player, true).serialize().miniMessage()), "").miniMessage()
 
     @Subscribe
@@ -119,7 +123,7 @@ class DiscordListener {
 
     private fun String.translateEmoteIDs(): String {
         var translated = this
-        emoteFixer.emotes.entries.forEach { (emoteId, replacement) ->
+        chattyEmoteFixer.emotes.entries.forEach { (emoteId, replacement) ->
             val id = ":$emoteId:"
             if (id in this) {
                 translated = translated.replace(id, replacement)

@@ -1,5 +1,6 @@
 package com.mineinabyss.chatty.helpers
 
+import com.mineinabyss.chatty.chattyConfig
 import net.kyori.adventure.text.minimessage.MiniMessage
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player

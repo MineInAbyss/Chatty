@@ -3,12 +3,14 @@ package com.mineinabyss.chatty.helpers
 import com.combimagnetron.imageloader.Avatar
 import com.combimagnetron.imageloader.Image.ColorType
 import com.combimagnetron.imageloader.ImageUtils
+import com.mineinabyss.chatty.chattyConfig
+import com.mineinabyss.chatty.chattyMessages
 import com.mineinabyss.chatty.components.ChannelType
 import com.mineinabyss.chatty.components.chattyData
 import com.mineinabyss.chatty.components.chattyNickname
 import com.mineinabyss.chatty.placeholders.chattyPlaceholderTags
-import com.mineinabyss.idofront.messaging.miniMsg
-import com.mineinabyss.idofront.messaging.serialize
+import com.mineinabyss.idofront.textcomponents.miniMsg
+import com.mineinabyss.idofront.textcomponents.serialize
 import me.clip.placeholderapi.PlaceholderAPI
 import net.kyori.adventure.key.Key
 import net.kyori.adventure.text.Component
