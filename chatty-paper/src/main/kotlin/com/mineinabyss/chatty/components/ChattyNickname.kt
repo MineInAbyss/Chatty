@@ -2,7 +2,7 @@ package com.mineinabyss.chatty.components
 
 import com.mineinabyss.chatty.chattyConfig
 import com.mineinabyss.chatty.helpers.parseTags
-import com.mineinabyss.geary.papermc.access.toGeary
+import com.mineinabyss.geary.papermc.tracking.entities.toGeary
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import org.bukkit.entity.Player

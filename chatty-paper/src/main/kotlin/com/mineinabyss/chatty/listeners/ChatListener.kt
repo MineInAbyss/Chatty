@@ -3,7 +3,7 @@ package com.mineinabyss.chatty.listeners
 import com.mineinabyss.chatty.*
 import com.mineinabyss.chatty.components.*
 import com.mineinabyss.chatty.helpers.*
-import com.mineinabyss.geary.papermc.access.toGeary
+import com.mineinabyss.geary.papermc.tracking.entities.toGeary
 import com.mineinabyss.idofront.textcomponents.miniMsg
 import com.mineinabyss.idofront.textcomponents.serialize
 import io.papermc.paper.chat.ChatRenderer

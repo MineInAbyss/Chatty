@@ -1,17 +1,19 @@
+@Suppress("DSL_SCOPE_VIOLATION")
 plugins {
-    id("com.mineinabyss.conventions.kotlin")
-    id("com.mineinabyss.conventions.papermc")
-    id("com.mineinabyss.conventions.copyjar")
-    id("com.mineinabyss.conventions.publication")
-    id("com.mineinabyss.conventions.testing")
-    //id("com.mineinabyss.conventions.autoversion")
-    kotlin("plugin.serialization")
+    alias(libs.plugins.mia.kotlin.jvm)
+    alias(libs.plugins.mia.papermc)
+    alias(libs.plugins.mia.testing)
+    alias(libs.plugins.mia.publication)
+    id(libs.plugins.mia.copyjar.get().pluginId)
+    alias(libs.plugins.kotlinx.serialization)
 }
 
 repositories {
+    mavenCentral()
     maven("https://repo.extendedclip.com/content/repositories/placeholderapi/")
     maven("https://nexus.scarsz.me/content/groups/public/") // DiscordSRV
     maven("https://m2.dv8tion.net/releases") // DiscordSRV
+    mavenLocal()
 }
 
 dependencies {
@@ -20,10 +22,11 @@ dependencies {
     compileOnly(libs.kotlinx.serialization.kaml)
     compileOnly(libs.kotlinx.coroutines)
     compileOnly(libs.minecraft.mccoroutine)
-    compileOnly(libs.koin.core)
 
     // Other plugins
     compileOnly(chattyLibs.geary.papermc.core)
+    compileOnly(chattyLibs.geary.papermc.tracking)
+    compileOnly(chattyLibs.geary.papermc.datastore)
 
     /// Third-party plugins
     compileOnly(chattyLibs.placeholderapi)
@@ -32,4 +35,13 @@ dependencies {
     // Shaded
     implementation(chattyLibs.imageloader)
     implementation(libs.bundles.idofront.core)
+
+}
+
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
+    kotlinOptions {
+        freeCompilerArgs = listOf(
+            "-opt-in=kotlinx.serialization.ExperimentalSerializationApi",
+        )
+    }
 }

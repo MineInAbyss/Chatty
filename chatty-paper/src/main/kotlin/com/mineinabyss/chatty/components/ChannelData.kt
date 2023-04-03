@@ -2,7 +2,7 @@ package com.mineinabyss.chatty.components
 
 import com.mineinabyss.chatty.helpers.getDefaultChat
 import com.mineinabyss.chatty.helpers.toPlayer
-import com.mineinabyss.geary.papermc.access.toGeary
+import com.mineinabyss.geary.papermc.tracking.entities.toGeary
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import org.bukkit.entity.Player
@@ -22,7 +22,7 @@ class ChannelData(
         set(value) = run { _lastMessager = value?.name }
 }
 
-val Player.chattyData get() = toGeary().getOrSetPersisting { ChannelData() }
+val Player.chattyData get() =  toGeary().getOrSetPersisting { ChannelData() }
 enum class ChannelType {
     GLOBAL,
     RADIUS,

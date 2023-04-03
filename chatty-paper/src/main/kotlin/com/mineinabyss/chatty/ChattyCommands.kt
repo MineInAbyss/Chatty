@@ -6,7 +6,7 @@ import com.github.shynixn.mccoroutine.bukkit.asyncDispatcher
 import com.github.shynixn.mccoroutine.bukkit.launch
 import com.mineinabyss.chatty.components.*
 import com.mineinabyss.chatty.helpers.*
-import com.mineinabyss.geary.papermc.access.toGeary
+import com.mineinabyss.geary.papermc.tracking.entities.toGeary
 import com.mineinabyss.idofront.commands.arguments.optionArg
 import com.mineinabyss.idofront.commands.arguments.stringArg
 import com.mineinabyss.idofront.commands.execution.IdofrontCommandExecutor
@@ -169,13 +169,14 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
             }
             "commandspy" {
                 playerAction {
-                    val player = sender as? Player ?: return@playerAction
-                    if (player.toGeary().has<CommandSpy>()) {
-                        player.toGeary().remove<CommandSpy>()
-                        player.sendFormattedMessage(chattyMessages.spying.commandSpyOff)
-                    } else {
-                        player.toGeary().getOrSetPersisting { CommandSpy() }
-                        player.sendFormattedMessage(chattyMessages.spying.commandSpyOn)
+                    (sender as? Player)?.toGeary()?.let {
+                        if (it.has<CommandSpy>()) {
+                            it.remove<CommandSpy>()
+                            player.sendFormattedMessage(chattyMessages.spying.commandSpyOff)
+                        } else {
+                            it.getOrSetPersisting { CommandSpy() }
+                            player.sendFormattedMessage(chattyMessages.spying.commandSpyOn)
+                        }
                     }
                 }
             }

@@ -1,6 +1,6 @@
+rootProject.name = "chatty"
+
 pluginManagement {
-    val kotlinVersion: String by settings
-    val idofrontVersion: String by settings
 
     repositories {
         mavenCentral()
@@ -9,25 +9,7 @@ pluginManagement {
         maven("https://repo.papermc.io/repository/maven-public/")
         google()
     }
-
-    plugins {
-
-        kotlin("jvm") version kotlinVersion
-        kotlin("kapt") version kotlinVersion
-        kotlin("plugin.serialization") version kotlinVersion
-
-        id("com.github.johnrengelman.shadow") version "7.1.0"
-    }
-
-    resolutionStrategy.eachPlugin {
-        if (requested.id.id.startsWith("com.mineinabyss.conventions")) useVersion(idofrontVersion)
-    }
 }
-
-include(
-    "chatty-paper",
-    "chatty-velocity"
-)
 
 dependencyResolutionManagement {
     val idofrontVersion: String by settings
@@ -42,4 +24,7 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "chatty"
+include(
+    "chatty-paper",
+    "chatty-velocity"
+)

@@ -6,10 +6,7 @@ import com.mineinabyss.chatty.listeners.ChattyProxyListener
 import com.mineinabyss.chatty.listeners.DiscordListener
 import com.mineinabyss.chatty.listeners.PlayerListener
 import com.mineinabyss.chatty.placeholders.PlaceholderAPIHook
-import com.mineinabyss.geary.addon.autoscan
-import com.mineinabyss.geary.papermc.dsl.gearyAddon
 import com.mineinabyss.idofront.config.IdofrontConfig
-import com.mineinabyss.idofront.config.config
 import com.mineinabyss.idofront.platforms.Platforms
 import com.mineinabyss.idofront.plugin.listeners
 import github.scarsz.discordsrv.DiscordSRV
@@ -25,9 +22,9 @@ class ChattyPlugin : JavaPlugin() {
 
     override fun onEnable() {
         saveDefaultAssets()
-        config = config("config") { fromPluginPath(loadDefault = true) }
-        config = config("emotefixer") { fromPluginPath(loadDefault = true) }
-        config = config("messages") { fromPluginPath(loadDefault = true) }
+        //config = config("config") { fromPluginPath(loadDefault = true) }
+        //config = config("emotefixer") { fromPluginPath(loadDefault = true) }
+        // = config("messages") { fromPluginPath(loadDefault = true) }
 
         // Register the proxy listener
         try {
@@ -43,13 +40,16 @@ class ChattyPlugin : JavaPlugin() {
         if (ChattyContext.isDiscordSRVLoaded)
             DiscordSRV.api.subscribe(DiscordListener())
 
-        gearyAddon {
-            autoscan("com.mineinabyss") {
+        ChattyCommands()
+        listeners(ChatListener(), PlayerListener())
+
+        /*geary {
+            *//*autoscan(classLoader, "com.mineinabyss.chatty") {
                 all()
-            }
+            }*//*
             ChattyCommands()
             listeners(ChatListener(), PlayerListener())
-        }
+        }*/
     }
 
     override fun onDisable() {

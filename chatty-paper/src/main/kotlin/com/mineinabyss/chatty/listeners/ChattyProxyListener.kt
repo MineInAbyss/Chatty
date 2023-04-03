@@ -11,7 +11,7 @@ import com.mineinabyss.chatty.helpers.ZERO_WIDTH
 import com.mineinabyss.chatty.helpers.getChannelFromId
 import com.mineinabyss.chatty.helpers.getChannelFromPlayer
 import com.mineinabyss.chatty.helpers.toPlayer
-import com.mineinabyss.geary.papermc.access.toGeary
+import com.mineinabyss.geary.papermc.tracking.entities.toGeary
 import com.mineinabyss.idofront.textcomponents.miniMsg
 import github.scarsz.discordsrv.Debug
 import github.scarsz.discordsrv.DiscordSRV

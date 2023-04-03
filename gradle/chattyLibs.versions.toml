@@ -1,11 +1,13 @@
 [versions]
-geary = "0.20.115"
-velocity = "3.1.1"
+geary = "0.23"
+velocity = "3.2.0-SNAPSHOT"
 discordsrv = "1.26.0"
 
 [libraries]
 geary-papermc-core = { module = "com.mineinabyss:geary-papermc-core", version.ref = "geary" }
+geary-papermc-tracking = { module = "com.mineinabyss:geary-papermc-tracking", version.ref = "geary" }
+geary-papermc-datastore = { module = "com.mineinabyss:geary-papermc-datastore", version.ref = "geary" }
 velocity = { module = "com.velocitypowered:velocity-api", version.ref = "velocity" }
 discordsrv = { module = "com.discordsrv:discordsrv", version.ref = "discordsrv" }
-placeholderapi = "me.clip:placeholderapi:2.11.2"
+placeholderapi = "me.clip:placeholderapi:2.11.3"
 imageloader = "com.combimagnetron:imageloader:1.1-SNAPSHOT"

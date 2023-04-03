@@ -8,7 +8,7 @@ import com.mineinabyss.chatty.helpers.parseTags
 import com.mineinabyss.chatty.helpers.refreshSkinInCaches
 import com.mineinabyss.chatty.helpers.translatePlaceholders
 import com.mineinabyss.chatty.helpers.verifyPlayerChannel
-import com.mineinabyss.geary.papermc.access.toGeary
+import com.mineinabyss.geary.papermc.tracking.entities.toGeary
 import com.mineinabyss.idofront.textcomponents.serialize
 import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
