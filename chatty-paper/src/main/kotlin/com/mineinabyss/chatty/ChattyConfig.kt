@@ -9,9 +9,6 @@ import net.kyori.adventure.text.format.TextColor
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
 
-val chattyConfig get() = chatty.config.data
-val chattyMessages get() = chatty.messages.data
-val chattyEmoteFixer get() = chatty.emotefixer.data
 @Serializable
 data class ChattyConfig(
     val playerHeadFont: String = "minecraft:chatty_heads",

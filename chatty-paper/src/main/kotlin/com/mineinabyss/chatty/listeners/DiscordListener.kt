@@ -2,7 +2,6 @@ package com.mineinabyss.chatty.listeners
 
 import com.mineinabyss.chatty.ChattyConfig
 import com.mineinabyss.chatty.chatty
-import com.mineinabyss.chatty.chattyEmoteFixer
 import com.mineinabyss.chatty.chattyProxyChannel
 import com.mineinabyss.chatty.components.chattyData
 import com.mineinabyss.chatty.helpers.getChannelFromId
@@ -37,7 +36,7 @@ class DiscordListener {
     fun DiscordGuildMessagePostProcessEvent.sendDiscordToProxy() {
         minecraftMessage = (minecraftMessage.serialize()
             .substringBefore(message.contentRaw) + mm.stripTags(message.contentStripped)).miniMessage()
-        Bukkit.getServer().sendPluginMessage(chatty, chattyProxyChannel, minecraftMessage.serialize().toByteArray())
+        Bukkit.getServer().sendPluginMessage(chatty.plugin, chattyProxyChannel, minecraftMessage.serialize().toByteArray())
     }
 
     @Subscribe(priority = ListenerPriority.NORMAL)
@@ -123,7 +122,7 @@ class DiscordListener {
 
     private fun String.translateEmoteIDs(): String {
         var translated = this
-        chattyEmoteFixer.emotes.entries.forEach { (emoteId, replacement) ->
+        chatty.emotefixer.emotes.entries.forEach { (emoteId, replacement) ->
             val id = ":$emoteId:"
             if (id in this) {
                 translated = translated.replace(id, replacement)

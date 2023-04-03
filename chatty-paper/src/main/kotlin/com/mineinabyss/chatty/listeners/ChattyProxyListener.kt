@@ -1,8 +1,7 @@
 package com.mineinabyss.chatty.listeners
 
 import com.mineinabyss.chatty.ChattyContext
-import com.mineinabyss.chatty.chattyConfig
-import com.mineinabyss.chatty.chattyEmoteFixer
+import com.mineinabyss.chatty.chatty
 import com.mineinabyss.chatty.chattyProxyChannel
 import com.mineinabyss.chatty.components.ChannelType
 import com.mineinabyss.chatty.components.SpyOnChannels
@@ -57,15 +56,15 @@ class ChattyProxyListener : PluginMessageListener {
         }
 
 
-        if (!chattyConfig.proxy.sendProxyMessagesToDiscord ||
-            channel?.discordsrv != true || !ChattyContext.isDiscordSRVLoaded
+        if (!chatty.config.proxy.sendProxyMessagesToDiscord ||
+            channel?.discordsrv != true || !chatty.isDiscordSRVLoaded
         ) return
 
         val dsrv = DiscordSRV.getPlugin()
         var discordMessage = proxyMessage.replaceFirst(channelFormat, "")
         val reserializer = DiscordSRV.config().getBoolean("Experiment_MCDiscordReserializer_ToDiscord")
         val discordChannel =
-            dsrv.getDestinationTextChannelForGameChannelName(chattyConfig.proxy.discordSrvChannelID)
+            dsrv.getDestinationTextChannelForGameChannelName(chatty.config.proxy.discordSrvChannelID)
 
         if (discordChannel == null) {
             DiscordSRV.debug(
@@ -97,10 +96,10 @@ class ChattyProxyListener : PluginMessageListener {
     }
 
     private val translateMentions =
-        if (!ChattyContext.isDiscordSRVLoaded) false else DiscordSRV.config().getBoolean("DiscordChatChannelTranslateMentions")
+        if (!chatty.isDiscordSRVLoaded) false else DiscordSRV.config().getBoolean("DiscordChatChannelTranslateMentions")
     private fun String.translateEmoteIDsToComponent(): String {
         var translated = this
-        chattyEmoteFixer.emotes.entries.forEach { (emoteId, replacement) ->
+        chatty.emotefixer.emotes.entries.forEach { (emoteId, replacement) ->
             val id = ":$emoteId:"
             if (id in translated)
                 translated = translated.replace(id, "<$replacement")

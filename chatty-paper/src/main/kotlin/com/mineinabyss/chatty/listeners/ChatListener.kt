@@ -29,7 +29,7 @@ class ChatListener : Listener {
     @EventHandler
     fun PlayerCommandPreprocessEvent.onPlayerCommand() {
         Bukkit.getOnlinePlayers().filter { it != player && it.toGeary().has<CommandSpy>() }.forEach { p ->
-            p.sendFormattedMessage(chattyConfig.chat.commandSpyFormat, message, optionalPlayer = player)
+            p.sendFormattedMessage(chatty.config.chat.commandSpyFormat, message, optionalPlayer = player)
         }
     }
 
@@ -63,7 +63,7 @@ class ChatListener : Listener {
             val proxyMessage = (("${player.name}$ZERO_WIDTH$channelId$ZERO_WIDTH" +
                     MiniMessage.miniMessage().escapeTags(translatePlaceholders(player, channel.format).serialize()) +
                     ZERO_WIDTH).miniMsg().append(message())).serialize().toByteArray()
-            player.sendPluginMessage(chatty, chattyProxyChannel, proxyMessage)
+            player.sendPluginMessage(chatty.plugin, chattyProxyChannel, proxyMessage)
         }
 
         val displayName = player.chattyNickname?.miniMsg() ?: player.displayName()
@@ -78,9 +78,9 @@ class ChatListener : Listener {
         }
 
         if (pingedPlayer == null && viewers().isEmpty()) {
-            player.sendFormattedMessage(chattyMessages.channels.emptyChannelMessage)
+            player.sendFormattedMessage(chatty.messages.channels.emptyChannelMessage)
             viewers().clear()
-        } else if (chattyConfig.chat.disableChatSigning) {
+        } else if (chatty.config.chat.disableChatSigning) {
             viewers().forEach { a ->
                 RendererExtension.render(player, displayName, message(), a)
             }

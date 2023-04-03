@@ -1,6 +1,6 @@
 package com.mineinabyss.chatty.placeholders
 
-import com.mineinabyss.chatty.chattyConfig
+import com.mineinabyss.chatty.chatty
 import com.mineinabyss.chatty.components.SpyOnChannels
 import com.mineinabyss.chatty.components.chattyData
 import com.mineinabyss.chatty.components.chattyNickname
@@ -32,13 +32,13 @@ fun chattyPlaceholders(player: Player?, string: String? = null) : Map<String, St
         "player_channel_proxy_enabled" to channel?.proxy.toString(),
         "player_spy_last" to player?.toGeary()?.get<SpyOnChannels>()?.channels?.lastOrNull().toString(),
 
-        "ping_defaultsound" to chattyConfig.ping.defaultPingSound,
-        "ping_volume" to chattyConfig.ping.pingVolume.toString(),
-        "ping_pitch" to chattyConfig.ping.pingPitch.toString(),
-        "ping_prefix" to chattyConfig.ping.pingPrefix,
-        "ping_clickreply" to chattyConfig.ping.clickToReply.toString(),
-        "ping_receiver_format" to chattyConfig.ping.pingReceiveFormat,
-        "ping_sender_format" to chattyConfig.ping.pingSendFormat,
+        "ping_defaultsound" to chatty.config.ping.defaultPingSound,
+        "ping_volume" to chatty.config.ping.pingVolume.toString(),
+        "ping_pitch" to chatty.config.ping.pingPitch.toString(),
+        "ping_prefix" to chatty.config.ping.pingPrefix,
+        "ping_clickreply" to chatty.config.ping.clickToReply.toString(),
+        "ping_receiver_format" to chatty.config.ping.pingReceiveFormat,
+        "ping_sender_format" to chatty.config.ping.pingSendFormat,
         "player_ping_sound" to player?.chattyData?.pingSound.toString(),
         "player_ping_toggle" to (player?.chattyData?.disablePingSound?.not() ?: "false").toString(),
 
