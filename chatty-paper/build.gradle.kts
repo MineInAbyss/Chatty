@@ -10,10 +10,10 @@ plugins {
 
 repositories {
     mavenCentral()
+    maven("https://repo.mineinabyss.com/snapshots")
     maven("https://repo.extendedclip.com/content/repositories/placeholderapi/")
     maven("https://nexus.scarsz.me/content/groups/public/") // DiscordSRV
     maven("https://m2.dv8tion.net/releases") // DiscordSRV
-    mavenLocal()
 }
 
 dependencies {
@@ -24,9 +24,7 @@ dependencies {
     compileOnly(libs.minecraft.mccoroutine)
 
     // Other plugins
-    compileOnly(chattyLibs.geary.papermc.core)
-    compileOnly(chattyLibs.geary.papermc.tracking)
-    compileOnly(chattyLibs.geary.papermc.datastore)
+    compileOnly(chattyLibs.geary.papermc)
 
     /// Third-party plugins
     compileOnly(chattyLibs.placeholderapi)

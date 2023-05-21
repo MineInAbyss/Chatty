@@ -9,6 +9,14 @@ pluginManagement {
         maven("https://repo.papermc.io/repository/maven-public/")
         google()
     }
+
+    val idofrontVersion: String by settings
+    resolutionStrategy {
+        eachPlugin {
+            if (requested.id.id.startsWith("com.mineinabyss.conventions"))
+                useVersion(idofrontVersion)
+        }
+    }
 }
 
 dependencyResolutionManagement {
