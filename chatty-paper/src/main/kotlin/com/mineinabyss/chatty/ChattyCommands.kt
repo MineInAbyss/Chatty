@@ -7,12 +7,10 @@ import com.github.shynixn.mccoroutine.bukkit.launch
 import com.mineinabyss.chatty.components.*
 import com.mineinabyss.chatty.helpers.*
 import com.mineinabyss.geary.papermc.tracking.entities.toGeary
-import com.mineinabyss.idofront.commands.arguments.optionArg
 import com.mineinabyss.idofront.commands.arguments.stringArg
 import com.mineinabyss.idofront.commands.execution.IdofrontCommandExecutor
 import com.mineinabyss.idofront.commands.extensions.actions.ensureSenderIsPlayer
 import com.mineinabyss.idofront.commands.extensions.actions.playerAction
-import com.mineinabyss.idofront.config.config
 import com.mineinabyss.idofront.events.call
 import com.mineinabyss.idofront.textcomponents.miniMsg
 import com.mineinabyss.idofront.textcomponents.serialize
@@ -31,38 +29,16 @@ import kotlin.collections.set
 class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
     override val commands = commands(chatty.plugin) {
         "chatty"(desc = "Chatty commands") {
-            /*"reload" {
-                val option by optionArg(listOf("all", "config", "messages", "emotefixer")) { default = "all" }
+            "reload" {
                 action {
-                    when (option) {
-                        "all" -> {
-                            chatty.config = config("config") { chatty.fromPluginPath(loadDefault = true) }
-                            chatty.messages = config("messages") { chatty.fromPluginPath(loadDefault = true) }
-                            chatty.emotefixer = config("emotefixer") { chatty.fromPluginPath(loadDefault = true) }
-                            sender.sendConsoleMessage("<green>Reloaded everything!")
-                        }
-
-                        "config" -> {
-                            chatty.config = config("config") { chatty.fromPluginPath(loadDefault = true) }
-                            sender.sendConsoleMessage("<green>Reloaded configs!")
-                        }
-
-                        "messages" -> {
-                            chatty.messages = config("messages") { chatty.fromPluginPath(loadDefault = true) }
-                            sender.sendConsoleMessage("<green>Reloaded messages!")
-                        }
-
-                        "emotefixer" -> {
-                            chatty.emotefixer = config("emotefixer") { chatty.fromPluginPath(loadDefault = true) }
-                            sender.sendConsoleMessage("<green>Reloaded emotefixer!")
-                        }
-                    }
+                    chatty.plugin.createChattyContext()
+                    sender.sendConsoleMessage("<green>Chatty has been reloaded!")
                 }
                 // chatty.config.reload() is a thing but does not regen or remove stuff so
 //                    chatty.config.reload()
 //                    chatty.messages.reload()
 //                    chatty.emoteFixer.reload()
-            }*/
+            }
             ("message" / "msg")(desc = "Private message another player") {
                 ensureSenderIsPlayer()
                 val player by stringArg()
@@ -275,46 +251,23 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
         val otherPrefix = chatty.config.nicknames.nickNameOtherPrefix
         return if (command.name == "chatty") {
             when (args.size) {
-                1 -> listOf(
-                    "message",
-                    "ping",
-                    "reload",
-                    "channels",
-                    "nickname",
-                    "spy",
-                    "commandspy"
-                ).filter { s -> s.startsWith(args[0]) }
-
+                1 -> listOf("message", "ping", "reload", "channels", "nickname", "spy", "commandspy").filter { s -> s.startsWith(args[0]) }
                 2 -> when (args[0]) {
                     "ping" -> listOf("toggle", "sound").filter { s -> s.startsWith(args[1]) }
                     "message", "msg" -> onlinePlayers.filter { s -> s.startsWith(args[1], true) }
                     "spy" ->
                         chatty.config.channels.keys.toList().filter { s ->
-                            s.startsWith(
-                                args[1],
-                                true
-                            ) && getChannelFromId(s)?.channelType != ChannelType.GLOBAL
+                            s.startsWith(args[1], true) && getChannelFromId(s)?.channelType != ChannelType.GLOBAL
                         }
-
-                    "reload", "rl" -> listOf(
-                        "all",
-                        "config",
-                        "messages",
-                        "emotefixer"
-                    ).filter { s -> s.startsWith(args[1]) }
-
                     else -> emptyList()
                 }
-
                 3 -> when {
                     args[1] == "sound" -> getAlternativePingSounds.filter { s -> s.startsWith(args[2], true) }
                     args[1].startsWith(otherPrefix) -> onlinePlayers.filter { s ->
                         s.replace(otherPrefix.toString(), "").startsWith(args[2], true)
                     }
-
                     else -> emptyList()
                 }
-
                 else -> emptyList()
             }
         } else emptyList()

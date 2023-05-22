@@ -6,6 +6,8 @@ import com.mineinabyss.chatty.listeners.ChattyProxyListener
 import com.mineinabyss.chatty.listeners.DiscordListener
 import com.mineinabyss.chatty.listeners.PlayerListener
 import com.mineinabyss.chatty.placeholders.PlaceholderAPIHook
+import com.mineinabyss.geary.autoscan.autoscan
+import com.mineinabyss.geary.modules.geary
 import com.mineinabyss.idofront.config.config
 import com.mineinabyss.idofront.di.DI
 import com.mineinabyss.idofront.platforms.Platforms
@@ -20,18 +22,9 @@ class ChattyPlugin : JavaPlugin() {
     }
 
     override fun onEnable() {
-        val chattyContext = object : ChattyContext {
-            override val plugin: ChattyPlugin = this@ChattyPlugin
-            override val config: ChattyConfig by config("config") { fromPluginPath(loadDefault = true) }
-            override val messages: ChattyMessages by config("messages") { fromPluginPath(loadDefault = true) }
-            override val emotefixer: DiscordEmoteFixer by config("emotefixer") { fromPluginPath(loadDefault = true) }
-            override val isPlaceholderApiLoaded: Boolean = Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")
-            override val isDiscordSRVLoaded: Boolean = Bukkit.getPluginManager().isPluginEnabled("DiscordSRV")
-        }
-
-        DI.add<ChattyContext>(chattyContext)
-
         saveDefaultAssets()
+
+        createChattyContext()
 
         // Register the proxy listener
         registerProxyChannels()
@@ -45,13 +38,27 @@ class ChattyPlugin : JavaPlugin() {
         if (chatty.isDiscordSRVLoaded)
             DiscordSRV.api.subscribe(DiscordListener())
 
-        /*geary {
-            *//*autoscan(classLoader, "com.mineinabyss.chatty") {
+        geary {
+            autoscan(classLoader, "com.mineinabyss.chatty") {
                 all()
-            }*//*
+            }
             ChattyCommands()
             listeners(ChatListener(), PlayerListener())
-        }*/
+        }
+    }
+
+    fun createChattyContext() {
+        DI.remove<ChattyContext>()
+        val chattyContext = object : ChattyContext {
+            override val plugin: ChattyPlugin = this@ChattyPlugin
+            override val config: ChattyConfig by config("config") { fromPluginPath(loadDefault = true) }
+            override val messages: ChattyMessages by config("messages") { fromPluginPath(loadDefault = true) }
+            override val emotefixer: DiscordEmoteFixer by config("emotefixer") { fromPluginPath(loadDefault = true) }
+            override val isPlaceholderApiLoaded: Boolean = Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")
+            override val isDiscordSRVLoaded: Boolean = Bukkit.getPluginManager().isPluginEnabled("DiscordSRV")
+        }
+
+        DI.add<ChattyContext>(chattyContext)
     }
 
     override fun onDisable() {
