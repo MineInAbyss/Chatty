@@ -22,6 +22,7 @@ import org.bukkit.Sound
 import org.bukkit.SoundCategory
 import org.bukkit.entity.Player
 import org.bukkit.profile.PlayerTextures.SkinModel
+import java.util.regex.Pattern
 
 const val ZERO_WIDTH = "\u200B"
 val ping = chatty.config.ping
@@ -183,7 +184,9 @@ private fun avatarBuilder(
         .ascent(ascent).colorType(colorType).scale(scale).build()
 }
 
-fun String.fixSerializedTags(): String = this.replace("\\<", "<").replace("\\>", ">")
+fun String.fixSerializedTags(): String = this.replaceAll("\\\\(?!u)(?!\")", "")
+
+fun String.replaceAll(regex: String, replacement: String): String = Pattern.compile(regex).matcher(this).replaceAll(replacement)
 
 fun String.fixLegacy(): Component {
     return if ("§" in this) legacy.deserialize(this)
