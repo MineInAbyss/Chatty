@@ -22,9 +22,9 @@ class ChattyPlugin : JavaPlugin() {
     }
 
     override fun onEnable() {
-        saveDefaultAssets()
-
         createChattyContext()
+
+        saveDefaultAssets()
 
         // Register the proxy listener
         registerProxyChannels()
