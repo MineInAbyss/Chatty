@@ -1,6 +1,8 @@
 package com.mineinabyss.chatty.listeners
 
-import com.mineinabyss.chatty.*
+import com.mineinabyss.chatty.ChattyConfig
+import com.mineinabyss.chatty.chatty
+import com.mineinabyss.chatty.chattyProxyChannel
 import com.mineinabyss.chatty.components.*
 import com.mineinabyss.chatty.helpers.*
 import com.mineinabyss.geary.papermc.tracking.entities.toGeary
@@ -81,11 +83,10 @@ class ChatListener : Listener {
             player.sendFormattedMessage(chatty.messages.channels.emptyChannelMessage)
             viewers().clear()
         } else if (chatty.config.chat.disableChatSigning) {
-            viewers().forEach { a ->
-                RendererExtension.render(player, displayName, message(), a)
-            }
+            viewers().filterIsInstance<Player>().forEach { it.sendMessage(message()) }
             viewers().clear()
-        }
+            isCancelled = true
+        } else renderer { _, _, _, _ -> return@renderer message() }
     }
 
     private fun setAudienceForChannelType(player: Player): Set<Audience> {
@@ -125,7 +126,7 @@ class ChatListener : Listener {
 
 object RendererExtension : ChatRenderer {
     override fun render(source: Player, sourceDisplayName: Component, message: Component, viewer: Audience): Component {
-        (viewer as? Player ?: Bukkit.getConsoleSender()).sendMessage(message)
+
         return message
     }
 }
