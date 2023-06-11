@@ -1,11 +1,6 @@
-name: Build
+name: Java CI with Gradle
 
 on:
-  push:
-    branches:
-      - master
-    paths-ignore:
-      - '**.md'
   pull_request:
 
 concurrency:
@@ -25,5 +20,5 @@ jobs:
           java-version: 17
           cache: gradle
 
-      - name: Build
+      - name: Run build
         run: gradle build
