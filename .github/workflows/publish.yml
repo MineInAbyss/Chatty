@@ -24,6 +24,7 @@ jobs:
           maven-password: ${{ secrets.MAVEN_PUBLISH_PASSWORD }}
           release-files: |
             ${{ github.workspace }}/publish/*.jar
+            ${{ github.workspace }}/chatty-velocity/build/publish/*.jar
 
   deploy:
     permissions:

@@ -8,6 +8,11 @@ plugins {
     kotlin("plugin.serialization")
     id("com.github.johnrengelman.shadow")
     `maven-publish`
+    id(libs.plugins.mia.copyjar.get().pluginId)
+}
+
+copyJar {
+    destPath.set(project.findProperty("velocity_plugin_path") as String? ?: "./build/publish")
 }
 
 repositories {
@@ -25,27 +30,4 @@ dependencies {
 
     compileOnly(chattyLibs.velocity)
     kapt(chattyLibs.velocity)
-}
-
-tasks.build {
-    dependsOn(tasks.shadowJar.get())
-}
-
-val copyJar: String? by project
-val pluginPath = project.findProperty("velocity_plugin_path")
-
-if(copyJar != "false" && pluginPath != null) {
-    tasks {
-        register<Copy>("copyJar") {
-            from(findByName("reobfJar") ?: findByName("shadowJar") ?: findByName("jar"))
-            into(pluginPath)
-            doLast {
-                println("Copied to plugin directory $pluginPath")
-            }
-        }
-
-        named<DefaultTask>("build") {
-            dependsOn("copyJar")
-        }
-    }
 }
