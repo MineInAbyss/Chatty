@@ -1,6 +1,5 @@
 package com.mineinabyss.chatty.listeners
 
-import com.mineinabyss.chatty.ChattyContext
 import com.mineinabyss.chatty.chatty
 import com.mineinabyss.chatty.chattyProxyChannel
 import com.mineinabyss.chatty.components.ChannelType
@@ -14,12 +13,12 @@ import com.mineinabyss.geary.papermc.tracking.entities.toGeary
 import com.mineinabyss.idofront.textcomponents.miniMsg
 import github.scarsz.discordsrv.Debug
 import github.scarsz.discordsrv.DiscordSRV
-import github.scarsz.discordsrv.dependencies.jda.api.Permission
-import github.scarsz.discordsrv.dependencies.jda.api.entities.MessageEmbed
 import github.scarsz.discordsrv.util.DiscordUtil
 import github.scarsz.discordsrv.util.MessageUtil
 import github.scarsz.discordsrv.util.PlaceholderUtil
 import github.scarsz.discordsrv.util.WebhookUtil
+import net.dv8tion.jda.api.Permission
+import net.dv8tion.jda.api.entities.MessageEmbed
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
 import org.bukkit.plugin.messaging.PluginMessageListener
@@ -60,38 +59,32 @@ class ChattyProxyListener : PluginMessageListener {
             channel?.discordsrv != true || !chatty.isDiscordSRVLoaded
         ) return
 
-        val dsrv = DiscordSRV.getPlugin()
-        var discordMessage = proxyMessage.replaceFirst(channelFormat, "")
         val reserializer = DiscordSRV.config().getBoolean("Experiment_MCDiscordReserializer_ToDiscord")
-        val discordChannel =
-            dsrv.getDestinationTextChannelForGameChannelName(chatty.config.proxy.discordSrvChannelID)
+        val discordChannel = DiscordSRV.getPlugin().getDestinationTextChannelForGameChannelName(chatty.config.proxy.discordSrvChannelID)
 
-        if (discordChannel == null) {
-            DiscordSRV.debug(
-                Debug.MINECRAFT_TO_DISCORD,
-                "Failed to find Discord channel to forward message from game channel $channel"
-            )
-        } else if (!DiscordUtil.checkPermission(discordChannel.guild, Permission.MANAGE_WEBHOOKS)) {
-            DiscordSRV.error("Couldn't deliver chat message as webhook because the bot lacks the \"Manage Webhooks\" permission.")
-        } else {
-            discordMessage = PlaceholderUtil.replacePlaceholdersToDiscord(discordMessage)
-            if (!reserializer) discordMessage = MessageUtil.strip(discordMessage)
+        when {
+            discordChannel == null -> {
+                DiscordSRV.debug(Debug.MINECRAFT_TO_DISCORD,
+                    "Failed to find Discord channel to forward message from game channel $channel")
+            }
+            !DiscordUtil.checkPermission(discordChannel.guild, Permission.MANAGE_WEBHOOKS) ->
+                DiscordSRV.error("Couldn't deliver chat message as webhook because the bot lacks the \"Manage Webhooks\" permission.")
+            else -> {
+                val discordMessage = proxyMessage.replaceFirst(channelFormat, "")
+                    .apply { PlaceholderUtil.replacePlaceholdersToDiscord(this) }
+                    .apply { if (!reserializer) MessageUtil.strip(this) }
+                    .apply { if (translateMentions) DiscordUtil.convertMentionsFromNames(this, DiscordSRV.getPlugin().mainGuild) }
 
-            if (translateMentions)
-                discordMessage = DiscordUtil.convertMentionsFromNames(discordMessage, dsrv.mainGuild)
-            var whUsername: String =
-                DiscordSRV.config().getString("Experiment_WebhookChatMessageUsernameFormat")
+                val whUsername = DiscordSRV.config().getString("Experiment_WebhookChatMessageUsernameFormat")
                     .replace("(%displayname%)|(%username%)".toRegex(), senderName)
-            whUsername = PlaceholderUtil.replacePlaceholders(whUsername)
-            whUsername = MessageUtil.strip(whUsername)
+                    .let { MessageUtil.strip(PlaceholderUtil.replacePlaceholders(it)) }
 
-            WebhookUtil.deliverMessage(
-                discordChannel,
-                whUsername,
-                DiscordSRV.getAvatarUrl(senderName, senderName.toPlayer()?.uniqueId),
-                discordMessage.translateEmoteIDsToComponent(),
-                MessageEmbed(null, null, null, null, null, 10, null, null, null, null, null, null, null)
-            )
+                WebhookUtil.deliverMessage(discordChannel, whUsername,
+                    DiscordSRV.getAvatarUrl(senderName, senderName.toPlayer()?.uniqueId),
+                    discordMessage.translateEmoteIDsToComponent(),
+                    MessageEmbed(null, null, null, null, null, 10, null, null, null, null, null, null, null)
+                )
+            }
         }
     }
 
@@ -104,9 +97,6 @@ class ChattyProxyListener : PluginMessageListener {
             if (id in translated)
                 translated = translated.replace(id, "<$replacement")
         }
-        return translated.cleanUpHackyFix()
+        return translated.replace("<<", "<")
     }
-
-    private fun String.cleanUpHackyFix() =
-        this.replace("<<", "<")
 }
