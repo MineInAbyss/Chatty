@@ -1,26 +1,22 @@
 package com.mineinabyss.chatty.components
 
 import com.mineinabyss.chatty.helpers.getDefaultChat
-import com.mineinabyss.chatty.helpers.toPlayer
 import com.mineinabyss.geary.papermc.tracking.entities.toGeary
+import com.mineinabyss.idofront.serialization.UUIDSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import org.bukkit.entity.Player
+import java.util.*
 
 @Serializable
 @SerialName("chatty:chatty_data")
-class ChannelData(
-    var channelId: String = getDefaultChat().key,
-    var lastChannelUsed: String = channelId,
-    var disablePingSound: Boolean = false,
-    var pingSound: String? = null,
-    @SerialName("lastMessager")
-    var _lastMessager: String? = null,
-) {
-    var lastMessager
-        get() = _lastMessager?.toPlayer()
-        set(value) = run { _lastMessager = value?.name }
-}
+data class ChannelData(
+    val channelId: String = getDefaultChat().key,
+    val lastChannelUsed: String = channelId,
+    val disablePingSound: Boolean = false,
+    val pingSound: String? = null,
+    val lastMessager: @Serializable(UUIDSerializer::class) UUID? = null,
+)
 
 val Player.chattyData get() =  toGeary().getOrSetPersisting { ChannelData() }
 enum class ChannelType {

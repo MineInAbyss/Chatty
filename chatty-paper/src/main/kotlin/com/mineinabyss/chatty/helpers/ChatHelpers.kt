@@ -8,6 +8,7 @@ import com.mineinabyss.chatty.components.ChannelType
 import com.mineinabyss.chatty.components.chattyData
 import com.mineinabyss.chatty.components.chattyNickname
 import com.mineinabyss.chatty.placeholders.chattyPlaceholderTags
+import com.mineinabyss.geary.papermc.tracking.entities.toGeary
 import com.mineinabyss.idofront.textcomponents.miniMsg
 import com.mineinabyss.idofront.textcomponents.serialize
 import me.clip.placeholderapi.PlaceholderAPI
@@ -120,14 +121,10 @@ fun Player.getChannelFromPlayer() =
 
 fun Player.verifyPlayerChannel() {
     if (chattyData.channelId !in chatty.config.channels)
-        chattyData.channelId = getDefaultChat().key
+        toGeary().setPersisting(chattyData.copy(channelId = getDefaultChat().key))
 }
 
-fun getAllChannelNames(): List<String> {
-    val list = mutableListOf<String>()
-    chatty.config.channels.forEach { list.add(it.key) }
-    return list
-}
+fun getAllChannelNames() = chatty.config.channels.keys.toList()
 
 fun translatePlaceholders(player: Player, message: String): Component {
     return PlaceholderAPI.setPlaceholders(player, message).fixLegacy()
@@ -207,8 +204,7 @@ fun Player.swapChannelCommand(channelId: String) {
             sendFormattedMessage(chatty.messages.channels.missingChannelPermission)
 
         else -> {
-            chattyData.channelId = channelId
-            chattyData.lastChannelUsed = channelId
+            toGeary().setPersisting(chattyData.copy(channelId = channelId, lastChannelUsed = channelId))
             sendFormattedMessage(chatty.messages.channels.channelChanged)
         }
     }
@@ -224,4 +220,8 @@ fun formattedResult(player: Player, message: Component): Component {
     val parsedMessage = Component.text("").color(channel.messageColor).append(message.parseTags(player, false))
 
     return parsedFormat.append(parsedMessage)
+}
+
+fun <T> T.copyWithEdit(block: T.() -> T): T {
+    return block()
 }

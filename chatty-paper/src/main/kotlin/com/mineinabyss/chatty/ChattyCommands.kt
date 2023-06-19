@@ -11,6 +11,7 @@ import com.mineinabyss.idofront.commands.arguments.stringArg
 import com.mineinabyss.idofront.commands.execution.IdofrontCommandExecutor
 import com.mineinabyss.idofront.commands.extensions.actions.ensureSenderIsPlayer
 import com.mineinabyss.idofront.commands.extensions.actions.playerAction
+import com.mineinabyss.idofront.entities.toPlayer
 import com.mineinabyss.idofront.events.call
 import com.mineinabyss.idofront.textcomponents.miniMsg
 import com.mineinabyss.idofront.textcomponents.serialize
@@ -54,7 +55,7 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
                 ensureSenderIsPlayer()
                 action {
                     val player = sender as? Player ?: return@action
-                    player.chattyData.lastMessager?.let { player.handleSendingPrivateMessage(it, arguments, true) }
+                    player.chattyData.lastMessager?.toPlayer()?.let { player.handleSendingPrivateMessage(it, arguments, true) }
                         ?: player.sendFormattedMessage(chatty.messages.privateMessages.emptyReply)
                 }
             }
@@ -63,7 +64,7 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
                     ensureSenderIsPlayer()
                     action {
                         val player = sender as? Player ?: return@action
-                        player.chattyData.disablePingSound = !player.chattyData.disablePingSound
+                        player.toGeary().setPersisting(player.chattyData.apply { ChannelData(channelId, lastChannelUsed, !disablePingSound, pingSound, lastMessager) })
                         player.sendFormattedMessage(chatty.messages.ping.toggledPingSound)
                     }
                 }
@@ -73,18 +74,16 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
                     action {
                         val player = sender as? Player ?: return@action
                         if (soundName in getAlternativePingSounds) {
-                            player.chattyData.pingSound = soundName
+                            player.toGeary().setPersisting(player.chattyData.apply { ChannelData(channelId, lastChannelUsed, !disablePingSound, soundName, lastMessager) })
                             player.sendFormattedMessage(chatty.messages.ping.changedPingSound)
-                        } else {
-                            player.sendFormattedMessage(chatty.messages.ping.invalidPingSound)
-                        }
+                        } else player.sendFormattedMessage(chatty.messages.ping.invalidPingSound)
                     }
                 }
             }
             ("channels" / "ch")(desc = "List all channels") {
                 action {
                     (sender as? Player)?.sendFormattedMessage(chatty.messages.channels.availableChannels)
-                        ?: sender.sendMessage(chatty.messages.channels.availableChannels)
+                        ?: sender.sendRichMessage(chatty.messages.channels.availableChannels)
                 }
             }
             ("nickname" / "nick") {
@@ -235,7 +234,7 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
             ensureSenderIsPlayer()
             action {
                 val player = sender as? Player ?: return@action
-                player.chattyData.lastMessager?.let { player.handleSendingPrivateMessage(it, arguments, true) }
+                player.chattyData.lastMessager?.toPlayer()?.let { player.handleSendingPrivateMessage(it, arguments, true) }
                     ?: player.sendFormattedMessage(chatty.messages.privateMessages.emptyReply)
             }
         }
@@ -285,27 +284,26 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
 
             arguments.isEmpty() -> swapChannelCommand(channel.key)
             else -> {
-                chattyData.channelId = channel.key
-                chattyData.lastChannelUsed = channel.key
+                toGeary().setPersisting(chattyData.copy(channelId = channel.key, lastChannelUsed = channel.key))
                 chatty.plugin.launch(chatty.plugin.asyncDispatcher) {
                     GenericChattyDecorateEvent(this@shortcutCommand, arguments.toSentence().miniMsg()).call {
                         GenericChattyChatEvent(this@shortcutCommand, (this as AsyncChatDecorateEvent).result()).callEvent()
                     }
                 }
-                chattyData.channelId = currentChannel
+                toGeary().setPersisting(chattyData.copy(channelId = currentChannel))
             }
         }
     }
 
     private val replyMap = mutableMapOf<Player, Job>()
-    private fun Player.handleReplyTimer(): Job {
-        if (this in replyMap) return replyMap[this]!!
-        replyMap[this]?.cancel()
+    private fun handleReplyTimer(player: Player): Job {
+        if (player in replyMap) return replyMap[player]!!
+        replyMap[player]?.cancel()
         return chatty.plugin.launch(chatty.plugin.asyncDispatcher) {
             delay(chatty.config.privateMessages.messageReplyTime)
-            replyMap[this@handleReplyTimer]?.cancel()
-            replyMap.remove(this@handleReplyTimer)
-            this@handleReplyTimer.chattyData.lastMessager = null
+            replyMap[player]?.cancel()
+            replyMap.remove(player)
+            player.toGeary().setPersisting(player.chattyData.copy(lastMessager = null))
         }
     }
 
@@ -324,11 +322,11 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
                 val msg = if (isReply) arguments.toSentence() else arguments.removeFirstArgumentOfStringList()
                 if (msg.isEmpty() || this == player) return
 
-                replyMap[player] = player.handleReplyTimer()
+                replyMap[player] = handleReplyTimer(player)
 
                 this.sendFormattedPrivateMessage(chatty.config.privateMessages.messageSendFormat, msg, player)
                 player.sendFormattedPrivateMessage(chatty.config.privateMessages.messageReceiveFormat, msg, this)
-                player.chattyData.lastMessager = this
+                player.toGeary().setPersisting(player.chattyData.copy(lastMessager = uniqueId))
                 if (chatty.config.privateMessages.messageSendSound.isNotEmpty())
                     this.playSound(player.location, chatty.config.privateMessages.messageSendSound, 1f, 1f)
                 if (chatty.config.privateMessages.messageReceivedSound.isNotEmpty())
