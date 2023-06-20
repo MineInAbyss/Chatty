@@ -30,7 +30,7 @@ class ChatListener : Listener {
 
     @EventHandler
     fun PlayerCommandPreprocessEvent.onPlayerCommand() {
-        Bukkit.getOnlinePlayers().filter { it != player && it.toGeary().has<CommandSpy>() }.forEach { p ->
+        Bukkit.getOnlinePlayers().filter { it.uniqueId != player.uniqueId && it.toGeary().has<CommandSpy>() }.forEach { p ->
             p.sendFormattedMessage(chatty.config.chat.commandSpyFormat, message, optionalPlayer = player)
         }
     }

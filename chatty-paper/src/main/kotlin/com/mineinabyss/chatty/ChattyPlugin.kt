@@ -42,8 +42,6 @@ class ChattyPlugin : JavaPlugin() {
             autoscan(classLoader, "com.mineinabyss.chatty") {
                 all()
             }
-            ChattyCommands()
-            listeners(ChatListener(), PlayerListener())
         }
     }
 
