@@ -4,7 +4,7 @@ import com.mineinabyss.chatty.helpers.toPlayer
 import com.mineinabyss.chatty.helpers.translateFullPlayerSkinComponent
 import com.mineinabyss.chatty.helpers.translatePlayerHeadComponent
 import com.mineinabyss.idofront.font.Space
-import com.mineinabyss.idofront.messaging.miniMsg
+import com.mineinabyss.idofront.textcomponents.miniMsg
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.minimessage.Context
 import net.kyori.adventure.text.minimessage.internal.serializer.SerializableResolver

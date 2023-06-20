@@ -5,9 +5,9 @@ import com.mineinabyss.chatty.chatty
 import com.mineinabyss.chatty.chattyProxyChannel
 import com.mineinabyss.chatty.components.*
 import com.mineinabyss.chatty.helpers.*
-import com.mineinabyss.geary.papermc.access.toGeary
-import com.mineinabyss.idofront.messaging.miniMsg
-import com.mineinabyss.idofront.messaging.serialize
+import com.mineinabyss.geary.papermc.tracking.entities.toGeary
+import com.mineinabyss.idofront.textcomponents.miniMsg
+import com.mineinabyss.idofront.textcomponents.serialize
 import io.papermc.paper.chat.ChatRenderer
 import io.papermc.paper.event.player.AsyncChatCommandDecorateEvent
 import io.papermc.paper.event.player.AsyncChatDecorateEvent
@@ -31,7 +31,7 @@ class ChatListener : Listener {
     @EventHandler
     fun PlayerCommandPreprocessEvent.onPlayerCommand() {
         Bukkit.getOnlinePlayers().filter { it != player && it.toGeary().has<CommandSpy>() }.forEach { p ->
-            p.sendFormattedMessage(chattyConfig.chat.commandSpyFormat, message, optionalPlayer = player)
+            p.sendFormattedMessage(chatty.config.chat.commandSpyFormat, message, optionalPlayer = player)
         }
     }
 
@@ -65,7 +65,7 @@ class ChatListener : Listener {
             val proxyMessage = (("${player.name}$ZERO_WIDTH$channelId$ZERO_WIDTH" +
                     MiniMessage.miniMessage().escapeTags(translatePlaceholders(player, channel.format).serialize()) +
                     ZERO_WIDTH).miniMsg().append(message())).serialize().toByteArray()
-            player.sendPluginMessage(chatty, chattyProxyChannel, proxyMessage)
+            player.sendPluginMessage(chatty.plugin, chattyProxyChannel, proxyMessage)
         }
 
         val displayName = player.chattyNickname?.miniMsg() ?: player.displayName()
@@ -80,14 +80,13 @@ class ChatListener : Listener {
         }
 
         if (pingedPlayer == null && viewers().isEmpty()) {
-            player.sendFormattedMessage(chattyMessages.channels.emptyChannelMessage)
+            player.sendFormattedMessage(chatty.messages.channels.emptyChannelMessage)
             viewers().clear()
-        } else if (chattyConfig.chat.disableChatSigning) {
-            viewers().forEach { a ->
-                RendererExtension.render(player, displayName, message(), a)
-            }
+        } else if (chatty.config.chat.disableChatSigning) {
+            viewers().filterIsInstance<Player>().forEach { it.sendMessage(message()) }
             viewers().clear()
-        }
+            isCancelled = true
+        } else renderer { _, _, _, _ -> return@renderer message() }
     }
 
     private fun setAudienceForChannelType(player: Player): Set<Audience> {
@@ -120,14 +119,14 @@ class ChatListener : Listener {
     private fun Player.sendFormattedMessage(vararg message: String, optionalPlayer: Player? = null) =
         this.sendMessage(translatePlaceholders((optionalPlayer ?: this), message.joinToString(" ")).parseTags(optionalPlayer ?: this, true))
 
-    private fun Component.stripMessageFormat(player: Player, channel: ChattyConfig.Data.ChattyChannel) =
+    private fun Component.stripMessageFormat(player: Player, channel: ChattyConfig.ChattyChannel) =
         plainText.serialize(this)
             .replace(plainText.serialize(translatePlaceholders(player, channel.format).parseTags(player, true)), "").miniMsg().parseTags(player, false)
 }
 
 object RendererExtension : ChatRenderer {
     override fun render(source: Player, sourceDisplayName: Component, message: Component, viewer: Audience): Component {
-        (viewer as? Player ?: Bukkit.getConsoleSender()).sendMessage(message)
+
         return message
     }
 }

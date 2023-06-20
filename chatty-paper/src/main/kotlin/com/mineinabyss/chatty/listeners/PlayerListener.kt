@@ -1,10 +1,14 @@
 package com.mineinabyss.chatty.listeners
 
+import com.mineinabyss.chatty.chatty
 import com.mineinabyss.chatty.components.ChannelData
 import com.mineinabyss.chatty.components.HideJoinLeave
-import com.mineinabyss.chatty.helpers.*
-import com.mineinabyss.geary.papermc.access.toGeary
-import com.mineinabyss.idofront.messaging.serialize
+import com.mineinabyss.chatty.helpers.parseTags
+import com.mineinabyss.chatty.helpers.refreshSkinInCaches
+import com.mineinabyss.chatty.helpers.translatePlaceholders
+import com.mineinabyss.chatty.helpers.verifyPlayerChannel
+import com.mineinabyss.geary.papermc.tracking.entities.toGeary
+import com.mineinabyss.idofront.textcomponents.serialize
 import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
@@ -18,16 +22,16 @@ class PlayerListener : Listener {
     @EventHandler(priority = EventPriority.LOWEST)
     fun PlayerJoinEvent.onFirstJoin() {
         if (player.toGeary().has<ChannelData>()) return
-        if (chattyConfig.join.enabled && chattyConfig.join.firstJoin.enabled) {
-            joinMessage(translatePlaceholders(player, chattyMessages.joinLeave.firstJoinMessage))
+        if (chatty.config.join.enabled && chatty.config.join.firstJoin.enabled) {
+            joinMessage(translatePlaceholders(player, chatty.messages.joinLeave.firstJoinMessage))
         }
     }
 
     @EventHandler(priority = EventPriority.NORMAL)
     fun PlayerJoinEvent.onJoin() {
         player.verifyPlayerChannel()
-        if (chattyConfig.join.enabled && !player.toGeary().has<HideJoinLeave>())
-            joinMessage(translatePlaceholders(player, chattyMessages.joinLeave.joinMessage))
+        if (chatty.config.join.enabled && !player.toGeary().has<HideJoinLeave>())
+            joinMessage(translatePlaceholders(player, chatty.messages.joinLeave.joinMessage))
     }
 
     @EventHandler
@@ -35,8 +39,8 @@ class PlayerListener : Listener {
         // Remove player incase they switch skins
         player.refreshSkinInCaches()
 
-        if (chattyConfig.leave.enabled && !player.toGeary().has<HideJoinLeave>())
-            quitMessage(translatePlaceholders(player, chattyMessages.joinLeave.leaveMessage))
+        if (chatty.config.leave.enabled && !player.toGeary().has<HideJoinLeave>())
+            quitMessage(translatePlaceholders(player, chatty.messages.joinLeave.leaveMessage))
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)

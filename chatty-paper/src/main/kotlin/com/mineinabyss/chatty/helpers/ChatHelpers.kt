@@ -3,12 +3,14 @@ package com.mineinabyss.chatty.helpers
 import com.combimagnetron.imageloader.Avatar
 import com.combimagnetron.imageloader.Image.ColorType
 import com.combimagnetron.imageloader.ImageUtils
+import com.mineinabyss.chatty.chatty
 import com.mineinabyss.chatty.components.ChannelType
 import com.mineinabyss.chatty.components.chattyData
 import com.mineinabyss.chatty.components.chattyNickname
 import com.mineinabyss.chatty.placeholders.chattyPlaceholderTags
-import com.mineinabyss.idofront.messaging.miniMsg
-import com.mineinabyss.idofront.messaging.serialize
+import com.mineinabyss.geary.papermc.tracking.entities.toGeary
+import com.mineinabyss.idofront.textcomponents.miniMsg
+import com.mineinabyss.idofront.textcomponents.serialize
 import me.clip.placeholderapi.PlaceholderAPI
 import net.kyori.adventure.key.Key
 import net.kyori.adventure.text.Component
@@ -21,9 +23,10 @@ import org.bukkit.Sound
 import org.bukkit.SoundCategory
 import org.bukkit.entity.Player
 import org.bukkit.profile.PlayerTextures.SkinModel
+import java.util.regex.Pattern
 
 const val ZERO_WIDTH = "\u200B"
-val ping = chattyConfig.ping
+val ping = chatty.config.ping
 val getAlternativePingSounds: List<String> =
     if ("*" in ping.alternativePingSounds || "all" in ping.alternativePingSounds)
         Sound.values().map { it.key.toString() }.toList() else ping.alternativePingSounds
@@ -32,7 +35,7 @@ val getPingEnabledChannels: List<String> =
     if ("*" in ping.enabledChannels || "all" in ping.enabledChannels) getAllChannelNames() else ping.enabledChannels
 
 fun String.checkForPlayerPings(channelId: String): Player? {
-    val ping = chattyConfig.ping
+    val ping = chatty.config.ping
     if (channelId !in getPingEnabledChannels || ping.pingPrefix.isEmpty() || ping.pingPrefix !in this) return null
     val pingedName = this.substringAfter(ping.pingPrefix).split(" ")[0]
     return Bukkit.getOnlinePlayers().firstOrNull { player ->
@@ -44,7 +47,7 @@ fun String.checkForPlayerPings(channelId: String): Player? {
 
 fun Component.handlePlayerPings(player: Player, pingedPlayer: Player) {
     getChannelFromId(player.chattyData.channelId) ?: return
-    val ping = chattyConfig.ping
+    val ping = chatty.config.ping
     val pingSound = pingedPlayer.chattyData.pingSound ?: ping.defaultPingSound
     val clickToReply =
         if (ping.clickToReply) "<insert:@${
@@ -97,35 +100,31 @@ fun Component.parseTags(player: Player? = null, ignorePermissions: Boolean = fal
     this.serialize().parseTags(player, ignorePermissions)
 
 fun getGlobalChat() =
-    chattyConfig.channels.entries.firstOrNull { it.value.channelType == ChannelType.GLOBAL }
+    chatty.config.channels.entries.firstOrNull { it.value.channelType == ChannelType.GLOBAL }
 
 fun getRadiusChannel() =
-    chattyConfig.channels.entries.firstOrNull { it.value.channelType == ChannelType.RADIUS }
+    chatty.config.channels.entries.firstOrNull { it.value.channelType == ChannelType.RADIUS }
 
 fun getAdminChannel() =
-    chattyConfig.channels.entries.firstOrNull { it.value.isStaffChannel }
+    chatty.config.channels.entries.firstOrNull { it.value.isStaffChannel }
 
 fun getDefaultChat() =
-    chattyConfig.channels.entries.firstOrNull { it.value.isDefaultChannel }
+    chatty.config.channels.entries.firstOrNull { it.value.isDefaultChannel }
         ?: getGlobalChat()
         ?: throw IllegalStateException("No Default or Global channel found")
 
 fun getChannelFromId(channelId: String) =
-    chattyConfig.channels.entries.firstOrNull { it.key == channelId }?.value
+    chatty.config.channels.entries.firstOrNull { it.key == channelId }?.value
 
 fun Player.getChannelFromPlayer() =
-    chattyConfig.channels.entries.firstOrNull { it.key == this.chattyData.channelId }?.value
+    chatty.config.channels.entries.firstOrNull { it.key == this.chattyData.channelId }?.value
 
 fun Player.verifyPlayerChannel() {
-    if (chattyData.channelId !in chattyConfig.channels)
-        chattyData.channelId = getDefaultChat().key
+    if (chattyData.channelId !in chatty.config.channels)
+        toGeary().setPersisting(chattyData.copy(channelId = getDefaultChat().key))
 }
 
-fun getAllChannelNames(): List<String> {
-    val list = mutableListOf<String>()
-    chattyConfig.channels.forEach { list.add(it.key) }
-    return list
-}
+fun getAllChannelNames() = chatty.config.channels.keys.toList()
 
 fun translatePlaceholders(player: Player, message: String): Component {
     return PlaceholderAPI.setPlaceholders(player, message).fixLegacy()
@@ -133,7 +132,7 @@ fun translatePlaceholders(player: Player, message: String): Component {
 
 val playerHeadMapCache = mutableMapOf<OfflinePlayer, Component>()
 fun OfflinePlayer.translatePlayerHeadComponent(): Component {
-    if (this !in playerHeadMapCache || playerHeadMapCache[this]!!.font() != Key.key(chattyConfig.playerHeadFont)) {
+    if (this !in playerHeadMapCache || playerHeadMapCache[this]!!.font() != Key.key(chatty.config.playerHeadFont)) {
         playerHeadMapCache[this] = runCatching { getPlayerHeadTexture(ascent = -5) }.getOrDefault(Component.empty())
     }
     return playerHeadMapCache[this] ?: Component.empty()
@@ -145,7 +144,7 @@ fun Player.refreshSkinInCaches() {
     playerHeadMapCache -= this
 }
 fun OfflinePlayer.translateFullPlayerSkinComponent(): Component {
-    if (this !in playerBodyMapCache || playerBodyMapCache[this]!!.font() != Key.key(chattyConfig.playerHeadFont)) {
+    if (this !in playerBodyMapCache || playerBodyMapCache[this]!!.font() != Key.key(chatty.config.playerHeadFont)) {
         playerBodyMapCache[this] = runCatching { getFullPlayerBodyTexture(ascent = -5) }.getOrDefault(Component.empty())
     }
     return playerBodyMapCache[this] ?: Component.empty()
@@ -155,7 +154,7 @@ fun OfflinePlayer.getPlayerHeadTexture(
     scale: Int = 1,
     ascent: Int = 0,
     colorType: ColorType = ColorType.MINIMESSAGE,
-    font: Key = Key.key(chattyConfig.playerHeadFont)
+    font: Key = Key.key(chatty.config.playerHeadFont)
 ): Component {
     val image = avatarBuilder(this, scale, ascent, colorType).getBodyBufferedImage(scale).getSubimage(4, 0, 8, 8)
     return "<font:$font>${ImageUtils.generateStringFromImage(image, colorType, ascent)}</font>".miniMsg()
@@ -165,7 +164,7 @@ fun OfflinePlayer.getFullPlayerBodyTexture(
     scale: Int = 1,
     ascent: Int = 0,
     colorType: ColorType = ColorType.MINIMESSAGE,
-    font: Key = Key.key(chattyConfig.playerHeadFont)
+    font: Key = Key.key(chatty.config.playerHeadFont)
 ): Component {
     val image = avatarBuilder(this, scale, ascent, colorType).getBodyBufferedImage(scale)
     return "<font:$font>${ImageUtils.generateStringFromImage(image, colorType, ascent)}</font>".miniMsg()
@@ -182,7 +181,9 @@ private fun avatarBuilder(
         .ascent(ascent).colorType(colorType).scale(scale).build()
 }
 
-fun String.fixSerializedTags(): String = this.replace("\\<", "<").replace("\\>", ">")
+fun String.fixSerializedTags(): String = this.replaceAll("\\\\(?!u)(?!\")", "")
+
+fun String.replaceAll(regex: String, replacement: String): String = Pattern.compile(regex).matcher(this).replaceAll(replacement)
 
 fun String.fixLegacy(): Component {
     return if ("§" in this) legacy.deserialize(this)
@@ -197,15 +198,14 @@ fun Player.swapChannelCommand(channelId: String) {
     val newChannel = getChannelFromId(channelId)
     when {
         newChannel == null ->
-            sendFormattedMessage(chattyMessages.channels.noChannelWithName)
+            sendFormattedMessage(chatty.messages.channels.noChannelWithName)
 
         newChannel.permission.isNotBlank() && !hasPermission(newChannel.permission) ->
-            sendFormattedMessage(chattyMessages.channels.missingChannelPermission)
+            sendFormattedMessage(chatty.messages.channels.missingChannelPermission)
 
         else -> {
-            chattyData.channelId = channelId
-            chattyData.lastChannelUsed = channelId
-            sendFormattedMessage(chattyMessages.channels.channelChanged)
+            toGeary().setPersisting(chattyData.copy(channelId = channelId, lastChannelUsed = channelId))
+            sendFormattedMessage(chatty.messages.channels.channelChanged)
         }
     }
 }
@@ -220,4 +220,8 @@ fun formattedResult(player: Player, message: Component): Component {
     val parsedMessage = Component.text("").color(channel.messageColor).append(message.parseTags(player, false))
 
     return parsedFormat.append(parsedMessage)
+}
+
+fun <T> T.copyWithEdit(block: T.() -> T): T {
+    return block()
 }

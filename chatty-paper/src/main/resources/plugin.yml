@@ -1,8 +1,8 @@
-name: chatty
+name: Chatty
 version: ${plugin_version}
 author: boy0000
 main: com.mineinabyss.chatty.ChattyPlugin
-api-version: 1.18
+api-version: "1.20"
 depend: [ Geary ]
 softdepend: [ BondrewdLikesHisEmotes, PlaceholderAPI, DiscordSRV ]
 description: Highly customizable chat plugin

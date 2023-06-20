@@ -7,8 +7,8 @@ import org.bukkit.entity.Player
 
 class PlaceholderAPIHook : PlaceholderExpansion() {
     override fun getIdentifier() = "chatty"
-    override fun getAuthor() = chatty.description.authors.toSentence()
-    override fun getVersion() = chatty.description.version
+    override fun getAuthor() = chatty.plugin.pluginMeta.authors.toSentence()
+    override fun getVersion() = chatty.plugin.pluginMeta.version
     override fun persist() = true
 
     override fun onPlaceholderRequest(player: Player, string: String): String {
