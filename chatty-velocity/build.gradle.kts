@@ -31,3 +31,7 @@ dependencies {
     compileOnly(chattyLibs.velocity)
     kapt(chattyLibs.velocity)
 }
+
+copyJar {
+    excludePlatformDependencies.set(false)
+}
