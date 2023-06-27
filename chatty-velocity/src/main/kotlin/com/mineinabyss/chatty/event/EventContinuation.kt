@@ -1,7 +1,6 @@
-package com.velocitypowered.api.kt.event
+package com.mineinabyss.chatty.event
 
 import com.google.common.reflect.TypeToken
-import com.mineinabyss.chatty.event.suspendingEventTask
 import com.velocitypowered.api.event.EventManager
 import com.velocitypowered.api.event.EventTask
 import org.slf4j.Logger
