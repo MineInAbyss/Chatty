@@ -4,7 +4,9 @@ import com.mineinabyss.chatty.chatty
 import com.mineinabyss.chatty.components.SpyOnChannels
 import com.mineinabyss.chatty.components.chattyData
 import com.mineinabyss.chatty.components.chattyNickname
-import com.mineinabyss.chatty.helpers.*
+import com.mineinabyss.chatty.helpers.getAllChannelNames
+import com.mineinabyss.chatty.helpers.getChannelFromId
+import com.mineinabyss.chatty.helpers.getChannelFromPlayer
 import com.mineinabyss.geary.papermc.tracking.entities.toGeary
 import com.mineinabyss.idofront.font.Space
 import com.mineinabyss.idofront.textcomponents.miniMsg
@@ -43,8 +45,8 @@ fun chattyPlaceholders(player: Player?, string: String? = null) : Map<String, St
         "player_ping_toggle" to (player?.chattyData?.disablePingSound?.not() ?: "false").toString(),
 
         "nickname" to (player?.chattyNickname ?: player?.displayName()?.serialize() ?: player?.name.toString()),
-        "player_head" to player?.translatePlayerHeadComponent()?.serialize().toString(),
-        "player_full_skin" to player?.translateFullPlayerSkinComponent()?.serialize().toString(),
+        //"player_head" to player?.translatePlayerHeadComponent()?.serialize().toString(),
+        //"player_full_skin" to player?.translateFullPlayerSkinComponent()?.serialize().toString(),
         "shift_$shift" to Space.of(shift)
     )
 }

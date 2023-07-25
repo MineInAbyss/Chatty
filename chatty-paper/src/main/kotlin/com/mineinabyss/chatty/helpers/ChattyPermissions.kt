@@ -24,7 +24,7 @@ object ChattyPermissions {
         Permission("chatty.tags.hover") to StandardTags.hoverEvent(),
         Permission("chatty.tags.reset") to StandardTags.reset(),
         Permission("chatty.tags.shift") to ChattyTags.SHIFT_RESOLVER,
-        Permission("chatty.tags.head") to ChattyTags.HEAD_RESOLVER,
-        Permission("chatty.tags.skin") to ChattyTags.SKIN_RESOLVER,
+        //Permission("chatty.tags.head") to ChattyTags.HEAD_RESOLVER,
+        //Permission("chatty.tags.skin") to ChattyTags.SKIN_RESOLVER,
     )
 }
