@@ -1,5 +1,5 @@
 [versions]
-geary = "0.24.1"
+geary = "0.25-SNAPSHOT"
 velocity = "3.2.0-SNAPSHOT"
 discordsrv = "1.26.2"
 
@@ -7,5 +7,5 @@ discordsrv = "1.26.2"
 geary-papermc = { module = "com.mineinabyss:geary-papermc", version.ref = "geary" }
 velocity = { module = "com.velocitypowered:velocity-api", version.ref = "velocity" }
 discordsrv = { module = "com.discordsrv:discordsrv", version.ref = "discordsrv" }
-placeholderapi = "me.clip:placeholderapi:2.11.3"
+placeholderapi = "me.clip:placeholderapi:2.11.4"
 imageloader = "com.combimagnetron:imageloader:1.1-SNAPSHOT"
