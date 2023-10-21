@@ -1,5 +1,5 @@
 [versions]
-geary = "0.25-SNAPSHOT"
+geary = "0.26.0"
 velocity = "3.2.0-SNAPSHOT"
 discordsrv = "1.26.2"
 

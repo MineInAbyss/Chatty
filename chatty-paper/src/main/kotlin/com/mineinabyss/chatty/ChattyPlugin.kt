@@ -49,9 +49,9 @@ class ChattyPlugin : JavaPlugin() {
         DI.remove<ChattyContext>()
         val chattyContext = object : ChattyContext {
             override val plugin: ChattyPlugin = this@ChattyPlugin
-            override val config: ChattyConfig by config("config") { fromPluginPath(loadDefault = true) }
-            override val messages: ChattyMessages by config("messages") { fromPluginPath(loadDefault = true) }
-            override val emotefixer: DiscordEmoteFixer by config("emotefixer") { fromPluginPath(loadDefault = true) }
+            override val config: ChattyConfig by config("config", dataFolder.toPath(), ChattyConfig())
+            override val messages: ChattyMessages by config("messages", dataFolder.toPath(), ChattyMessages())
+            override val emotefixer: DiscordEmoteFixer by config("emotefixer", dataFolder.toPath(), DiscordEmoteFixer())
             override val isPlaceholderApiLoaded: Boolean = Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")
             override val isDiscordSRVLoaded: Boolean = Bukkit.getPluginManager().isPluginEnabled("DiscordSRV")
         }
