@@ -1,0 +1,25 @@
+name: Chatty
+version: "${plugin_version}"
+author: boy0000
+main: com.mineinabyss.chatty.ChattyPlugin
+api-version: "1.20"
+description: Highly customizable chat plugin
+
+dependencies:
+  server:
+    Geary:
+      required: true
+      load: BEFORE
+      join-classpath: true
+    BondrewdLikesHisEmotes:
+      required: false
+      load: BEFORE
+      join-classpath: true
+    PlaceholderAPI:
+      required: false
+      load: BEFORE
+      join-classpath: true
+    DiscordSRV:
+      required: false
+      load: BEFORE
+      join-classpath: true
