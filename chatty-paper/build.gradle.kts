@@ -22,6 +22,7 @@ dependencies {
     compileOnly(libs.kotlinx.serialization.kaml)
     compileOnly(libs.kotlinx.coroutines)
     compileOnly(libs.minecraft.mccoroutine)
+    compileOnly(libs.bundles.idofront.core)
 
     // Other plugins
     compileOnly(chattyLibs.geary.papermc)
@@ -32,7 +33,6 @@ dependencies {
 
     // Shaded
     implementation(chattyLibs.imageloader)
-    implementation(libs.bundles.idofront.core)
 
 }
 

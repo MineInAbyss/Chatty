@@ -10,17 +10,12 @@ import com.mineinabyss.geary.autoscan.autoscan
 import com.mineinabyss.geary.modules.geary
 import com.mineinabyss.idofront.config.config
 import com.mineinabyss.idofront.di.DI
-import com.mineinabyss.idofront.platforms.Platforms
 import com.mineinabyss.idofront.plugin.listeners
 import github.scarsz.discordsrv.DiscordSRV
 import org.bukkit.Bukkit
 import org.bukkit.plugin.java.JavaPlugin
 
 class ChattyPlugin : JavaPlugin() {
-    override fun onLoad() {
-        Platforms.load(this, "mineinabyss")
-    }
-
     override fun onEnable() {
         createChattyContext()
 
