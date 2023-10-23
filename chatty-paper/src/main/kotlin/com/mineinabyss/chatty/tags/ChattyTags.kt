@@ -1,5 +1,8 @@
 package com.mineinabyss.chatty.tags
 
+import com.mineinabyss.chatty.helpers.toPlayer
+import com.mineinabyss.chatty.helpers.translateFullPlayerSkinComponent
+import com.mineinabyss.chatty.helpers.translatePlayerHeadComponent
 import com.mineinabyss.idofront.font.Space
 import com.mineinabyss.idofront.textcomponents.miniMsg
 import net.kyori.adventure.text.Component
@@ -35,7 +38,7 @@ object ChattyTags {
                 Space.of(args.popOr("A shift value is needed").value().toIntOrNull() ?: 0).miniMsg()
             ) else Tag.selfClosingInserting(Component.empty())
 
-            /*HEAD -> return if (args.hasNext()) Tag.selfClosingInserting(
+            HEAD -> return if (args.hasNext()) Tag.selfClosingInserting(
                 args.popOr("A player name is needed").value().toPlayer()?.translatePlayerHeadComponent()
                     ?: Component.empty()
             ) else Tag.selfClosingInserting(Component.empty())
@@ -43,7 +46,7 @@ object ChattyTags {
             SKIN -> return if (args.hasNext()) Tag.selfClosingInserting(
                 args.popOr("A player name is needed").value().toPlayer()?.translateFullPlayerSkinComponent()
                     ?: Component.empty()
-            ) else Tag.selfClosingInserting(Component.empty())*/
+            ) else Tag.selfClosingInserting(Component.empty())
         }
 
         return Tag.inserting(Component.empty())

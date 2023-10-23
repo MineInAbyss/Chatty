@@ -4,6 +4,7 @@ import com.mineinabyss.chatty.chatty
 import com.mineinabyss.chatty.components.ChannelData
 import com.mineinabyss.chatty.components.HideJoinLeave
 import com.mineinabyss.chatty.helpers.parseTags
+import com.mineinabyss.chatty.helpers.refreshSkinInCaches
 import com.mineinabyss.chatty.helpers.translatePlaceholders
 import com.mineinabyss.chatty.helpers.verifyPlayerChannel
 import com.mineinabyss.geary.papermc.tracking.entities.toGeary
@@ -36,7 +37,7 @@ class PlayerListener : Listener {
     @EventHandler
     fun PlayerQuitEvent.onDisconnect() {
         // Remove player incase they switch skins
-        //player.refreshSkinInCaches()
+        player.refreshSkinInCaches()
 
         if (chatty.config.leave.enabled && !player.toGeary().has<HideJoinLeave>())
             quitMessage(translatePlaceholders(player, chatty.messages.joinLeave.leaveMessage))
