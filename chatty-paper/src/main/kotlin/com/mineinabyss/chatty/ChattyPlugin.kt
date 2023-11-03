@@ -16,6 +16,14 @@ import org.bukkit.Bukkit
 import org.bukkit.plugin.java.JavaPlugin
 
 class ChattyPlugin : JavaPlugin() {
+    override fun onLoad() {
+        geary {
+            autoscan(classLoader, "com.mineinabyss.chatty") {
+                all()
+            }
+        }
+    }
+
     override fun onEnable() {
         createChattyContext()
 
@@ -32,12 +40,6 @@ class ChattyPlugin : JavaPlugin() {
 
         if (chatty.isDiscordSRVLoaded)
             DiscordSRV.api.subscribe(DiscordListener())
-
-        geary {
-            autoscan(classLoader, "com.mineinabyss.chatty") {
-                all()
-            }
-        }
     }
 
     fun createChattyContext() {
