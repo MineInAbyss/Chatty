@@ -166,18 +166,21 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
                 }
         }
         ("global" / "g") {
-            playerAction {
-                player.shortcutCommand(getGlobalChat(), arguments)
+            ensureSenderIsPlayer()
+            action {
+                (sender as? Player)?.shortcutCommand(getGlobalChat(), arguments)
             }
         }
         ("local" / "l") {
-            playerAction {
-                player.shortcutCommand(getRadiusChannel(), arguments)
+            ensureSenderIsPlayer()
+            action {
+                (sender as? Player)?.shortcutCommand(getRadiusChannel(), arguments)
             }
         }
         ("admin" / "a") {
-            playerAction {
-                player.shortcutCommand(getAdminChannel(), arguments)
+            ensureSenderIsPlayer()
+            action {
+                (sender as? Player)?.shortcutCommand(getAdminChannel(), arguments)
             }
         }
         ("message" / "msg")(desc = "Private message another player") {
@@ -241,7 +244,11 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
                     else -> emptyList()
                 }
             }
-            "message", "msg" -> onlinePlayers.filter { s -> s.startsWith(args[0], true) }.take(25)
+            "message", "msg" ->
+                when (args.size) {
+                    0, 1 -> onlinePlayers.filter { s -> s.startsWith(args[0], true) }.take(25)
+                    else -> emptyList()
+                }
             else -> emptyList()
         }
     }
