@@ -4,12 +4,14 @@ import com.mineinabyss.chatty.components.ChannelType
 import com.mineinabyss.chatty.components.SpyOnChannels
 import com.mineinabyss.chatty.queries.SpyingPlayers
 import com.mineinabyss.geary.papermc.tracking.entities.toGeary
+import com.mineinabyss.idofront.serialization.ColorSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import net.kyori.adventure.audience.Audience
 import net.kyori.adventure.text.format.NamedTextColor
 import net.kyori.adventure.text.format.TextColor
 import org.bukkit.Bukkit
+import org.bukkit.Color
 import org.bukkit.entity.Player
 
 @Serializable
@@ -23,14 +25,14 @@ data class ChattyChannel(
     val isDefaultChannel: Boolean = false,
     val isStaffChannel: Boolean = false,
     val format: String = "",
-    @SerialName("messageColor") val _messageColor: String = "white",
+    @Serializable(with=ColorSerializer::class)
+    @SerialName("messageColor") val _messageColor: Color = Color.WHITE,
     val channelRadius: Int = 0,
     val channelAliases: List<String> = listOf(),
 ) {
     val key by lazy { chatty.config.channels.entries.first { it.value == this }.key }
     val messageColor: TextColor
-        get() = TextColor.fromHexString(_messageColor) ?: NamedTextColor.NAMES.value(_messageColor)
-        ?: NamedTextColor.WHITE
+        get() = TextColor.color(_messageColor.asRGB())
 
 
     fun getAudience(player: Player): Collection<Audience> {

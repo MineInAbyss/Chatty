@@ -12,7 +12,6 @@ import java.util.*
 @SerialName("chatty:chatty_data")
 data class ChannelData(
     val channelId: String = getDefaultChat().key,
-    @SerialName("lastChannelUsed")
     val lastChannelUsedId: String = channelId,
     val disablePingSound: Boolean = false,
     val pingSound: String? = null,

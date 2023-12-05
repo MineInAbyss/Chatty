@@ -51,7 +51,7 @@ class ChattyProxyListener : PluginMessageListener {
                 ChannelType.RADIUS -> canSpy
                 ChannelType.PERMISSION -> onlinePlayers.filter { it.hasPermission(channel.permission) || it in canSpy }
                 ChannelType.PRIVATE -> onlinePlayers.filter {
-                    it.toGeary().get<ChannelData>()?.channel == channel || it in canSpy
+                    it.toGeary().get<ChannelData>()?.withChannelVerified()?.channel == channel || it in canSpy
                 }
             }.forEach { it.sendMessage(proxyMessage.miniMsg()) }
         }
@@ -83,14 +83,14 @@ class ChattyProxyListener : PluginMessageListener {
                 DiscordSRV.error("Couldn't deliver chat message as webhook because the bot lacks the \"Manage Webhooks\" permission.")
 
             else -> {
-                val discordMessage = proxyMessage.replaceFirst(channelFormat, "")
-                    .apply { PlaceholderUtil.replacePlaceholdersToDiscord(this) }
-                    .apply { if (!reserializer) MessageUtil.strip(this) }
-                    .apply {
-                        if (translateMentions) DiscordUtil.convertMentionsFromNames(
-                            this,
-                            DiscordSRV.getPlugin().mainGuild
-                        )
+                val discordMessage = proxyMessage
+                    .replaceFirst(channelFormat, "")
+                    .run { PlaceholderUtil.replacePlaceholdersToDiscord(this) }
+                    .run { if (!reserializer) MessageUtil.strip(this) else this }
+                    .run {
+                        if (translateMentions)
+                            DiscordUtil.convertMentionsFromNames(this,DiscordSRV.getPlugin().mainGuild)
+                        else this
                     }
 
                 val whUsername = DiscordSRV.config().getString("Experiment_WebhookChatMessageUsernameFormat")

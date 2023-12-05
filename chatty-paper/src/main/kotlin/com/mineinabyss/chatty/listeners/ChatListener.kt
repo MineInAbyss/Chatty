@@ -66,9 +66,9 @@ class ChatListener : Listener {
         val pingedPlayer = originalMessage().serialize().checkForPlayerPings(channelId)
         if (pingedPlayer != null && pingedPlayer != player && pingedPlayer in viewers()) {
             viewers() -= setOf(pingedPlayer, player)
-            val pingedChannelData = pingedPlayer.toGearyOrNull()?.get<ChannelData>()
-            if (pingedChannelData != null)
+            pingedPlayer.toGearyOrNull()?.get<ChannelData>()?.let { pingedChannelData ->
                 message().handlePlayerPings(player, pingedPlayer, pingedChannelData)
+            }
         }
 
         if (channel.proxy) {
