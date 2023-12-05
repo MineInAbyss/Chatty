@@ -14,9 +14,9 @@ import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver
 
 object ChattyTags {
 
-    private val SHIFT = "shift"
-    private val HEAD = "head"
-    private val SKIN = "skin"
+    private const val SHIFT = "shift"
+    private const val HEAD = "head"
+    private const val SKIN = "skin"
 
     val SHIFT_RESOLVER: TagResolver = SerializableResolver.claimingComponent(
         SHIFT, { args: ArgumentQueue, ctx: Context -> create(args, ctx, SHIFT) },

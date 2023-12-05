@@ -1,14 +1,13 @@
 package com.mineinabyss.chatty.listeners
 
+import com.mineinabyss.chatty.ChattyChannel
 import com.mineinabyss.chatty.chatty
 import com.mineinabyss.chatty.chattyProxyChannel
+import com.mineinabyss.chatty.components.ChannelData
 import com.mineinabyss.chatty.components.ChannelType
-import com.mineinabyss.chatty.components.SpyOnChannels
-import com.mineinabyss.chatty.components.chattyData
 import com.mineinabyss.chatty.helpers.ZERO_WIDTH
-import com.mineinabyss.chatty.helpers.getChannelFromId
-import com.mineinabyss.chatty.helpers.getChannelFromPlayer
 import com.mineinabyss.chatty.helpers.toPlayer
+import com.mineinabyss.chatty.queries.SpyingPlayers
 import com.mineinabyss.geary.papermc.tracking.entities.toGeary
 import com.mineinabyss.idofront.textcomponents.miniMsg
 import github.scarsz.discordsrv.Debug
@@ -33,12 +32,13 @@ class ChattyProxyListener : PluginMessageListener {
         val senderName = decoded.substringBefore(ZERO_WIDTH)
         val channelId = decoded.substringAfter(ZERO_WIDTH).split(ZERO_WIDTH).first()
         val channelFormat = decoded.substringAfter(channelId + ZERO_WIDTH).split(ZERO_WIDTH).first()
-        val channel = getChannelFromId(channelId)
+        val channel = chatty.config.channels[channelId]
         val proxyMessage = decoded.substringAfterLast(ZERO_WIDTH)
 
         val onlinePlayers = Bukkit.getOnlinePlayers().filter { it.server == Bukkit.getServer() }
-        val canSpy = onlinePlayers.filter {
-            it.toGeary().get<SpyOnChannels>()?.channels?.contains(player.chattyData.channelId) == true
+        val canSpy = chatty.spyingPlayers.run {
+            toList { query -> query.player.takeIf { query.spying.channels.contains(channelId) } }
+                .filterNotNull()
         }
 
         // If the channel is not found, it is discord
@@ -50,46 +50,67 @@ class ChattyProxyListener : PluginMessageListener {
                 ChannelType.GLOBAL -> onlinePlayers
                 ChannelType.RADIUS -> canSpy
                 ChannelType.PERMISSION -> onlinePlayers.filter { it.hasPermission(channel.permission) || it in canSpy }
-                ChannelType.PRIVATE -> onlinePlayers.filter { it.getChannelFromPlayer() == channel || it in canSpy }
+                ChannelType.PRIVATE -> onlinePlayers.filter {
+                    it.toGeary().get<ChannelData>()?.withChannelVerified()?.channel == channel || it in canSpy
+                }
             }.forEach { it.sendMessage(proxyMessage.miniMsg()) }
         }
 
 
-        if (!chatty.config.proxy.sendProxyMessagesToDiscord ||
-            channel?.discordsrv != true || !chatty.isDiscordSRVLoaded
-        ) return
+        if (chatty.config.proxy.sendProxyMessagesToDiscord
+            && channel?.discordsrv == true
+            && chatty.isDiscordSRVLoaded
+        ) {
+            sendToDiscord(proxyMessage, senderName, channel, channelFormat)
+        }
 
+    }
+
+    fun sendToDiscord(proxyMessage: String, senderName: String, channel: ChattyChannel, channelFormat: String) {
         val reserializer = DiscordSRV.config().getBoolean("Experiment_MCDiscordReserializer_ToDiscord")
-        val discordChannel = DiscordSRV.getPlugin().getDestinationTextChannelForGameChannelName(chatty.config.proxy.discordSrvChannelID)
+        val discordChannel = DiscordSRV.getPlugin()
+            .getDestinationTextChannelForGameChannelName(chatty.config.proxy.discordSrvChannelID)
 
         when {
             discordChannel == null -> {
-                DiscordSRV.debug(Debug.MINECRAFT_TO_DISCORD,
-                    "Failed to find Discord channel to forward message from game channel $channel")
+                DiscordSRV.debug(
+                    Debug.MINECRAFT_TO_DISCORD,
+                    "Failed to find Discord channel to forward message from game channel $channel"
+                )
             }
+
             !DiscordUtil.checkPermission(discordChannel.guild, Permission.MANAGE_WEBHOOKS) ->
                 DiscordSRV.error("Couldn't deliver chat message as webhook because the bot lacks the \"Manage Webhooks\" permission.")
+
             else -> {
-                val discordMessage = proxyMessage.replaceFirst(channelFormat, "")
-                    .apply { PlaceholderUtil.replacePlaceholdersToDiscord(this) }
-                    .apply { if (!reserializer) MessageUtil.strip(this) }
-                    .apply { if (translateMentions) DiscordUtil.convertMentionsFromNames(this, DiscordSRV.getPlugin().mainGuild) }
+                val discordMessage = proxyMessage
+                    .replaceFirst(channelFormat, "")
+                    .run { PlaceholderUtil.replacePlaceholdersToDiscord(this) }
+                    .run { if (!reserializer) MessageUtil.strip(this) else this }
+                    .run {
+                        if (translateMentions)
+                            DiscordUtil.convertMentionsFromNames(this,DiscordSRV.getPlugin().mainGuild)
+                        else this
+                    }
 
                 val whUsername = DiscordSRV.config().getString("Experiment_WebhookChatMessageUsernameFormat")
                     .replace("(%displayname%)|(%username%)".toRegex(), senderName)
                     .let { MessageUtil.strip(PlaceholderUtil.replacePlaceholders(it)) }
 
-                WebhookUtil.deliverMessage(discordChannel, whUsername,
+                WebhookUtil.deliverMessage(
+                    discordChannel, whUsername,
                     DiscordSRV.getAvatarUrl(senderName, senderName.toPlayer()?.uniqueId),
                     discordMessage.translateEmoteIDsToComponent(),
                     MessageEmbed(null, null, null, null, null, 10, null, null, null, null, null, null, null)
                 )
             }
         }
+
     }
 
     private val translateMentions =
         if (!chatty.isDiscordSRVLoaded) false else DiscordSRV.config().getBoolean("DiscordChatChannelTranslateMentions")
+
     private fun String.translateEmoteIDsToComponent(): String {
         var translated = this
         chatty.emotefixer.emotes.entries.forEach { (emoteId, replacement) ->

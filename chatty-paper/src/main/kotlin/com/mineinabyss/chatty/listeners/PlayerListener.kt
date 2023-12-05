@@ -3,10 +3,7 @@ package com.mineinabyss.chatty.listeners
 import com.mineinabyss.chatty.chatty
 import com.mineinabyss.chatty.components.ChannelData
 import com.mineinabyss.chatty.components.HideJoinLeave
-import com.mineinabyss.chatty.helpers.parseTags
-import com.mineinabyss.chatty.helpers.refreshSkinInCaches
-import com.mineinabyss.chatty.helpers.translatePlaceholders
-import com.mineinabyss.chatty.helpers.verifyPlayerChannel
+import com.mineinabyss.chatty.helpers.*
 import com.mineinabyss.geary.papermc.tracking.entities.toGeary
 import com.mineinabyss.idofront.textcomponents.serialize
 import org.bukkit.event.EventHandler
@@ -29,8 +26,9 @@ class PlayerListener : Listener {
 
     @EventHandler(priority = EventPriority.NORMAL)
     fun PlayerJoinEvent.onJoin() {
-        player.verifyPlayerChannel()
-        if (chatty.config.join.enabled && !player.toGeary().has<HideJoinLeave>())
+        val gearyPlayer = player.toGeary()
+        gearyPlayer.getOrSetPersisting { ChannelData() }
+        if (chatty.config.join.enabled && !gearyPlayer.has<HideJoinLeave>())
             joinMessage(translatePlaceholders(player, chatty.messages.joinLeave.joinMessage))
     }
 

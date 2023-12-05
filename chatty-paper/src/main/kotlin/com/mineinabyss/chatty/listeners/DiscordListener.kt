@@ -1,13 +1,12 @@
 package com.mineinabyss.chatty.listeners
 
-import com.mineinabyss.chatty.ChattyConfig
+import com.mineinabyss.chatty.ChattyChannel
 import com.mineinabyss.chatty.chatty
 import com.mineinabyss.chatty.chattyProxyChannel
-import com.mineinabyss.chatty.components.chattyData
-import com.mineinabyss.chatty.helpers.getChannelFromId
-import com.mineinabyss.chatty.helpers.getChannelFromPlayer
+import com.mineinabyss.chatty.components.ChannelData
 import com.mineinabyss.chatty.helpers.parseTags
 import com.mineinabyss.chatty.helpers.translatePlaceholders
+import com.mineinabyss.geary.papermc.tracking.entities.toGeary
 import com.mineinabyss.idofront.textcomponents.miniMsg
 import com.mineinabyss.idofront.textcomponents.serialize
 import github.scarsz.discordsrv.api.ListenerPriority
@@ -36,24 +35,30 @@ class DiscordListener {
     fun DiscordGuildMessagePostProcessEvent.sendDiscordToProxy() {
         minecraftMessage = (minecraftMessage.serialize()
             .substringBefore(message.contentRaw) + mm.stripTags(message.contentStripped)).miniMsg()
-        Bukkit.getServer().sendPluginMessage(chatty.plugin, chattyProxyChannel, minecraftMessage.serialize().toByteArray())
+        Bukkit.getServer()
+            .sendPluginMessage(chatty.plugin, chattyProxyChannel, minecraftMessage.serialize().toByteArray())
     }
 
     @Subscribe(priority = ListenerPriority.NORMAL)
     fun GameChatMessagePreProcessEvent.onChat() {
-        val channel = getChannelFromId(player.chattyData.channelId) ?: return
-        val lastUsedChannel = getChannelFromId(player.chattyData.lastChannelUsed) ?: return
+        val data = player.toGeary().get<ChannelData>() ?: return
+        val channel = data.channel ?: return
+        val lastUsedChannel = data.lastChannelUsed ?: return
 
         when {
             isCancelled -> return
             !channel.discordsrv || (channel != lastUsedChannel && !lastUsedChannel.discordsrv) -> isCancelled = true
-            else -> messageComponent = messageComponent.stripFormat(player, player.getChannelFromPlayer() ?: return)
+            else -> messageComponent = messageComponent.stripFormat(player, channel)
         }
     }
 
     // Parse the DSRV Component through the Chatty normal MM instance to format <chatty> tags, then serialize/deserialize it back to DSRV Component
-    private fun Component.stripFormat(player: Player, channel: ChattyConfig.ChattyChannel) =
-        plainText.serialize(this).replace(plainText.serialize(translatePlaceholders(player, channel.format).parseTags(player, true).serialize().miniMsg()), "").miniMsg()
+    private fun Component.stripFormat(player: Player, channel: ChattyChannel) =
+        plainText.serialize(this).replace(
+            plainText.serialize(
+                translatePlaceholders(player, channel.format).parseTags(player, true).serialize().miniMsg()
+            ), ""
+        ).miniMsg()
 
     @Subscribe
     fun DeathMessagePreProcessEvent.onDeath() {
