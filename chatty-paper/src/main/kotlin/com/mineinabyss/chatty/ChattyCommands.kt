@@ -4,9 +4,11 @@ package com.mineinabyss.chatty
 
 import com.github.shynixn.mccoroutine.bukkit.asyncDispatcher
 import com.github.shynixn.mccoroutine.bukkit.launch
+import com.github.shynixn.mccoroutine.bukkit.minecraftDispatcher
 import com.mineinabyss.chatty.components.*
 import com.mineinabyss.chatty.helpers.*
 import com.mineinabyss.geary.papermc.tracking.entities.toGeary
+import com.mineinabyss.geary.papermc.tracking.entities.toGearyOrNull
 import com.mineinabyss.idofront.commands.arguments.stringArg
 import com.mineinabyss.idofront.commands.execution.IdofrontCommandExecutor
 import com.mineinabyss.idofront.commands.extensions.actions.ensureSenderIsPlayer
@@ -18,6 +20,7 @@ import com.mineinabyss.idofront.textcomponents.serialize
 import io.papermc.paper.event.player.AsyncChatDecorateEvent
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.withContext
 import org.bukkit.Bukkit
 import org.bukkit.command.Command
 import org.bukkit.command.CommandSender
@@ -266,17 +269,19 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
 
             arguments.isEmpty() -> swapChannelCommand(channel.value)
             else -> {
-                val gearyPlayer = toGeary()
-                gearyPlayer.setPersisting(chattyData.copy(channelId = channel.key, lastChannelUsedId = channel.key))
-                runCatching {
+                toGeary().setPersisting(chattyData.copy(channelId = channel.key, lastChannelUsedId = channel.key))
+                chatty.plugin.launch(chatty.plugin.asyncDispatcher) {
                     GenericChattyDecorateEvent(this@shortcutCommand, arguments.toSentence().miniMsg()).call {
                         GenericChattyChatEvent(
                             this@shortcutCommand,
                             (this as AsyncChatDecorateEvent).result()
                         ).callEvent()
                     }
+                    withContext(chatty.plugin.minecraftDispatcher) {
+                        // chance that player logged out by now
+                        toGearyOrNull()?.setPersisting(chattyData.copy(channelId = currentChannel))
+                    }
                 }
-                gearyPlayer.setPersisting(chattyData.copy(channelId = currentChannel))
             }
         }
     }
