@@ -1,5 +1,8 @@
 package com.mineinabyss.chatty
 
+import com.mineinabyss.chatty.components.ChannelData
+import com.mineinabyss.chatty.components.ChattyNickname
+import com.mineinabyss.chatty.components.CommandSpy
 import com.mineinabyss.chatty.helpers.DiscordEmoteFixer
 import com.mineinabyss.chatty.listeners.ChatListener
 import com.mineinabyss.chatty.listeners.ChattyProxyListener
@@ -7,6 +10,7 @@ import com.mineinabyss.chatty.listeners.DiscordListener
 import com.mineinabyss.chatty.listeners.PlayerListener
 import com.mineinabyss.chatty.placeholders.PlaceholderAPIHook
 import com.mineinabyss.geary.autoscan.autoscan
+import com.mineinabyss.geary.helpers.componentId
 import com.mineinabyss.geary.modules.geary
 import com.mineinabyss.idofront.config.config
 import com.mineinabyss.idofront.di.DI
@@ -40,6 +44,10 @@ class ChattyPlugin : JavaPlugin() {
 
         if (chatty.isDiscordSRVLoaded)
             DiscordSRV.api.subscribe(DiscordListener())
+
+        // register components we'll use async now since they'll error otherwise
+        componentId<ChattyNickname>()
+        componentId<ChannelData>()
     }
 
     fun createChattyContext() {
