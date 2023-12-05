@@ -27,6 +27,10 @@ class ChattyPlugin : JavaPlugin() {
                 all()
             }
         }
+
+        // register components we'll use async now since they'll error otherwise
+        componentId<ChattyNickname>()
+        componentId<ChannelData>()
     }
 
     override fun onEnable() {
@@ -39,16 +43,11 @@ class ChattyPlugin : JavaPlugin() {
 
         ChattyCommands()
         listeners(ChatListener(), PlayerListener())
-
         if (chatty.isPlaceholderApiLoaded)
             PlaceholderAPIHook().register()
 
         if (chatty.isDiscordSRVLoaded)
             DiscordSRV.api.subscribe(DiscordListener())
-
-        // register components we'll use async now since they'll error otherwise
-        componentId<ChattyNickname>()
-        componentId<ChannelData>()
     }
 
     fun createChattyContext() {
