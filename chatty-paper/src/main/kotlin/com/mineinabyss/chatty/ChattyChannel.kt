@@ -52,7 +52,7 @@ data class ChattyChannel(
         }
 
         // Add spying players
-        val spies = SpyingPlayers().run {
+        val spies = chatty.spyingPlayers.run {
             toList { query -> query.player.takeIf { query.spying.channels.contains(key) } }.filterNotNull()
         }
         audiences.addAll(spies)

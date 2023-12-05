@@ -1,6 +1,7 @@
 package com.mineinabyss.chatty
 
 import com.mineinabyss.chatty.helpers.DiscordEmoteFixer
+import com.mineinabyss.chatty.queries.SpyingPlayers
 import com.mineinabyss.idofront.config.IdofrontConfig
 import com.mineinabyss.idofront.di.DI
 import org.bukkit.Bukkit
@@ -14,4 +15,5 @@ interface ChattyContext {
     val emotefixer: DiscordEmoteFixer
     val isPlaceholderApiLoaded: Boolean
     val isDiscordSRVLoaded: Boolean
+    val spyingPlayers: SpyingPlayers
 }

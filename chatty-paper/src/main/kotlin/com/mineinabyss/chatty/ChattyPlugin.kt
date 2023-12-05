@@ -9,6 +9,7 @@ import com.mineinabyss.chatty.listeners.ChattyProxyListener
 import com.mineinabyss.chatty.listeners.DiscordListener
 import com.mineinabyss.chatty.listeners.PlayerListener
 import com.mineinabyss.chatty.placeholders.PlaceholderAPIHook
+import com.mineinabyss.chatty.queries.SpyingPlayers
 import com.mineinabyss.geary.autoscan.autoscan
 import com.mineinabyss.geary.helpers.componentId
 import com.mineinabyss.geary.modules.geary
@@ -59,6 +60,9 @@ class ChattyPlugin : JavaPlugin() {
             override val emotefixer: DiscordEmoteFixer by config("emotefixer", dataFolder.toPath(), DiscordEmoteFixer())
             override val isPlaceholderApiLoaded: Boolean = Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")
             override val isDiscordSRVLoaded: Boolean = Bukkit.getPluginManager().isPluginEnabled("DiscordSRV")
+            override val spyingPlayers: SpyingPlayers = SpyingPlayers().apply {
+                registerIfNotRegistered()
+            }
         }
 
         DI.add<ChattyContext>(chattyContext)
