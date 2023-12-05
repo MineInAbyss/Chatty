@@ -206,41 +206,44 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
     ): List<String> {
         val onlinePlayers = Bukkit.getOnlinePlayers().map { it.name }
         val otherPrefix = chatty.config.nicknames.nickNameOtherPrefix
-        return if (command.name == "chatty") {
-            when (args.size) {
-                1 -> listOf(
-                    "message",
-                    "ping",
-                    "reload",
-                    "channels",
-                    "nickname",
-                    "spy",
-                    "commandspy"
-                ).filter { s -> s.startsWith(args[0]) }
+        return when (command.name) {
+            "chatty" -> {
+                when (args.size) {
+                    1 -> listOf(
+                        "message",
+                        "ping",
+                        "reload",
+                        "channels",
+                        "nickname",
+                        "spy",
+                        "commandspy"
+                    ).filter { s -> s.startsWith(args[0]) }
 
-                2 -> when (args[0]) {
-                    "ping" -> listOf("toggle", "sound").filter { s -> s.startsWith(args[1]) }
-                    "message", "msg" -> onlinePlayers.filter { s -> s.startsWith(args[1], true) }
-                    "spy" ->
-                        chatty.config.channels.entries.filter { s ->
-                            s.key.startsWith(args[1], true) && s.value.channelType != ChannelType.GLOBAL
-                        }.map { it.key }
+                    2 -> when (args[0]) {
+                        "ping" -> listOf("toggle", "sound").filter { s -> s.startsWith(args[1]) }
+                        "spy" ->
+                            chatty.config.channels.entries.filter { s ->
+                                s.key.startsWith(args[1], true) && s.value.channelType != ChannelType.GLOBAL
+                            }.map { it.key }
 
-                    else -> emptyList()
-                }
+                        else -> emptyList()
+                    }
 
-                3 -> when {
-                    args[1] == "sound" -> getAlternativePingSounds.filter { s -> s.startsWith(args[2], true) }
-                    args[1].startsWith(otherPrefix) -> onlinePlayers.filter { s ->
-                        s.replace(otherPrefix.toString(), "").startsWith(args[2], true)
+                    3 -> when {
+                        args[1] == "sound" -> getAlternativePingSounds.filter { s -> s.startsWith(args[2], true) }
+                        args[1].startsWith(otherPrefix) -> onlinePlayers.filter { s ->
+                            s.replace(otherPrefix.toString(), "").startsWith(args[2], true)
+                        }
+
+                        else -> emptyList()
                     }
 
                     else -> emptyList()
                 }
-
-                else -> emptyList()
             }
-        } else emptyList()
+            "message", "msg" -> onlinePlayers.filter { s -> s.startsWith(args[0], true) }.take(25)
+            else -> emptyList()
+        }
     }
 
     private fun Player.shortcutCommand(
