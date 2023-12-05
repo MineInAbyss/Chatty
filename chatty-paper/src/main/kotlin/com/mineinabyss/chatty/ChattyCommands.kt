@@ -266,8 +266,9 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
 
             arguments.isEmpty() -> swapChannelCommand(channel.value)
             else -> {
-                toGeary().setPersisting(chattyData.copy(channelId = channel.key, lastChannelUsedId = channel.key))
-                chatty.plugin.launch(chatty.plugin.asyncDispatcher) {
+                val gearyPlayer = toGeary()
+                gearyPlayer.setPersisting(chattyData.copy(channelId = channel.key, lastChannelUsedId = channel.key))
+                runCatching {
                     GenericChattyDecorateEvent(this@shortcutCommand, arguments.toSentence().miniMsg()).call {
                         GenericChattyChatEvent(
                             this@shortcutCommand,
@@ -275,7 +276,7 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
                         ).callEvent()
                     }
                 }
-                toGeary().setPersisting(chattyData.copy(channelId = currentChannel))
+                gearyPlayer.setPersisting(chattyData.copy(channelId = currentChannel))
             }
         }
     }
