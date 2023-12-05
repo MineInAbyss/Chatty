@@ -9,6 +9,7 @@ import com.mineinabyss.chatty.helpers.*
 import com.mineinabyss.geary.papermc.tracking.entities.toGeary
 import com.mineinabyss.idofront.commands.arguments.stringArg
 import com.mineinabyss.idofront.commands.execution.IdofrontCommandExecutor
+import com.mineinabyss.idofront.commands.extensions.actions.ensureSenderIsPlayer
 import com.mineinabyss.idofront.commands.extensions.actions.playerAction
 import com.mineinabyss.idofront.entities.toPlayer
 import com.mineinabyss.idofront.events.call
@@ -180,13 +181,16 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
             }
         }
         ("message" / "msg")(desc = "Private message another player") {
-            val otherPlayer by stringArg()
-            playerAction {
-                player.handleSendingPrivateMessage(otherPlayer.toPlayer() ?: return@playerAction, arguments, false)
+            ensureSenderIsPlayer()
+            val player by stringArg()
+            action {
+                (sender as? Player)?.handleSendingPrivateMessage(player.toPlayer() ?: return@action, arguments, false)
             }
         }
         ("reply" / "r")(desc = "Reply to your previous private message") {
-            playerAction {
+            ensureSenderIsPlayer()
+            action {
+                val player = sender as? Player ?: return@action
                 player.toGeary().get<ChannelData>()?.lastMessager?.toPlayer()
                     ?.let { player.handleSendingPrivateMessage(it, arguments, true) }
                     ?: player.sendFormattedMessage(chatty.messages.privateMessages.emptyReply)
