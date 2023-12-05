@@ -163,7 +163,7 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
                 .forEach { channelName ->
                     channelName {
                         playerAction {
-                            player.swapChannelCommand(chatty.config.channels[channelName])
+                            swapChannel(player, chatty.config.channels[channelName])
                         }
                     }
                 }
@@ -267,7 +267,7 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
             channel.value.permission.isNotBlank() && !hasPermission(channel.value.permission) ->
                 sendFormattedMessage(chatty.messages.channels.missingChannelPermission)
 
-            arguments.isEmpty() -> swapChannelCommand(channel.value)
+            arguments.isEmpty() -> swapChannel(this, channel.value)
             else -> {
                 toGeary().setPersisting(chattyData.copy(channelId = channel.key, lastChannelUsedId = channel.key))
                 chatty.plugin.launch(chatty.plugin.asyncDispatcher) {
@@ -331,35 +331,42 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
         }
     }
 
-    private fun Player.sendFormattedMessage(message: String, optionalPlayer: Player? = null) =
-        this.sendMessage(translatePlaceholders((optionalPlayer ?: this), message).parseTags(this, true))
-
-    private fun Player.sendFormattedPrivateMessage(messageFormat: String, message: String, receiver: Player) =
-        this.sendMessage(
-            (translatePlaceholders(receiver, messageFormat).serialize() + message)
-                .parseTags(receiver, true)
-        )
-
-    private fun CommandSender.sendConsoleMessage(message: String) = this.sendMessage(message.parseTags(null, true))
-
-    private fun List<String>.removeFirstArgumentOfStringList(): String =
-        this.filter { it != this.first() }.toSentence()
 
 
-    private fun Player.swapChannelCommand(newChannel: ChattyChannel?) {
-        when {
-            newChannel == null ->
-                sendFormattedMessage(chatty.messages.channels.noChannelWithName)
+    companion object {
+        private fun Player.sendFormattedMessage(message: String, optionalPlayer: Player? = null) =
+            this.sendMessage(translatePlaceholders((optionalPlayer ?: this), message).parseTags(this, true))
 
-            newChannel.permission.isNotBlank() && !hasPermission(newChannel.permission) ->
-                sendFormattedMessage(chatty.messages.channels.missingChannelPermission)
+        private fun Player.sendFormattedPrivateMessage(messageFormat: String, message: String, receiver: Player) =
+            this.sendMessage(
+                (translatePlaceholders(receiver, messageFormat).serialize() + message)
+                    .parseTags(receiver, true)
+            )
+        private fun CommandSender.sendConsoleMessage(message: String) = this.sendMessage(message.parseTags(null, true))
 
-            else -> {
-                val chattyData = toGeary().get<ChannelData>() ?: return
-                toGeary().setPersisting(chattyData.copy(channelId = newChannel.key, lastChannelUsedId = newChannel.key))
-                sendFormattedMessage(chatty.messages.channels.channelChanged)
+        private fun List<String>.removeFirstArgumentOfStringList(): String =
+            this.filter { it != this.first() }.toSentence()
+
+        fun swapChannel(player: Player, newChannel: ChattyChannel?) {
+            when {
+                newChannel == null ->
+                    player.sendFormattedMessage(chatty.messages.channels.noChannelWithName)
+
+                newChannel.permission.isNotBlank() && !player.hasPermission(newChannel.permission) ->
+                    player.sendFormattedMessage(chatty.messages.channels.missingChannelPermission)
+
+                else -> {
+                    val gearyPlayer = player.toGeary()
+                    val chattyData = gearyPlayer.get<ChannelData>() ?: return
+                    gearyPlayer.setPersisting(
+                        chattyData.copy(
+                            channelId = newChannel.key,
+                            lastChannelUsedId = newChannel.key
+                        )
+                    )
+                    player.sendFormattedMessage(chatty.messages.channels.channelChanged)
+                }
             }
         }
     }
-
 }
