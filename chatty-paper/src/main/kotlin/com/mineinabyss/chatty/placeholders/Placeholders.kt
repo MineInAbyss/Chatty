@@ -1,11 +1,14 @@
 package com.mineinabyss.chatty.placeholders
 
 import com.mineinabyss.chatty.chatty
+import com.mineinabyss.chatty.components.ChannelData
 import com.mineinabyss.chatty.components.SpyOnChannels
-import com.mineinabyss.chatty.components.chattyData
 import com.mineinabyss.chatty.components.chattyNickname
-import com.mineinabyss.chatty.helpers.*
+import com.mineinabyss.chatty.helpers.getAllChannelNames
+import com.mineinabyss.chatty.helpers.translateFullPlayerSkinComponent
+import com.mineinabyss.chatty.helpers.translatePlayerHeadComponent
 import com.mineinabyss.geary.papermc.tracking.entities.toGeary
+import com.mineinabyss.geary.papermc.tracking.entities.toGearyOrNull
 import com.mineinabyss.idofront.font.Space
 import com.mineinabyss.idofront.textcomponents.miniMsg
 import com.mineinabyss.idofront.textcomponents.serialize
@@ -13,16 +16,17 @@ import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver
 import org.bukkit.entity.Player
 
-fun chattyPlaceholders(player: Player?, string: String? = null) : Map<String, String> {
-    val channel = player?.getChannelFromPlayer()
-    val shift = if (string == null) 0 else try {
-        Integer.parseInt(string.substringAfter("shift_", "0"))
-    } catch (e: NumberFormatException) { 0 }
+fun chattyPlaceholders(player: Player?, string: String? = null): Map<String, String> {
+    val channelData = player?.toGearyOrNull()?.get<ChannelData>()
+    val channel = channelData?.channel
+    val shift = string?.substringAfter("shift_", "0")?.toIntOrNull() ?: 0
 
     return mapOf(
         "all_channels" to getAllChannelNames().joinToString(", "),
-        "player_available_channels" to getAllChannelNames().filter { player?.hasPermission(getChannelFromId(it)?.permission.toString()) != false }.joinToString(", "),
-        "player_channel" to player?.chattyData?.channelId.toString(),
+        "player_available_channels" to chatty.config.channels.values.filter {
+            player?.hasPermission(it.permission) ?: false
+        }.joinToString(", "),
+        "player_channel" to channelData?.channelId.toString(),
         "player_channel_permission" to channel?.permission.toString(),
         "player_channel_isdefault" to channel?.isDefaultChannel.toString(),
         "player_channel_type" to channel?.channelType.toString(),
@@ -39,8 +43,8 @@ fun chattyPlaceholders(player: Player?, string: String? = null) : Map<String, St
         "ping_clickreply" to chatty.config.ping.clickToReply.toString(),
         "ping_receiver_format" to chatty.config.ping.pingReceiveFormat,
         "ping_sender_format" to chatty.config.ping.pingSendFormat,
-        "player_ping_sound" to player?.chattyData?.pingSound.toString(),
-        "player_ping_toggle" to (player?.chattyData?.disablePingSound?.not() ?: "false").toString(),
+        "player_ping_sound" to channelData?.pingSound.toString(),
+        "player_ping_toggle" to (channelData?.disablePingSound?.not() ?: "false").toString(),
 
         "nickname" to (player?.chattyNickname ?: player?.displayName()?.serialize() ?: player?.name.toString()),
         "player_head" to player?.translatePlayerHeadComponent()?.serialize().toString(),
@@ -49,11 +53,12 @@ fun chattyPlaceholders(player: Player?, string: String? = null) : Map<String, St
     )
 }
 
-val Player?.chattyPlaceholderTags: TagResolver get() {
-    val tagResolver = TagResolver.builder()
-    chattyPlaceholders(this).map { p ->
-        Placeholder.component("chatty_${p.key}", p.value.miniMsg())
-    }.forEach { tagResolver.resolver(it) }
+val Player?.chattyPlaceholderTags: TagResolver
+    get() {
+        val tagResolver = TagResolver.builder()
+        chattyPlaceholders(this).map { p ->
+            Placeholder.component("chatty_${p.key}", p.value.miniMsg())
+        }.forEach { tagResolver.resolver(it) }
 
-    return tagResolver.build()
-}
+        return tagResolver.build()
+    }

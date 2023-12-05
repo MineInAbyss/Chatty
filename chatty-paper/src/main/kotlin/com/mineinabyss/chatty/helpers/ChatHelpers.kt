@@ -4,8 +4,8 @@ import com.combimagnetron.imageloader.Avatar
 import com.combimagnetron.imageloader.Image.ColorType
 import com.combimagnetron.imageloader.ImageUtils
 import com.mineinabyss.chatty.chatty
+import com.mineinabyss.chatty.components.ChannelData
 import com.mineinabyss.chatty.components.ChannelType
-import com.mineinabyss.chatty.components.chattyData
 import com.mineinabyss.chatty.components.chattyNickname
 import com.mineinabyss.chatty.placeholders.chattyPlaceholderTags
 import com.mineinabyss.geary.papermc.tracking.entities.toGeary
@@ -45,10 +45,9 @@ fun String.checkForPlayerPings(channelId: String): Player? {
     }
 }
 
-fun Component.handlePlayerPings(player: Player, pingedPlayer: Player) {
-    getChannelFromId(player.chattyData.channelId) ?: return
+fun Component.handlePlayerPings(player: Player, pingedPlayer: Player, pingedChannelData: ChannelData) {
     val ping = chatty.config.ping
-    val pingSound = pingedPlayer.chattyData.pingSound ?: ping.defaultPingSound
+    val pingSound = pingedChannelData.pingSound ?: ping.defaultPingSound
     val clickToReply =
         if (ping.clickToReply) "<insert:@${
             player.chattyNickname?.let { MiniMessage.miniMessage().stripTags(it) }
@@ -61,7 +60,7 @@ fun Component.handlePlayerPings(player: Player, pingedPlayer: Player) {
             .build()
     )
 
-    if (!pingedPlayer.chattyData.disablePingSound)
+    if (!pingedChannelData.disablePingSound)
         pingedPlayer.playSound(pingedPlayer.location, pingSound, SoundCategory.VOICE, ping.pingVolume, ping.pingPitch)
     pingedPlayer.sendMessage(pingMessage)
 
@@ -113,16 +112,12 @@ fun getDefaultChat() =
         ?: getGlobalChat()
         ?: throw IllegalStateException("No Default or Global channel found")
 
-fun getChannelFromId(channelId: String) =
-    chatty.config.channels.entries.firstOrNull { it.key == channelId }?.value
+// TODO change to data.channel
+//fun getChannelFromId(channelId: String) =
+//    chatty.config.channels[channelId]
 
-fun Player.getChannelFromPlayer() =
-    chatty.config.channels.entries.firstOrNull { it.key == this.chattyData.channelId }?.value
-
-fun Player.verifyPlayerChannel() {
-    if (chattyData.channelId !in chatty.config.channels)
-        toGeary().setPersisting(chattyData.copy(channelId = getDefaultChat().key))
-}
+//fun Player.getChannelFromPlayer() =
+//    chatty.config.channels.entries.firstOrNull { it.key == this.chattyData.channelId }?.value
 
 fun getAllChannelNames() = chatty.config.channels.keys.toList()
 
@@ -194,34 +189,14 @@ fun List<String>.toSentence() = this.joinToString(" ")
 
 fun String.toPlayer() = Bukkit.getPlayer(this)
 
-fun Player.swapChannelCommand(channelId: String) {
-    val newChannel = getChannelFromId(channelId)
-    when {
-        newChannel == null ->
-            sendFormattedMessage(chatty.messages.channels.noChannelWithName)
-
-        newChannel.permission.isNotBlank() && !hasPermission(newChannel.permission) ->
-            sendFormattedMessage(chatty.messages.channels.missingChannelPermission)
-
-        else -> {
-            toGeary().setPersisting(chattyData.copy(channelId = channelId, lastChannelUsed = channelId))
-            sendFormattedMessage(chatty.messages.channels.channelChanged)
-        }
-    }
-}
-
 fun Player.sendFormattedMessage(message: String) =
     this.sendMessage(translatePlaceholders(this, message).parseTags(player, true))
 
 fun formattedResult(player: Player, message: Component): Component {
-    player.verifyPlayerChannel()
-    val channel = player.getChannelFromPlayer() ?: return message
+    val channelData = player.toGeary().get<ChannelData>()?.withChannelVerified()
+    val channel = channelData?.channel ?: return message
     val parsedFormat = translatePlaceholders(player, channel.format).parseTags(player, true)
     val parsedMessage = Component.text("").color(channel.messageColor).append(message.parseTags(player, false))
 
     return parsedFormat.append(parsedMessage)
-}
-
-fun <T> T.copyWithEdit(block: T.() -> T): T {
-    return block()
 }
