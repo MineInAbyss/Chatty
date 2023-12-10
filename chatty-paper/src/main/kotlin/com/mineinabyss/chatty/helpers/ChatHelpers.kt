@@ -176,7 +176,7 @@ private fun avatarBuilder(
         .ascent(ascent).colorType(colorType).scale(scale).build()
 }
 
-fun String.fixSerializedTags(): String = this.replaceAll("\\\\(?!u)(?!\")", "")
+fun String.fixSerializedTags(): String = this.replaceAll("\\\\(?!u)(?!\")(?!:)", "")
 
 fun String.replaceAll(regex: String, replacement: String): String = Pattern.compile(regex).matcher(this).replaceAll(replacement)
 
