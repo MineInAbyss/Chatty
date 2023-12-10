@@ -50,7 +50,7 @@ class ChatListener : Listener {
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     fun AsyncChatDecorateEvent.onChatPreview() {
-        player()?.let { result(formattedResult(it, originalMessage())) }
+        player()?.let { result(formattedResult(it, result())) }
     }
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
