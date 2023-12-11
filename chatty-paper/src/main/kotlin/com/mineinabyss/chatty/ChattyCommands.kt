@@ -15,6 +15,7 @@ import com.mineinabyss.idofront.commands.extensions.actions.ensureSenderIsPlayer
 import com.mineinabyss.idofront.commands.extensions.actions.playerAction
 import com.mineinabyss.idofront.entities.toPlayer
 import com.mineinabyss.idofront.events.call
+import com.mineinabyss.idofront.messaging.broadcast
 import com.mineinabyss.idofront.textcomponents.miniMsg
 import com.mineinabyss.idofront.textcomponents.serialize
 import io.papermc.paper.event.player.AsyncChatDecorateEvent
@@ -272,10 +273,8 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
                 toGeary().setPersisting(chattyData.copy(channelId = channel.key, lastChannelUsedId = channel.key))
                 chatty.plugin.launch(chatty.plugin.asyncDispatcher) {
                     GenericChattyDecorateEvent(this@shortcutCommand, arguments.toSentence().miniMsg()).call {
-                        GenericChattyChatEvent(
-                            this@shortcutCommand,
-                            (this as AsyncChatDecorateEvent).result()
-                        ).callEvent()
+                        this as AsyncChatDecorateEvent
+                        GenericChattyChatEvent(this@shortcutCommand, this.result()).callEvent()
                     }
                     withContext(chatty.plugin.minecraftDispatcher) {
                         // chance that player logged out by now

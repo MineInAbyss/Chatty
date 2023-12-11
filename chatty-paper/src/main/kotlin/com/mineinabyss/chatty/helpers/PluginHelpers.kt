@@ -13,6 +13,6 @@ import org.bukkit.entity.Player
 
 val legacy = LegacyComponentSerializer.builder().useUnusualXRepeatedCharacterHexFormat().build()
 fun GenericChattyDecorateEvent(player: Player, msg: Component) =
-    AsyncChatDecorateEvent(true, player, msg, formattedResult(player, msg))
+    AsyncChatDecorateEvent(true, player, msg, msg)
 fun GenericChattyChatEvent(player: Player, msg: Component) =
     AsyncChatEvent(true, player, mutableSetOf(), ChatRenderer.defaultRenderer(), msg, msg, SignedMessage.system(msg.serialize(), null))
