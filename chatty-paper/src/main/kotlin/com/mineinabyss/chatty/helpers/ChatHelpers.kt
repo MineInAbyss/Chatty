@@ -37,40 +37,39 @@ val getPingEnabledChannels: List<String> =
 fun String.checkForPlayerPings(channelId: String): Player? {
     val ping = chatty.config.ping
     if (channelId !in getPingEnabledChannels || ping.pingPrefix.isEmpty() || ping.pingPrefix !in this) return null
-    val pingedName = this.substringAfter(ping.pingPrefix).split(" ")[0]
+    val pingedName = this.substringAfter(ping.pingPrefix).substringBefore(" ")
     return Bukkit.getOnlinePlayers().firstOrNull { player ->
-        player.name == pingedName || player.chattyNickname?.let {
-            MiniMessage.miniMessage().stripTags(it)
-        } == pingedName
+        player.name == pingedName || player.chattyNickname?.stripTags() == pingedName
     }
 }
 
 fun Component.handlePlayerPings(player: Player, pingedPlayer: Player, pingedChannelData: ChannelData) {
     val ping = chatty.config.ping
     val pingSound = pingedChannelData.pingSound ?: ping.defaultPingSound
-    val clickToReply =
-        if (ping.clickToReply) "<insert:@${
-            player.chattyNickname?.let { MiniMessage.miniMessage().stripTags(it) }
-        } ><hover:show_text:'<red>Shift + Click to mention!'>"
-        else ""
-    val pingMessage = this.replaceText(
-        TextReplacementConfig.builder()
-            .match(ping.pingPrefix + pingedPlayer.chattyNickname)
-            .replacement((ping.pingReceiveFormat + clickToReply + ping.pingPrefix + pingedPlayer.chattyNickname).miniMsg())
-            .build()
-    )
+    val pingRegex = "${ping.pingPrefix}(${pingedPlayer.chattyNickname}|${pingedPlayer.name})+".toRegex()
 
-    if (!pingedChannelData.disablePingSound)
-        pingedPlayer.playSound(pingedPlayer.location, pingSound, SoundCategory.VOICE, ping.pingVolume, ping.pingPitch)
-    pingedPlayer.sendMessage(pingMessage)
+    pingRegex.find(this.serialize())?.let { match ->
 
-    val pingerMessage = this.replaceText(
-        TextReplacementConfig.builder()
-            .match(ping.pingPrefix + pingedPlayer.chattyNickname)
-            .replacement((ping.pingSendFormat + ping.pingPrefix + pingedPlayer.chattyNickname).miniMsg())
-            .build()
-    )
-    player.sendMessage(pingerMessage)
+        val pingMessage = this.replaceText(
+            TextReplacementConfig.builder()
+                .match(match.value)
+                .replacement((ping.pingReceiveFormat +
+                ("<insert:@${player.name} ><hover:show_text:'<red>Shift + Click to mention!'>".takeIf { ping.clickToReply } ?: "")
+                    + match.value).miniMsg())
+                .build()
+        )
+        if (!pingedChannelData.disablePingSound)
+            pingedPlayer.playSound(pingedPlayer.location, pingSound, SoundCategory.VOICE, ping.pingVolume, ping.pingPitch)
+        pingedPlayer.sendMessage(pingMessage)
+
+        val pingerMessage = this.replaceText(
+            TextReplacementConfig.builder()
+                .match(match.value)
+                .replacement((ping.pingSendFormat + match.value).miniMsg())
+                .build()
+        )
+        player.sendMessage(pingerMessage)
+    }
 }
 
 /** Build a unique instance of MiniMessage with an empty TagResolver and deserializes with a generated one that takes permissions into account
