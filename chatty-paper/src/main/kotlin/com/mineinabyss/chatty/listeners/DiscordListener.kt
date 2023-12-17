@@ -12,31 +12,30 @@ import com.mineinabyss.idofront.textcomponents.serialize
 import github.scarsz.discordsrv.api.ListenerPriority
 import github.scarsz.discordsrv.api.Subscribe
 import github.scarsz.discordsrv.api.events.*
+import github.scarsz.discordsrv.dependencies.jda.api.MessageBuilder
+import github.scarsz.discordsrv.dependencies.jda.api.entities.Message
+import github.scarsz.discordsrv.dependencies.jda.api.entities.MessageEmbed
 import github.scarsz.discordsrv.objects.MessageFormat
-import net.dv8tion.jda.api.MessageBuilder
-import net.dv8tion.jda.api.entities.Message
-import net.dv8tion.jda.api.entities.MessageEmbed
-import net.dv8tion.jda.api.entities.MessageEmbed.Field
 import net.kyori.adventure.text.Component
-import net.kyori.adventure.text.minimessage.MiniMessage
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
+import github.scarsz.discordsrv.dependencies.kyori.adventure.text.Component as ComponentDSV
 
 
 class DiscordListener {
-
-    private val mm = MiniMessage.miniMessage()
-    private val plainText = PlainTextComponentSerializer.plainText()
+    private val mm = github.scarsz.discordsrv.dependencies.kyori.adventure.text.minimessage.MiniMessage.miniMessage()
+    private val plainText = github.scarsz.discordsrv.dependencies.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer.plainText()
     private val legacy = LegacyComponentSerializer.builder().useUnusualXRepeatedCharacterHexFormat().build()
 
     @Subscribe(priority = ListenerPriority.HIGHEST)
     fun DiscordGuildMessagePostProcessEvent.sendDiscordToProxy() {
-        minecraftMessage = (minecraftMessage.serialize()
-            .substringBefore(message.contentRaw) + mm.stripTags(message.contentStripped)).miniMsg()
+        minecraftMessage = mm.deserialize(
+            mm.serialize(minecraftMessage).substringBefore(message.contentRaw) + mm.stripTags(message.contentStripped)
+        )
         Bukkit.getServer()
-            .sendPluginMessage(chatty.plugin, chattyProxyChannel, minecraftMessage.serialize().toByteArray())
+            .sendPluginMessage(chatty.plugin, chattyProxyChannel, mm.serialize(minecraftMessage).toByteArray())
     }
 
     @Subscribe(priority = ListenerPriority.NORMAL)
@@ -53,12 +52,12 @@ class DiscordListener {
     }
 
     // Parse the DSRV Component through the Chatty normal MM instance to format <chatty> tags, then serialize/deserialize it back to DSRV Component
-    private fun Component.stripFormat(player: Player, channel: ChattyChannel) =
-        plainText.serialize(this).replace(
+    private fun ComponentDSV.stripFormat(player: Player, channel: ChattyChannel): ComponentDSV =
+        mm.deserialize(plainText.serialize(this).replace(
             plainText.serialize(
-                translatePlaceholders(player, channel.format).parseTags(player, true).serialize().miniMsg()
+                mm.deserialize(translatePlaceholders(player, channel.format).parseTags(player, true).serialize())
             ), ""
-        ).miniMsg()
+        ))
 
     @Subscribe
     fun DeathMessagePreProcessEvent.onDeath() {
@@ -83,12 +82,18 @@ class DiscordListener {
     private fun Message.translatePostFormat(): Message {
         val message = this
         val embeds = mutableListOf<MessageEmbed>()
-        val fields = mutableListOf<Field>()
+        val fields = mutableListOf<MessageEmbed.Field>()
 
         message.embeds.forEach { embed ->
             if (embed.fields.isNotEmpty())
                 embed.fields.forEach { field ->
-                    fields.add(Field(field.name?.translateEmoteIDs(), field.value?.translateEmoteIDs(), field.isInline))
+                    fields.add(
+                        MessageEmbed.Field(
+                            field.name?.translateEmoteIDs(),
+                            field.value?.translateEmoteIDs(),
+                            field.isInline
+                        )
+                    )
                 }
             embeds.add(
                 MessageEmbed(
@@ -104,7 +109,7 @@ class DiscordListener {
     }
 
     private fun MessageFormat.translatePreFormat(): MessageFormat {
-        val fields = mutableListOf<Field>()
+        val fields = mutableListOf<MessageEmbed.Field>()
         val format = this
         if (content != null)
             format.content = content.translateEmoteIDs()
@@ -114,14 +119,14 @@ class DiscordListener {
             format.description = description.translateEmoteIDs()
         if (format.fields != null)
             format.fields.forEach { f ->
-                fields.add(Field(f.name?.translateEmoteIDs(), f.value?.translateEmoteIDs(), f.isInline))
+                fields.add(MessageEmbed.Field(f.name?.translateEmoteIDs(), f.value?.translateEmoteIDs(), f.isInline))
             }
         format.fields = fields
         return format
     }
 
     private fun String.cleanUpHackyFix() =
-        plainText.serialize(this.miniMsg()).replace("\\<", "<").replace("<<", "<")
+        plainText.serialize(mm.deserialize(this)).replace("\\<", "<").replace("<<", "<")
 
     private fun String.translateEmoteIDs(): String {
         var translated = this

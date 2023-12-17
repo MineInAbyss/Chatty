@@ -12,12 +12,12 @@ import com.mineinabyss.geary.papermc.tracking.entities.toGeary
 import com.mineinabyss.idofront.textcomponents.miniMsg
 import github.scarsz.discordsrv.Debug
 import github.scarsz.discordsrv.DiscordSRV
+import github.scarsz.discordsrv.dependencies.jda.api.Permission
+import github.scarsz.discordsrv.dependencies.jda.api.entities.MessageEmbed
 import github.scarsz.discordsrv.util.DiscordUtil
 import github.scarsz.discordsrv.util.MessageUtil
 import github.scarsz.discordsrv.util.PlaceholderUtil
 import github.scarsz.discordsrv.util.WebhookUtil
-import net.dv8tion.jda.api.Permission
-import net.dv8tion.jda.api.entities.MessageEmbed
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
 import org.bukkit.plugin.messaging.PluginMessageListener
