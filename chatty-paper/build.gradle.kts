@@ -13,7 +13,6 @@ repositories {
     maven("https://repo.mineinabyss.com/snapshots")
     maven("https://repo.extendedclip.com/content/repositories/placeholderapi/")
     maven("https://nexus.scarsz.me/content/groups/public/") // DiscordSRV
-    maven("https://m2.dv8tion.net/releases") // DiscordSRV
 }
 
 dependencies {
