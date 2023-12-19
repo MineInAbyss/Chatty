@@ -29,7 +29,7 @@ const val ZERO_WIDTH = "\u200B"
 val ping = chatty.config.ping
 val getAlternativePingSounds: List<String> =
     if ("*" in ping.alternativePingSounds || "all" in ping.alternativePingSounds)
-        Sound.values().map { it.key.toString() }.toList() else ping.alternativePingSounds
+        Sound.entries.map { it.key.toString() }.toList() else ping.alternativePingSounds
 
 val getPingEnabledChannels: List<String> =
     if ("*" in ping.enabledChannels || "all" in ping.enabledChannels) getAllChannelNames() else ping.enabledChannels

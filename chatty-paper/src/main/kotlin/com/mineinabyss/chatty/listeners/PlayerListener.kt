@@ -5,11 +5,14 @@ import com.mineinabyss.chatty.components.ChannelData
 import com.mineinabyss.chatty.components.HideJoinLeave
 import com.mineinabyss.chatty.helpers.*
 import com.mineinabyss.geary.papermc.tracking.entities.toGeary
+import com.mineinabyss.idofront.items.editItemMeta
 import com.mineinabyss.idofront.textcomponents.serialize
+import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
 import org.bukkit.event.block.SignChangeEvent
+import org.bukkit.event.inventory.PrepareAnvilEvent
 import org.bukkit.event.player.PlayerEditBookEvent
 import org.bukkit.event.player.PlayerJoinEvent
 import org.bukkit.event.player.PlayerQuitEvent
@@ -57,6 +60,13 @@ class PlayerListener : Listener {
     fun SignChangeEvent.onSign() {
         lines().forEachIndexed { index, line ->
             line(index, line.serialize().parseTags(player))
+        }
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    fun PrepareAnvilEvent.onAnvilRename() {
+        result = result?.editItemMeta {
+            displayName(displayName()?.parseTags(viewers.first() as? Player))
         }
     }
 }
