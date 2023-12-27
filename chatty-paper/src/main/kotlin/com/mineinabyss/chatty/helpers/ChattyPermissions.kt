@@ -9,6 +9,7 @@ object ChattyPermissions {
     const val NICKNAME = "chatty.nickname"
     const val NICKNAME_OTHERS = "chatty.nickname.others"
     const val BYPASS_TAG_PERM = "chatty.tags.bypass"
+    const val MODERATION_PERM = "chatty.moderation"
     val chatFormattingPerms = mapOf(
         Permission("chatty.tags.color") to StandardTags.color(),
         Permission("chatty.tags.rainbow") to StandardTags.rainbow(),

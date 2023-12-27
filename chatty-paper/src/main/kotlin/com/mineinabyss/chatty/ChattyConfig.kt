@@ -18,7 +18,7 @@ data class ChattyConfig(
     val privateMessages: PrivateMessages = PrivateMessages(),
     // Mutable so other plugins can add channels on their end
     // Might be a safer way to do this but 3AM so first solution is the best solution
-    val channels: MutableMap<String, ChattyChannel> = mutableMapOf("global" to ChattyChannel(ChannelType.GLOBAL)),
+    val channels: MutableMap<String, ChattyChannel> = mutableMapOf("global" to ChattyChannel(ChannelType.GLOBAL, messageDeletion = ChattyChannel.MessageDeletion(true))),
 ) {
 
     @Serializable

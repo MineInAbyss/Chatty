@@ -8,11 +8,21 @@ class ChattyMessages(
     val privateMessages: PrivateMessages = PrivateMessages(),
     val spying: Spying = Spying(),
     val ping: Pings = Pings(),
+    val messageDeletion: MessageDeletion = MessageDeletion(),
     val channels: Channels = Channels(),
     val proxies: Proxies = Proxies(),
     val joinLeave: JoinLeave = JoinLeave(),
     val other: Other = Other()
 ) {
+
+    @Serializable
+    data class MessageDeletion(
+        val hoverText: String = "<red>Click to delete message",
+        val notifyStaff: String = "<gold>Message deleted by <yellow>%player_name%</yellow>.",
+        val format: String = "<gray>[<red>X</red>]</gray>",
+        val deletionSuccess: String = "<green><i>Message deleted",
+        val deletionFailed: String = "<red>Could not delete message...",
+    )
 
     @Serializable
     data class PrivateMessages(

@@ -3,6 +3,7 @@ package com.mineinabyss.chatty.helpers
 import com.combimagnetron.imageloader.Avatar
 import com.combimagnetron.imageloader.Image.ColorType
 import com.combimagnetron.imageloader.ImageUtils
+import com.mineinabyss.chatty.ChattyChannel
 import com.mineinabyss.chatty.chatty
 import com.mineinabyss.chatty.components.ChannelData
 import com.mineinabyss.chatty.components.ChannelType
@@ -12,9 +13,15 @@ import com.mineinabyss.geary.papermc.tracking.entities.toGeary
 import com.mineinabyss.idofront.textcomponents.miniMsg
 import com.mineinabyss.idofront.textcomponents.serialize
 import me.clip.placeholderapi.PlaceholderAPI
+import net.kyori.adventure.audience.Audience
+import net.kyori.adventure.chat.SignedMessage
 import net.kyori.adventure.key.Key
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.TextReplacementConfig
+import net.kyori.adventure.text.event.ClickEvent
+import net.kyori.adventure.text.event.HoverEvent
+import net.kyori.adventure.text.event.HoverEventSource
+import net.kyori.adventure.text.format.NamedTextColor
 import net.kyori.adventure.text.minimessage.MiniMessage
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver
 import org.bukkit.Bukkit
@@ -191,6 +198,14 @@ fun String.toPlayer() = Bukkit.getPlayer(this)
 fun Player.sendFormattedMessage(message: String) =
     this.sendMessage(translatePlaceholders(this, message).parseTags(player, true))
 
+fun Player.sendFormattedMessage(vararg message: String, optionalPlayer: Player? = null) =
+    this.sendMessage(
+        translatePlaceholders((optionalPlayer ?: this), message.joinToString(" ")).parseTags(
+            optionalPlayer ?: this,
+            true
+        )
+    )
+
 fun formattedResult(player: Player, message: Component): Component {
     val channelData = player.toGeary().get<ChannelData>()?.withChannelVerified()
     val channel = channelData?.channel ?: return message
@@ -198,4 +213,30 @@ fun formattedResult(player: Player, message: Component): Component {
     val parsedMessage = Component.text("").color(channel.messageColor).append(message.parseTags(player, false))
 
     return parsedFormat.append(parsedMessage)
+}
+
+fun Component.hoverEventShowText(text: Component) = this.hoverEvent(HoverEventSource.unbox(HoverEvent.showText(text)))
+
+fun formatModerationMessage(messageDeletion: ChattyChannel.MessageDeletion, message: Component, signedMessage: SignedMessage, audience: Audience, source: Player, viewers: Set<Player>): Component {
+    fun Component.appendDeletionHover(player: Player): Component {
+        return this.hoverEventShowText(chatty.messages.messageDeletion.hoverText.miniMsg())
+            .clickEvent(ClickEvent.callback {
+                val hoverString = Component.empty().hoverEventShowText(message).serialize()
+                if (!signedMessage.canDelete()) return@callback player.sendFormattedMessage(hoverString + chatty.messages.messageDeletion.deletionFailed)
+
+                viewers.forEach {
+                    it.deleteMessage(signedMessage)
+                    if (player != it && it.hasPermission(ChattyPermissions.MODERATION_PERM))
+                        it.sendFormattedMessage(hoverString + chatty.messages.messageDeletion.notifyStaff, optionalPlayer = player)
+                }
+                player.sendFormattedMessage(hoverString + chatty.messages.messageDeletion.deletionSuccess)
+        }).compact()
+    }
+
+    return when {
+        !messageDeletion.enabled || audience !is Player || audience == source || !audience.hasPermission(ChattyPermissions.MODERATION_PERM) -> message
+        messageDeletion.position == ChattyChannel.MessageDeletion.MessageDeletionPosition.PREFIX -> messageDeletion.format.miniMsg().appendDeletionHover(audience).append(message)
+        messageDeletion.position == ChattyChannel.MessageDeletion.MessageDeletionPosition.SUFFIX -> message.append(messageDeletion.format.miniMsg().appendDeletionHover(audience))
+        else -> message
+    }
 }

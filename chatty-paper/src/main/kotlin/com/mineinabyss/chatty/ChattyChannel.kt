@@ -20,6 +20,7 @@ data class ChattyChannel(
     val simpleConsoleMessages: Boolean = false,
     val proxy: Boolean = false,
     val discordsrv: Boolean = true,
+    val messageDeletion: MessageDeletion = MessageDeletion(),
     val isDefaultChannel: Boolean = false,
     val isStaffChannel: Boolean = false,
     val format: String = "",
@@ -27,6 +28,17 @@ data class ChattyChannel(
     val channelRadius: Int = 0,
     val channelAliases: List<String> = listOf(),
 ) {
+
+    @Serializable data class MessageDeletion(
+        val enabled: Boolean = false,
+        val position: MessageDeletionPosition = MessageDeletionPosition.PREFIX,
+        val format: String = "<gray>[<red>X</red>]</gray>",
+        val notifyStaff: Boolean = true,
+    ) {
+        enum class MessageDeletionPosition {
+            PREFIX, SUFFIX
+        }
+    }
     val key by lazy { chatty.config.channels.entries.first { it.value == this }.key }
     val messageColor: TextColor
         get() = TextColor.fromHexString(_messageColor) ?: NamedTextColor.NAMES.value(_messageColor)

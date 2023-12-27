@@ -1,6 +1,5 @@
 package com.mineinabyss.chatty.listeners
 
-import com.github.shynixn.mccoroutine.bukkit.launch
 import com.mineinabyss.chatty.ChattyChannel
 import com.mineinabyss.chatty.chatty
 import com.mineinabyss.chatty.chattyProxyChannel
@@ -10,9 +9,6 @@ import com.mineinabyss.geary.datatypes.family.family
 import com.mineinabyss.geary.papermc.tracking.entities.toGearyOrNull
 import com.mineinabyss.geary.systems.accessors.Pointer
 import com.mineinabyss.geary.systems.query.GearyQuery
-import com.mineinabyss.idofront.messaging.broadcastVal
-import com.mineinabyss.idofront.messaging.logError
-import com.mineinabyss.idofront.messaging.logInfo
 import com.mineinabyss.idofront.textcomponents.miniMsg
 import com.mineinabyss.idofront.textcomponents.serialize
 import io.papermc.paper.event.player.AsyncChatCommandDecorateEvent
@@ -93,23 +89,20 @@ class ChatListener : Listener {
             else Bukkit.getConsoleSender().sendMessage(message())
         }
 
+        val playerViewers = viewers().filterIsInstance<Player>().toSet()
         if (pingedPlayer == null && viewers().isEmpty()) {
             player.sendFormattedMessage(chatty.messages.channels.emptyChannelMessage)
             viewers().clear()
         } else if (chatty.config.chat.disableChatSigning) {
-            viewers().filterIsInstance<Player>().forEach { it.sendMessage(message()) }
+            playerViewers.forEach { receiver ->
+                receiver.sendMessage(formatModerationMessage(channel.messageDeletion, message(), signedMessage(), receiver, player, playerViewers))
+            }
             viewers().clear()
             isCancelled = true
-        } else renderer { _, _, _, _ -> return@renderer message() }
+        } else renderer { source, _, message, audience ->
+            return@renderer formatModerationMessage(channel.messageDeletion, message, signedMessage(), audience, source, playerViewers)
+        }
     }
-
-    private fun Player.sendFormattedMessage(vararg message: String, optionalPlayer: Player? = null) =
-        this.sendMessage(
-            translatePlaceholders((optionalPlayer ?: this), message.joinToString(" ")).parseTags(
-                optionalPlayer ?: this,
-                true
-            )
-        )
 
     private fun Component.stripMessageFormat(player: Player, channel: ChattyChannel) =
         plainText.serialize(this)
