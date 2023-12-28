@@ -21,7 +21,8 @@ import net.kyori.adventure.text.TextReplacementConfig
 import net.kyori.adventure.text.event.ClickEvent
 import net.kyori.adventure.text.event.HoverEvent
 import net.kyori.adventure.text.event.HoverEventSource
-import net.kyori.adventure.text.format.NamedTextColor
+import net.kyori.adventure.text.format.Style
+import net.kyori.adventure.text.format.TextDecoration
 import net.kyori.adventure.text.minimessage.MiniMessage
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver
 import org.bukkit.Bukkit
@@ -239,4 +240,29 @@ fun formatModerationMessage(messageDeletion: ChattyChannel.MessageDeletion, mess
         messageDeletion.position == ChattyChannel.MessageDeletion.MessageDeletionPosition.SUFFIX -> message.append(messageDeletion.format.miniMsg().appendDeletionHover(audience))
         else -> message
     }
+}
+
+private fun appendPingInsert(matchResult: MatchResult, audience: Player, pingedPlayer: Player, source: Player) : Component {
+    return when (audience) {
+        pingedPlayer ->
+            (ping.pingReceiveFormat + matchResult.value).miniMsg()
+                .insertion("@${source.name} ")
+                .hoverEventShowText(chatty.messages.ping.replyMessage.miniMsg())
+        source -> (ping.pingSendFormat + matchResult.value).miniMsg().style(Style.style(TextDecoration.ITALIC))
+        else -> matchResult.value.miniMsg()
+    }
+}
+fun formatPlayerPingMessage(source: Player, pingedPlayer: Player?, audience: Audience, message: Component): Component {
+    if (pingedPlayer == null || audience !is Player) return message
+    val ping = chatty.config.ping
+    val pingRegex = "${ping.pingPrefix}(${pingedPlayer.chattyNickname}|${pingedPlayer.name})+".toRegex()
+
+    return pingRegex.find(message.serialize())?.let { match ->
+        message.replaceText(
+            TextReplacementConfig.builder()
+                .match(match.value)
+                .replacement(appendPingInsert(match, audience, pingedPlayer, source))
+                .build()
+        )
+    } ?: message
 }

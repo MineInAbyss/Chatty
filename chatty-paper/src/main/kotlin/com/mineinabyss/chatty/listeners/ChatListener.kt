@@ -62,14 +62,6 @@ class ChatListener : Listener {
         if (viewers().isNotEmpty()) viewers().clear()
         viewers() += channel.getAudience(player)
 
-        val pingedPlayer = originalMessage().serialize().checkForPlayerPings(channelId)
-        if (pingedPlayer != null && pingedPlayer != player && pingedPlayer in viewers()) {
-            viewers() -= setOf(pingedPlayer, player)
-            pingedPlayer.toGearyOrNull()?.get<ChannelData>()?.let { pingedChannelData ->
-                message().handlePlayerPings(player, pingedPlayer, pingedChannelData)
-            }
-        }
-
         if (channel.proxy) {
             //Append channel to give proxy info on what channel the message is from
             val proxyMessage = (("${player.name}$ZERO_WIDTH$channelId$ZERO_WIDTH" +
@@ -89,18 +81,24 @@ class ChatListener : Listener {
             else Bukkit.getConsoleSender().sendMessage(message())
         }
 
+        val pingedPlayer = originalMessage().serialize().checkForPlayerPings(channelId)
         val playerViewers = viewers().filterIsInstance<Player>().toSet()
-        if (pingedPlayer == null && viewers().isEmpty()) {
-            player.sendFormattedMessage(chatty.messages.channels.emptyChannelMessage)
-            viewers().clear()
-        } else if (chatty.config.chat.disableChatSigning) {
-            playerViewers.forEach { receiver ->
-                receiver.sendMessage(formatModerationMessage(channel.messageDeletion, message(), signedMessage(), receiver, player, playerViewers))
+        when {
+            viewers().isEmpty() -> player.sendFormattedMessage(chatty.messages.channels.emptyChannelMessage)
+            chatty.config.chat.disableChatSigning -> {
+                playerViewers.forEach { receiver ->
+                    var finalMessage = formatPlayerPingMessage(player, pingedPlayer, receiver, message())
+                    finalMessage = formatModerationMessage(channel.messageDeletion, finalMessage, signedMessage(), receiver, player, playerViewers)
+                    receiver.sendMessage(finalMessage)
+                }
+                viewers().clear()
+                isCancelled = true
             }
-            viewers().clear()
-            isCancelled = true
-        } else renderer { source, _, message, audience ->
-            return@renderer formatModerationMessage(channel.messageDeletion, message, signedMessage(), audience, source, playerViewers)
+            else -> renderer { source, _, message, audience ->
+                var finalMessage = formatPlayerPingMessage(source, pingedPlayer,audience, message)
+                finalMessage = formatModerationMessage(channel.messageDeletion, finalMessage, signedMessage(), audience, source, playerViewers)
+                return@renderer finalMessage
+            }
         }
     }
 

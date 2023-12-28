@@ -59,6 +59,7 @@ class ChattyMessages(
         val toggledPingSound: String = "Ping sound is now <i><chatty_player_ping_toggle></i>.",
         val changedPingSound: String = "Ping sound set to <i><chatty_player_ping_sound></i>",
         val invalidPingSound: String = "<red>You must specify a valid sound to play.",
+        val replyMessage: String = "<red>Shift + Click to mention!"
     )
 
     @Serializable
