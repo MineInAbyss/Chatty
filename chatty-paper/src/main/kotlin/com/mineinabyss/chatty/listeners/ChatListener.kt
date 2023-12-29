@@ -16,6 +16,8 @@ import io.papermc.paper.event.player.AsyncChatDecorateEvent
 import io.papermc.paper.event.player.AsyncChatEvent
 import net.kyori.adventure.audience.MessageType
 import net.kyori.adventure.chat.ChatType
+import net.kyori.adventure.identity.Identity
+import net.kyori.adventure.key.Key
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.minimessage.MiniMessage
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer
@@ -72,13 +74,10 @@ class ChatListener : Listener {
         }
 
         val displayName = player.chattyNickname?.miniMsg() ?: player.displayName()
+        val simpleMessage = displayName.compact().append(Component.text(": ").append(message().stripMessageFormat(player, channel)))
         if (channel.logToConsole) {
             if (channel.simpleConsoleMessages)
-                Bukkit.getConsoleSender().sendMessage(
-                    displayName.append(
-                        Component.text(": ").append(message().stripMessageFormat(player, channel))
-                    )
-                )
+                Bukkit.getConsoleSender().sendMessage(simpleMessage)
             else Bukkit.getConsoleSender().sendMessage(message())
         }
 
@@ -97,7 +96,7 @@ class ChatListener : Listener {
                         player,
                         playerViewers
                     )
-                    receiver.sendMessage(finalMessage, ChatType.CHAT.bind(finalMessage))
+                    receiver.sendMessage(finalMessage)
                 }
                 viewers().clear()
                 isCancelled = true
