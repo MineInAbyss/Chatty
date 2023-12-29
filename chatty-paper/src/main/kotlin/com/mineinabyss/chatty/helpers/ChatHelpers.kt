@@ -207,13 +207,11 @@ fun Player.sendFormattedMessage(vararg message: String, optionalPlayer: Player? 
         )
     )
 
-fun formattedResult(player: Player, message: Component): Component {
-    val channelData = player.toGeary().get<ChannelData>()?.withChannelVerified()
-    val channel = channelData?.channel ?: return message
+fun appendChannelFormat(message: Component, player: Player, channel: ChattyChannel): Component {
     val parsedFormat = translatePlaceholders(player, channel.format).parseTags(player, true)
-    val parsedMessage = Component.text("").color(channel.messageColor).append(message.parseTags(player, false))
+    val parsedMessage = Component.empty().color(channel.messageColor).append(message.parseTags(player, false))
 
-    return parsedFormat.append(parsedMessage)
+    return parsedFormat.compact().append(parsedMessage)
 }
 
 fun Component.hoverEventShowText(text: Component) = this.hoverEvent(HoverEventSource.unbox(HoverEvent.showText(text)))

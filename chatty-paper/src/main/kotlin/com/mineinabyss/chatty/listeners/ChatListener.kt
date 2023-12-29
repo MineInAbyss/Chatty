@@ -3,7 +3,9 @@ package com.mineinabyss.chatty.listeners
 import com.mineinabyss.chatty.ChattyChannel
 import com.mineinabyss.chatty.chatty
 import com.mineinabyss.chatty.chattyProxyChannel
-import com.mineinabyss.chatty.components.*
+import com.mineinabyss.chatty.components.ChannelData
+import com.mineinabyss.chatty.components.CommandSpy
+import com.mineinabyss.chatty.components.chattyNickname
 import com.mineinabyss.chatty.helpers.*
 import com.mineinabyss.geary.datatypes.family.family
 import com.mineinabyss.geary.papermc.tracking.entities.toGearyOrNull
@@ -14,10 +16,6 @@ import com.mineinabyss.idofront.textcomponents.serialize
 import io.papermc.paper.event.player.AsyncChatCommandDecorateEvent
 import io.papermc.paper.event.player.AsyncChatDecorateEvent
 import io.papermc.paper.event.player.AsyncChatEvent
-import net.kyori.adventure.audience.MessageType
-import net.kyori.adventure.chat.ChatType
-import net.kyori.adventure.identity.Identity
-import net.kyori.adventure.key.Key
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.minimessage.MiniMessage
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer
@@ -47,12 +45,12 @@ class ChatListener : Listener {
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     fun AsyncChatCommandDecorateEvent.onCommandPreview() {
-        player()?.let { result(originalMessage().parseTags(it, false)) }
+        player()?.let { result(result().parseTags(it, false)) }
     }
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     fun AsyncChatDecorateEvent.onChatPreview() {
-        player()?.let { result(formattedResult(it, result())) }
+        player()?.let { result(result().parseTags(it, false)) }
     }
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
@@ -96,6 +94,8 @@ class ChatListener : Listener {
                         player,
                         playerViewers
                     )
+                    finalMessage = appendChannelFormat(finalMessage, player, channel)
+
                     receiver.sendMessage(finalMessage)
                 }
                 viewers().clear()
@@ -112,6 +112,8 @@ class ChatListener : Listener {
                     source,
                     playerViewers
                 )
+                finalMessage = appendChannelFormat(finalMessage, player, channel)
+
                 return@renderer finalMessage
             }
         }

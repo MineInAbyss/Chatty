@@ -334,7 +334,7 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
 
     companion object {
         private fun CommandSender.sendFormattedMessage(message: String, optionalPlayer: Player? = null) =
-            this.sendMessage(translatePlaceholders((optionalPlayer ?: this as? Player), message).parseTags(this, true))
+            this.sendMessage(translatePlaceholders((optionalPlayer ?: this as? Player), message).parseTags(this as? Player, true))
 
         private fun Player.sendFormattedPrivateMessage(messageFormat: String, message: String, receiver: Player) =
             this.sendMessage(
