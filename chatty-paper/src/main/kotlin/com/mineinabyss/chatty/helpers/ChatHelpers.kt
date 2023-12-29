@@ -225,6 +225,7 @@ fun formatModerationMessage(messageDeletion: ChattyChannel.MessageDeletion, mess
                 val hoverString = Component.empty().hoverEventShowText(message).serialize()
                 if (!signedMessage.canDelete()) return@callback player.sendFormattedMessage(hoverString + chatty.messages.messageDeletion.deletionFailed)
 
+
                 viewers.forEach {
                     it.deleteMessage(signedMessage)
                     if (player != it && it.hasPermission(ChattyPermissions.MODERATION_PERM))

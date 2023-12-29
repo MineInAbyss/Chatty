@@ -14,6 +14,8 @@ import com.mineinabyss.idofront.textcomponents.serialize
 import io.papermc.paper.event.player.AsyncChatCommandDecorateEvent
 import io.papermc.paper.event.player.AsyncChatDecorateEvent
 import io.papermc.paper.event.player.AsyncChatEvent
+import net.kyori.adventure.audience.MessageType
+import net.kyori.adventure.chat.ChatType
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.minimessage.MiniMessage
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer
@@ -95,7 +97,7 @@ class ChatListener : Listener {
                         player,
                         playerViewers
                     )
-                    receiver.sendMessage(finalMessage)
+                    receiver.sendMessage(finalMessage, ChatType.CHAT.bind(finalMessage))
                 }
                 viewers().clear()
                 isCancelled = true
