@@ -1,11 +1,9 @@
 package com.mineinabyss.chatty.listeners
 
-import com.mineinabyss.chatty.ChattyChannel
 import com.mineinabyss.chatty.chatty
 import com.mineinabyss.chatty.chattyProxyChannel
 import com.mineinabyss.chatty.components.ChannelData
 import com.mineinabyss.chatty.components.CommandSpy
-import com.mineinabyss.chatty.components.chattyNickname
 import com.mineinabyss.chatty.helpers.*
 import com.mineinabyss.geary.datatypes.family.family
 import com.mineinabyss.geary.papermc.tracking.entities.toGearyOrNull
@@ -17,6 +15,7 @@ import io.papermc.paper.event.player.AsyncChatCommandDecorateEvent
 import io.papermc.paper.event.player.AsyncChatDecorateEvent
 import io.papermc.paper.event.player.AsyncChatEvent
 import net.kyori.adventure.text.Component
+import net.kyori.adventure.text.format.NamedTextColor
 import net.kyori.adventure.text.minimessage.MiniMessage
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer
 import org.bukkit.Bukkit
@@ -71,13 +70,8 @@ class ChatListener : Listener {
             player.sendPluginMessage(chatty.plugin, chattyProxyChannel, proxyMessage)
         }
 
-        val displayName = player.chattyNickname?.miniMsg() ?: player.displayName()
-        val simpleMessage = displayName.compact().append(Component.text(": ").append(message().stripMessageFormat(player, channel)))
-        if (channel.logToConsole) {
-            if (channel.simpleConsoleMessages)
-                Bukkit.getConsoleSender().sendMessage(simpleMessage)
-            else Bukkit.getConsoleSender().sendMessage(message())
-        }
+        val simpleMessage = player.name().append(Component.text(": ", NamedTextColor.WHITE)).append(message())
+        if (channel.logToConsole) Bukkit.getConsoleSender().sendMessage(simpleMessage)
 
         val pingedPlayer = originalMessage().serialize().checkForPlayerPings(channelId)
         val playerViewers = viewers().filterIsInstance<Player>().toSet()
@@ -118,9 +112,4 @@ class ChatListener : Listener {
             }
         }
     }
-
-    private fun Component.stripMessageFormat(player: Player, channel: ChattyChannel) =
-        plainText.serialize(this)
-            .replace(plainText.serialize(translatePlaceholders(player, channel.format).parseTags(player, true)), "")
-            .miniMsg().parseTags(player, false)
 }

@@ -17,7 +17,6 @@ data class ChattyChannel(
     val channelType: ChannelType,
     val permission: String = "",
     val logToConsole: Boolean = true,
-    val simpleConsoleMessages: Boolean = false,
     val proxy: Boolean = false,
     val discordsrv: Boolean = true,
     val messageDeletion: MessageDeletion = MessageDeletion(),
