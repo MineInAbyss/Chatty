@@ -9,7 +9,6 @@ import com.mineinabyss.chatty.components.ChannelData
 import com.mineinabyss.chatty.components.ChannelType
 import com.mineinabyss.chatty.components.chattyNickname
 import com.mineinabyss.chatty.placeholders.chattyPlaceholderTags
-import com.mineinabyss.geary.papermc.tracking.entities.toGeary
 import com.mineinabyss.idofront.textcomponents.miniMsg
 import com.mineinabyss.idofront.textcomponents.serialize
 import me.clip.placeholderapi.PlaceholderAPI
@@ -217,13 +216,13 @@ fun appendChannelFormat(message: Component, player: Player, channel: ChattyChann
 
 fun Component.hoverEventShowText(text: Component) = this.hoverEvent(HoverEventSource.unbox(HoverEvent.showText(text)))
 
-fun formatModerationMessage(messageDeletion: ChattyChannel.MessageDeletion, message: Component, signedMessage: SignedMessage, audience: Audience, source: Player, viewers: Set<Player>): Component {
+fun formatModerationMessage(messageDeletion: ChattyChannel.MessageDeletion, message: Component, messageHistory: Component, signedMessage: SignedMessage, audience: Audience, source: Player, viewers: Set<Player>): Component {
     fun Component.appendDeletionHover(player: Player): Component {
         return when (chatty.config.chat.disableChatSigning) {
             true -> this.hoverEventShowText(Component.text("Chat-Signing is disabled, messages cannot be deleted.", NamedTextColor.RED))
             false -> this.hoverEventShowText(chatty.messages.messageDeletion.hoverText.miniMsg())
                 .clickEvent(ClickEvent.callback {
-                    val hoverString = Component.empty().hoverEventShowText(message).serialize()
+                    val hoverString = Component.empty().hoverEventShowText(messageHistory).serialize()
                     if (!signedMessage.canDelete()) return@callback player.sendFormattedMessage(hoverString + chatty.messages.messageDeletion.deletionFailed)
 
 

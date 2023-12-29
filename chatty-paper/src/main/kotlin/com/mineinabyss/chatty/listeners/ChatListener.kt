@@ -4,6 +4,7 @@ import com.mineinabyss.chatty.chatty
 import com.mineinabyss.chatty.chattyProxyChannel
 import com.mineinabyss.chatty.components.ChannelData
 import com.mineinabyss.chatty.components.CommandSpy
+import com.mineinabyss.chatty.components.chattyNickname
 import com.mineinabyss.chatty.helpers.*
 import com.mineinabyss.geary.datatypes.family.family
 import com.mineinabyss.geary.papermc.tracking.entities.toGearyOrNull
@@ -16,6 +17,8 @@ import io.papermc.paper.event.player.AsyncChatDecorateEvent
 import io.papermc.paper.event.player.AsyncChatEvent
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
+import net.kyori.adventure.text.format.Style
+import net.kyori.adventure.text.format.TextDecoration
 import net.kyori.adventure.text.minimessage.MiniMessage
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer
 import org.bukkit.Bukkit
@@ -70,7 +73,7 @@ class ChatListener : Listener {
             player.sendPluginMessage(chatty.plugin, chattyProxyChannel, proxyMessage)
         }
 
-        val simpleMessage = player.name().append(Component.text(": ", NamedTextColor.WHITE)).append(message())
+        val simpleMessage = Component.textOfChildren(player.name().style(Style.style(TextDecoration.ITALIC)), Component.text(": "), message())
         if (channel.logToConsole) Bukkit.getConsoleSender().sendMessage(simpleMessage)
 
         val pingedPlayer = originalMessage().serialize().checkForPlayerPings(channelId)
@@ -85,6 +88,7 @@ class ChatListener : Listener {
                     finalMessage = formatModerationMessage(
                         channel.messageDeletion,
                         finalMessage,
+                        simpleMessage,
                         signedMessage(),
                         receiver,
                         player,
@@ -104,6 +108,7 @@ class ChatListener : Listener {
                 finalMessage = formatModerationMessage(
                     channel.messageDeletion,
                     finalMessage,
+                    simpleMessage,
                     signedMessage(),
                     audience,
                     source,
