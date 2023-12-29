@@ -4,7 +4,7 @@ import com.mineinabyss.chatty.chatty
 import com.mineinabyss.chatty.chattyProxyChannel
 import com.mineinabyss.chatty.components.ChannelData
 import com.mineinabyss.chatty.components.CommandSpy
-import com.mineinabyss.chatty.components.chattyNickname
+import com.mineinabyss.chatty.events.ChattyPlayerChatEvent
 import com.mineinabyss.chatty.helpers.*
 import com.mineinabyss.geary.datatypes.family.family
 import com.mineinabyss.geary.papermc.tracking.entities.toGearyOrNull
@@ -16,7 +16,6 @@ import io.papermc.paper.event.player.AsyncChatCommandDecorateEvent
 import io.papermc.paper.event.player.AsyncChatDecorateEvent
 import io.papermc.paper.event.player.AsyncChatEvent
 import net.kyori.adventure.text.Component
-import net.kyori.adventure.text.format.NamedTextColor
 import net.kyori.adventure.text.format.Style
 import net.kyori.adventure.text.format.TextDecoration
 import net.kyori.adventure.text.minimessage.MiniMessage
@@ -64,6 +63,10 @@ class ChatListener : Listener {
 
         if (viewers().isNotEmpty()) viewers().clear()
         viewers() += channel.getAudience(player)
+
+        val chattyEvent = ChattyPlayerChatEvent(player, channel, message(), viewers())
+        if (chattyEvent.callEvent()) message(chattyEvent.message)
+        else viewers().clear()
 
         if (channel.proxy) {
             //Append channel to give proxy info on what channel the message is from
