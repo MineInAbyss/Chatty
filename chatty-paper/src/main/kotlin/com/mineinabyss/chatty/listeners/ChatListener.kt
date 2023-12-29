@@ -36,10 +36,9 @@ class ChatListener : Listener {
 
     @EventHandler
     fun PlayerCommandPreprocessEvent.onPlayerCommand() {
-        commandSpyQuery.run { toList { it.player } }
-            .forEach { p ->
-                p.sendFormattedMessage(chatty.config.chat.commandSpyFormat, message, optionalPlayer = player)
-            }
+        commandSpyQuery.run { toList { it.player } }.filter { it != player }.forEach { p ->
+            p.sendFormattedMessage(chatty.config.chat.commandSpyFormat, message, optionalPlayer = player)
+        }
     }
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
@@ -88,15 +87,30 @@ class ChatListener : Listener {
             chatty.config.chat.disableChatSigning -> {
                 playerViewers.forEach { receiver ->
                     var finalMessage = formatPlayerPingMessage(player, pingedPlayer, receiver, message())
-                    finalMessage = formatModerationMessage(channel.messageDeletion, finalMessage, signedMessage(), receiver, player, playerViewers)
+                    finalMessage = formatModerationMessage(
+                        channel.messageDeletion,
+                        finalMessage,
+                        signedMessage(),
+                        receiver,
+                        player,
+                        playerViewers
+                    )
                     receiver.sendMessage(finalMessage)
                 }
                 viewers().clear()
                 isCancelled = true
             }
+
             else -> renderer { source, _, message, audience ->
-                var finalMessage = formatPlayerPingMessage(source, pingedPlayer,audience, message)
-                finalMessage = formatModerationMessage(channel.messageDeletion, finalMessage, signedMessage(), audience, source, playerViewers)
+                var finalMessage = formatPlayerPingMessage(source, pingedPlayer, audience, message)
+                finalMessage = formatModerationMessage(
+                    channel.messageDeletion,
+                    finalMessage,
+                    signedMessage(),
+                    audience,
+                    source,
+                    playerViewers
+                )
                 return@renderer finalMessage
             }
         }
