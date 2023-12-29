@@ -66,19 +66,19 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
                 }
             }
             ("nickname" / "nick") {
-                playerAction {
+                action {
                     val nickMessage = chatty.messages.nicknames
                     val nick = arguments.toSentence()
-                    val bypassFormatPerm = player.hasPermission(ChattyPermissions.NICKNAME_OTHERS)
+                    val bypassFormatPerm = sender.hasPermission(ChattyPermissions.NICKNAME_OTHERS)
 
                     when {
-                        !player.hasPermission(ChattyPermissions.NICKNAME) ->
-                            player.sendFormattedMessage(nickMessage.selfDenied)
+                        !sender.hasPermission(ChattyPermissions.NICKNAME) ->
+                            sender.sendFormattedMessage(nickMessage.selfDenied)
 
-                        arguments.isEmpty() -> {
+                        arguments.isEmpty() && sender is Player -> {
                             // Removes players displayname or sends error if sender is console
-                            player.chattyNickname = null
-                            player.sendFormattedMessage(nickMessage.selfEmpty)
+                            (sender as Player).chattyNickname = null
+                            sender.sendFormattedMessage(nickMessage.selfEmpty)
                         }
 
                         arguments.first().startsWith(chatty.config.nicknames.nickNameOtherPrefix) -> {
@@ -86,34 +86,34 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
                             val otherNick = nick.removePlayerToNickFromString()
 
                             when {
-                                !player.hasPermission(ChattyPermissions.NICKNAME_OTHERS) ->
-                                    player.sendFormattedMessage(nickMessage.otherDenied, otherPlayer)
+                                !sender.hasPermission(ChattyPermissions.NICKNAME_OTHERS) ->
+                                    sender.sendFormattedMessage(nickMessage.otherDenied, otherPlayer)
 
                                 otherPlayer == null || otherPlayer !in Bukkit.getOnlinePlayers() ->
-                                    player.sendFormattedMessage(nickMessage.invalidPlayer, otherPlayer)
+                                    sender.sendFormattedMessage(nickMessage.invalidPlayer, otherPlayer)
 
                                 otherNick.isEmpty() -> {
                                     otherPlayer.chattyNickname = null
                                     otherPlayer.sendFormattedMessage(nickMessage.selfEmpty)
-                                    player.sendFormattedMessage(nickMessage.otherEmpty, otherPlayer)
+                                    sender.sendFormattedMessage(nickMessage.otherEmpty, otherPlayer)
                                 }
 
                                 !bypassFormatPerm && !otherNick.verifyNickLength() ->
-                                    player.sendFormattedMessage(nickMessage.tooLong)
+                                    sender.sendFormattedMessage(nickMessage.tooLong)
 
                                 otherNick.isNotEmpty() -> {
                                     otherPlayer.chattyNickname = otherNick
-                                    player.sendFormattedMessage(nickMessage.otherSuccess, otherPlayer)
+                                    sender.sendFormattedMessage(nickMessage.otherSuccess, otherPlayer)
                                 }
                             }
                         }
 
-                        else -> {
+                        else  -> {
                             if (!bypassFormatPerm && !nick.verifyNickLength()) {
-                                player.sendFormattedMessage(nickMessage.tooLong)
+                                sender.sendFormattedMessage(nickMessage.tooLong)
                             } else {
-                                player.chattyNickname = nick
-                                player.sendFormattedMessage(nickMessage.selfSuccess)
+                                (sender as? Player)?.chattyNickname = nick
+                                sender.sendFormattedMessage(nickMessage.selfSuccess)
                             }
                         }
                     }
@@ -333,8 +333,8 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
 
 
     companion object {
-        private fun Player.sendFormattedMessage(message: String, optionalPlayer: Player? = null) =
-            this.sendMessage(translatePlaceholders((optionalPlayer ?: this), message).parseTags(this, true))
+        private fun CommandSender.sendFormattedMessage(message: String, optionalPlayer: Player? = null) =
+            this.sendMessage(translatePlaceholders((optionalPlayer ?: this as? Player), message).parseTags(this, true))
 
         private fun Player.sendFormattedPrivateMessage(messageFormat: String, message: String, receiver: Player) =
             this.sendMessage(

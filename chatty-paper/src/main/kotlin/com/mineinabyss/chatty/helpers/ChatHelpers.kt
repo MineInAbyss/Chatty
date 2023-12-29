@@ -128,7 +128,7 @@ fun getDefaultChat() =
 
 fun getAllChannelNames() = chatty.config.channels.keys.toList()
 
-fun translatePlaceholders(player: Player, message: String): Component {
+fun translatePlaceholders(player: Player?, message: String): Component {
     return PlaceholderAPI.setPlaceholders(player, message).fixLegacy()
 }
 
