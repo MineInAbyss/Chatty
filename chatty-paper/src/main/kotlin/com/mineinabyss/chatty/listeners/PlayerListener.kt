@@ -66,7 +66,7 @@ class PlayerListener : Listener {
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     fun PrepareAnvilEvent.onAnvilRename() {
         result = result?.editItemMeta {
-            displayName(displayName()?.parseTags(viewers.first() as? Player))
+            displayName(displayName()?.parseTags(viewers.firstOrNull() as? Player))
         }
     }
 }
