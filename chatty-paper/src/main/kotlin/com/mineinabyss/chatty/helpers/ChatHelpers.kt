@@ -21,6 +21,7 @@ import net.kyori.adventure.text.TextReplacementConfig
 import net.kyori.adventure.text.event.ClickEvent
 import net.kyori.adventure.text.event.HoverEvent
 import net.kyori.adventure.text.event.HoverEventSource
+import net.kyori.adventure.text.format.NamedTextColor
 import net.kyori.adventure.text.format.Style
 import net.kyori.adventure.text.format.TextDecoration
 import net.kyori.adventure.text.minimessage.MiniMessage
@@ -218,19 +219,22 @@ fun Component.hoverEventShowText(text: Component) = this.hoverEvent(HoverEventSo
 
 fun formatModerationMessage(messageDeletion: ChattyChannel.MessageDeletion, message: Component, signedMessage: SignedMessage, audience: Audience, source: Player, viewers: Set<Player>): Component {
     fun Component.appendDeletionHover(player: Player): Component {
-        return this.hoverEventShowText(chatty.messages.messageDeletion.hoverText.miniMsg())
-            .clickEvent(ClickEvent.callback {
-                val hoverString = Component.empty().hoverEventShowText(message).serialize()
-                if (!signedMessage.canDelete()) return@callback player.sendFormattedMessage(hoverString + chatty.messages.messageDeletion.deletionFailed)
+        return when (chatty.config.chat.disableChatSigning) {
+            true -> this.hoverEventShowText(Component.text("Chat-Signing is disabled, messages cannot be deleted.", NamedTextColor.RED))
+            false -> this.hoverEventShowText(chatty.messages.messageDeletion.hoverText.miniMsg())
+                .clickEvent(ClickEvent.callback {
+                    val hoverString = Component.empty().hoverEventShowText(message).serialize()
+                    if (!signedMessage.canDelete()) return@callback player.sendFormattedMessage(hoverString + chatty.messages.messageDeletion.deletionFailed)
 
 
-                viewers.forEach {
-                    it.deleteMessage(signedMessage)
-                    if (player != it && it.hasPermission(ChattyPermissions.MODERATION_PERM))
-                        it.sendFormattedMessage(hoverString + chatty.messages.messageDeletion.notifyStaff, optionalPlayer = player)
-                }
-                player.sendFormattedMessage(hoverString + chatty.messages.messageDeletion.deletionSuccess)
-        }).compact()
+                    viewers.forEach {
+                        it.deleteMessage(signedMessage)
+                        if (player != it && it.hasPermission(ChattyPermissions.MODERATION_PERM))
+                            it.sendFormattedMessage(hoverString + chatty.messages.messageDeletion.notifyStaff, optionalPlayer = player)
+                    }
+                    player.sendFormattedMessage(hoverString + chatty.messages.messageDeletion.deletionSuccess)
+                }).compact()
+        }
     }
 
     return when {
