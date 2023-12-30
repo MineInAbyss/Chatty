@@ -68,16 +68,16 @@ class ChatListener : Listener {
         if (chattyEvent.callEvent()) message(chattyEvent.message)
         else viewers().clear()
 
+        val simpleMessage = Component.textOfChildren(player.name().style(Style.style(TextDecoration.ITALIC)), Component.text(": "), message())
+        if (channel.logToConsole) Bukkit.getConsoleSender().sendMessage(simpleMessage)
         if (channel.proxy) {
             //Append channel to give proxy info on what channel the message is from
             val proxyMessage = (("${player.name}$ZERO_WIDTH$channelId$ZERO_WIDTH" +
                     MiniMessage.miniMessage().escapeTags(translatePlaceholders(player, channel.format).serialize()) +
-                    ZERO_WIDTH).miniMsg().append(message())).serialize().toByteArray()
+                    ZERO_WIDTH).miniMsg().append(message()).serialize() + ZERO_WIDTH + simpleMessage.serialize())
+                        .toByteArray()
             player.sendPluginMessage(chatty.plugin, chattyProxyChannel, proxyMessage)
         }
-
-        val simpleMessage = Component.textOfChildren(player.name().style(Style.style(TextDecoration.ITALIC)), Component.text(": "), message())
-        if (channel.logToConsole) Bukkit.getConsoleSender().sendMessage(simpleMessage)
 
         val pingedPlayer = originalMessage().serialize().checkForPlayerPings(channelId)
         val playerViewers = viewers().filterIsInstance<Player>().toSet()
