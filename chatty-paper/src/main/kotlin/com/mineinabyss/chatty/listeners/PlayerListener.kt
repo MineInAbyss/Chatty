@@ -7,6 +7,7 @@ import com.mineinabyss.chatty.helpers.*
 import com.mineinabyss.geary.papermc.tracking.entities.toGeary
 import com.mineinabyss.idofront.items.editItemMeta
 import com.mineinabyss.idofront.textcomponents.serialize
+import net.kyori.adventure.text.Component
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
@@ -65,7 +66,9 @@ class PlayerListener : Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     fun PrepareAnvilEvent.onAnvilRename() {
+        if (result?.itemMeta?.hasDisplayName() != true) return
         result = result?.editItemMeta {
+            if (!hasDisplayName()) return@editItemMeta
             displayName(displayName()?.parseTags(viewers.firstOrNull() as? Player))
         }
     }
