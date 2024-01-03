@@ -6,9 +6,11 @@ import com.mineinabyss.chatty.chattyProxyChannel
 import com.mineinabyss.chatty.components.ChannelData
 import com.mineinabyss.chatty.components.ChannelType
 import com.mineinabyss.chatty.helpers.ZERO_WIDTH
+import com.mineinabyss.chatty.helpers.gson
 import com.mineinabyss.chatty.helpers.toPlayer
 import com.mineinabyss.geary.papermc.tracking.entities.toGeary
 import com.mineinabyss.idofront.textcomponents.miniMsg
+import com.mineinabyss.idofront.textcomponents.serialize
 import github.scarsz.discordsrv.Debug
 import github.scarsz.discordsrv.DiscordSRV
 import github.scarsz.discordsrv.dependencies.jda.api.Permission
@@ -17,6 +19,9 @@ import github.scarsz.discordsrv.util.DiscordUtil
 import github.scarsz.discordsrv.util.MessageUtil
 import github.scarsz.discordsrv.util.PlaceholderUtil
 import github.scarsz.discordsrv.util.WebhookUtil
+import net.kyori.adventure.text.Component
+import net.kyori.adventure.text.TextComponent
+import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
 import org.bukkit.plugin.messaging.PluginMessageListener
@@ -27,15 +32,13 @@ class ChattyProxyListener : PluginMessageListener {
         if (ch != chattyProxyChannel) return
         // Get channel from last part of string as it is sent via the proxy message
         // playername0playerchannel0channelformat(minimsg formatted)0 full message
-        val decoded = byteArray.decodeToString()
-        val senderName = decoded.substringBefore(ZERO_WIDTH)
-        val channelId = decoded.substringAfter(ZERO_WIDTH).split(ZERO_WIDTH).first()
-        val channelFormat = decoded.substringAfter(channelId + ZERO_WIDTH).split(ZERO_WIDTH).first()
+        val decoded = gson.deserialize(byteArray.decodeToString())
+        val senderName = (decoded.children()[0] as? TextComponent)?.content() ?: return
+        val channelId = (decoded.children()[1] as? TextComponent)?.content() ?: return
         val channel = chatty.config.channels[channelId]
-        val message = decoded.substringBeforeLast(ZERO_WIDTH).substringAfterLast(ZERO_WIDTH)
-        val simpleMessage = decoded.substringAfterLast(ZERO_WIDTH)
+        val message = decoded.children()[2] ?: return
+        val simpleMessage = decoded.children()[3] ?: return
 
-        val onlinePlayers = Bukkit.getOnlinePlayers().filter { it.server == Bukkit.getServer() }
         val canSpy = chatty.spyingPlayers.run {
             toList { query -> query.player.takeIf { query.spying.channels.contains(channelId) } }
                 .filterNotNull()
@@ -47,21 +50,20 @@ class ChattyProxyListener : PluginMessageListener {
                 Bukkit.getConsoleSender().sendMessage(simpleMessage)
 
             when (channel.channelType) {
-                ChannelType.GLOBAL -> onlinePlayers
+                ChannelType.GLOBAL -> player.server.onlinePlayers
                 ChannelType.RADIUS -> canSpy
-                ChannelType.PERMISSION -> onlinePlayers.filter { it.hasPermission(channel.permission) || it in canSpy }
-                ChannelType.PRIVATE -> onlinePlayers.filter {
+                ChannelType.PERMISSION -> player.server.onlinePlayers.filter { it.hasPermission(channel.permission) || it in canSpy }
+                ChannelType.PRIVATE -> player.server.onlinePlayers.filter {
                     it.toGeary().get<ChannelData>()?.withChannelVerified()?.channel == channel || it in canSpy
                 }
-            }.forEach { it.sendMessage((channelFormat + message).miniMsg()) }
+            }.forEach { it.sendMessage(message) }
         }
-
 
         if (chatty.config.proxy.sendProxyMessagesToDiscord
             && channel?.discordsrv == true
             && chatty.isDiscordSRVLoaded
         ) {
-            sendToDiscord(message, senderName, channel)
+            sendToDiscord(message.serialize(), senderName, channel)
         }
 
     }

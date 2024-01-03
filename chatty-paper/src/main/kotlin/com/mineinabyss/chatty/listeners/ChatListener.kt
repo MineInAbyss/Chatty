@@ -1,5 +1,6 @@
 package com.mineinabyss.chatty.listeners
 
+import com.mineinabyss.chatty.ChattyChannel
 import com.mineinabyss.chatty.chatty
 import com.mineinabyss.chatty.chattyProxyChannel
 import com.mineinabyss.chatty.components.ChannelData
@@ -19,6 +20,7 @@ import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.Style
 import net.kyori.adventure.text.format.TextDecoration
 import net.kyori.adventure.text.minimessage.MiniMessage
+import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
@@ -70,14 +72,6 @@ class ChatListener : Listener {
 
         val simpleMessage = Component.textOfChildren(player.name().style(Style.style(TextDecoration.ITALIC)), Component.text(": "), message())
         if (channel.logToConsole) Bukkit.getConsoleSender().sendMessage(simpleMessage)
-        if (channel.proxy) {
-            //Append channel to give proxy info on what channel the message is from
-            val proxyMessage = (("${player.name}$ZERO_WIDTH$channelId$ZERO_WIDTH" +
-                    MiniMessage.miniMessage().escapeTags(translatePlaceholders(player, channel.format).serialize()) +
-                    ZERO_WIDTH).miniMsg().append(message()).serialize() + ZERO_WIDTH + simpleMessage.serialize())
-                        .toByteArray()
-            player.sendPluginMessage(chatty.plugin, chattyProxyChannel, proxyMessage)
-        }
 
         val pingedPlayer = originalMessage().serialize().checkForPlayerPings(channelId)
         val playerViewers = viewers().filterIsInstance<Player>().toSet()
@@ -98,6 +92,7 @@ class ChatListener : Listener {
                         playerViewers
                     )
 
+                    handleProxyMessage(player, channelId, channel, finalMessage, simpleMessage)
                     receiver.sendMessage(finalMessage)
                 }
                 viewers().clear()
@@ -118,8 +113,15 @@ class ChatListener : Listener {
                     playerViewers
                 )
 
+                handleProxyMessage(source, channelId, channel, finalMessage, simpleMessage)
                 return@renderer finalMessage
             }
         }
+    }
+
+    private fun handleProxyMessage(player: Player, channelId: String, channel: ChattyChannel, message: Component, simpleMessage: Component) {
+        if (!channel.proxy) return
+        val proxyMessage = Component.textOfChildren(player.name(), Component.text(channelId), message, simpleMessage)
+        player.sendPluginMessage(chatty.plugin, chattyProxyChannel, GsonComponentSerializer.gson().serialize(proxyMessage).toByteArray())
     }
 }

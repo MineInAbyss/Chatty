@@ -25,6 +25,7 @@ import net.kyori.adventure.text.format.Style
 import net.kyori.adventure.text.format.TextDecoration
 import net.kyori.adventure.text.minimessage.MiniMessage
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver
+import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer
 import org.bukkit.Bukkit
 import org.bukkit.OfflinePlayer
 import org.bukkit.Sound
@@ -33,6 +34,7 @@ import org.bukkit.entity.Player
 import org.bukkit.profile.PlayerTextures.SkinModel
 import java.util.regex.Pattern
 
+val gson = GsonComponentSerializer.gson()
 const val ZERO_WIDTH = "\u200B"
 val ping = chatty.config.ping
 val getAlternativePingSounds: List<String> =
@@ -80,12 +82,14 @@ fun Component.handlePlayerPings(player: Player, pingedPlayer: Player, pingedChan
     }
 }
 
+val emptyMiniMessage = MiniMessage.builder().tags(TagResolver.empty()).build()
+
 /** Build a unique instance of MiniMessage with an empty TagResolver and deserializes with a generated one that takes permissions into account
  * @param player Format tags based on a player's permission, or null to parse all tags
  * @param ignorePermissions Whether to ignore permissions and parse all tags
  */
 fun String.parseTags(player: Player? = null, ignorePermissions: Boolean = false): Component {
-    val mm = if (ignorePermissions) MiniMessage.miniMessage() else MiniMessage.builder().tags(TagResolver.empty()).build()
+    val mm = if (ignorePermissions) MiniMessage.miniMessage() else emptyMiniMessage
     return mm.deserialize(this.fixSerializedTags(), player.buildTagResolver(ignorePermissions))
 }
 
