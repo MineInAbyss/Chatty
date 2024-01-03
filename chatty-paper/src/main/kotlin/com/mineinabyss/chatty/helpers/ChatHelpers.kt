@@ -35,7 +35,6 @@ import org.bukkit.profile.PlayerTextures.SkinModel
 import java.util.regex.Pattern
 
 val gson = GsonComponentSerializer.gson()
-const val ZERO_WIDTH = "\u200B"
 val ping = chatty.config.ping
 val getAlternativePingSounds: List<String> =
     if ("*" in ping.alternativePingSounds || "all" in ping.alternativePingSounds)
