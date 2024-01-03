@@ -5,11 +5,9 @@ import com.mineinabyss.chatty.chatty
 import com.mineinabyss.chatty.chattyProxyChannel
 import com.mineinabyss.chatty.components.ChannelData
 import com.mineinabyss.chatty.components.ChannelType
-import com.mineinabyss.chatty.helpers.ZERO_WIDTH
 import com.mineinabyss.chatty.helpers.gson
 import com.mineinabyss.chatty.helpers.toPlayer
 import com.mineinabyss.geary.papermc.tracking.entities.toGeary
-import com.mineinabyss.idofront.textcomponents.miniMsg
 import com.mineinabyss.idofront.textcomponents.serialize
 import github.scarsz.discordsrv.Debug
 import github.scarsz.discordsrv.DiscordSRV
@@ -19,9 +17,7 @@ import github.scarsz.discordsrv.util.DiscordUtil
 import github.scarsz.discordsrv.util.MessageUtil
 import github.scarsz.discordsrv.util.PlaceholderUtil
 import github.scarsz.discordsrv.util.WebhookUtil
-import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.TextComponent
-import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
 import org.bukkit.plugin.messaging.PluginMessageListener
@@ -30,8 +26,6 @@ import org.bukkit.plugin.messaging.PluginMessageListener
 class ChattyProxyListener : PluginMessageListener {
     override fun onPluginMessageReceived(ch: String, player: Player, byteArray: ByteArray) {
         if (ch != chattyProxyChannel) return
-        // Get channel from last part of string as it is sent via the proxy message
-        // playername0playerchannel0channelformat(minimsg formatted)0 full message
         val decoded = gson.deserialize(byteArray.decodeToString())
         val senderName = (decoded.children()[0] as? TextComponent)?.content() ?: return
         val channelId = (decoded.children()[1] as? TextComponent)?.content() ?: return
