@@ -33,23 +33,12 @@ object ChattyTags {
     )
 
     private fun create(args: ArgumentQueue, ctx: Context, tag: String): Tag {
-        when (tag) {
-            SHIFT -> return if (args.hasNext()) Tag.selfClosingInserting(
-                Space.of(args.popOr("A shift value is needed").value().toIntOrNull() ?: 0).miniMsg()
-            ) else Tag.selfClosingInserting(Component.empty())
-
-            HEAD -> return if (args.hasNext()) Tag.selfClosingInserting(
-                args.popOr("A player name is needed").value().toPlayer()?.translatePlayerHeadComponent()
-                    ?: Component.empty()
-            ) else Tag.selfClosingInserting(Component.empty())
-
-            SKIN -> return if (args.hasNext()) Tag.selfClosingInserting(
-                args.popOr("A player name is needed").value().toPlayer()?.translateFullPlayerSkinComponent()
-                    ?: Component.empty()
-            ) else Tag.selfClosingInserting(Component.empty())
-        }
-
-        return Tag.inserting(Component.empty())
+        return Tag.selfClosingInserting(when {
+            tag == SHIFT && args.hasNext() -> Space.of(args.popOr("A shift value is needed").value().toIntOrNull() ?: 0).miniMsg()
+            tag == HEAD && args.hasNext() -> args.popOr("A player name is needed").value().toPlayer()?.translatePlayerHeadComponent() ?: Component.empty()
+            tag == SKIN && args.hasNext() -> args.popOr("A player name is needed").value().toPlayer()?.translateFullPlayerSkinComponent() ?: Component.empty()
+            else -> Component.empty()
+        })
     }
 
     private fun emit(component: Component?) = null

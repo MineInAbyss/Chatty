@@ -97,7 +97,7 @@ fun Player?.buildTagResolver(ignorePermissions: Boolean = false): TagResolver {
         tagResolver.resolver(chattyPlaceholderTags)
         tagResolver.resolvers(ChattyPermissions.chatFormattingPerms.values)
     }
-    else tagResolver.resolvers(ChattyPermissions.chatFormattingPerms.filter { hasPermission(it.key) }.map { it.value })
+    else tagResolver.resolvers(ChattyPermissions.chatFormattingPerms.filter { hasPermission(it.key) }.values)
 
     return tagResolver.build()
 }
