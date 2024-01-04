@@ -29,9 +29,10 @@ class ChattyProxyListener : PluginMessageListener {
         val decoded = gson.deserialize(byteArray.decodeToString())
         val senderName = (decoded.children()[0] as? TextComponent)?.content() ?: return
         val channelId = (decoded.children()[1] as? TextComponent)?.content() ?: return
-        val channel = chatty.config.channels[channelId]
         val message = decoded.children()[2] ?: return
         val simpleMessage = decoded.children()[3] ?: return
+        val channel = chatty.config.channels[channelId]
+        val onlinePlayers = Bukkit.getOnlinePlayers().filter { it.server == Bukkit.getServer() }
 
         val canSpy = chatty.spyingPlayers.run {
             toList { query -> query.player.takeIf { query.spying.channels.contains(channelId) } }
@@ -44,10 +45,10 @@ class ChattyProxyListener : PluginMessageListener {
                 Bukkit.getConsoleSender().sendMessage(simpleMessage)
 
             when (channel.channelType) {
-                ChannelType.GLOBAL -> player.server.onlinePlayers
+                ChannelType.GLOBAL -> onlinePlayers
                 ChannelType.RADIUS -> canSpy
-                ChannelType.PERMISSION -> player.server.onlinePlayers.filter { it.hasPermission(channel.permission) || it in canSpy }
-                ChannelType.PRIVATE -> player.server.onlinePlayers.filter {
+                ChannelType.PERMISSION -> onlinePlayers.filter { it.hasPermission(channel.permission) || it in canSpy }
+                ChannelType.PRIVATE -> onlinePlayers.filter {
                     it.toGeary().get<ChannelData>()?.withChannelVerified()?.channel == channel || it in canSpy
                 }
             }.forEach { it.sendMessage(message) }
