@@ -72,7 +72,7 @@ class ChatListener : Listener {
 
         val simpleMessage = Component.textOfChildren(player.name().style(Style.style(TextDecoration.ITALIC)), Component.text(": "), message())
         if (channel.logToConsole) Bukkit.getConsoleSender().sendMessage(simpleMessage)
-        handleProxyMessage(source, channelId, channel, finalMessage, simpleMessage)
+        handleProxyMessage(player, channelId, channel, message(), simpleMessage)
 
         val pingedPlayer = originalMessage().serialize().checkForPlayerPings(channelId)
         val playerViewers = viewers().filterIsInstance<Player>().toSet()
