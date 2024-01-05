@@ -72,6 +72,7 @@ class ChatListener : Listener {
 
         val simpleMessage = Component.textOfChildren(player.name().style(Style.style(TextDecoration.ITALIC)), Component.text(": "), message())
         if (channel.logToConsole) Bukkit.getConsoleSender().sendMessage(simpleMessage)
+        handleProxyMessage(source, channelId, channel, finalMessage, simpleMessage)
 
         val pingedPlayer = originalMessage().serialize().checkForPlayerPings(channelId)
         val playerViewers = viewers().filterIsInstance<Player>().toSet()
@@ -92,9 +93,9 @@ class ChatListener : Listener {
                         playerViewers
                     )
 
-                    handleProxyMessage(player, channelId, channel, finalMessage, simpleMessage)
                     receiver.sendMessage(finalMessage)
                 }
+
                 viewers().clear()
                 isCancelled = true
             }
@@ -113,7 +114,6 @@ class ChatListener : Listener {
                     playerViewers
                 )
 
-                handleProxyMessage(source, channelId, channel, finalMessage, simpleMessage)
                 return@renderer finalMessage
             }
         }
