@@ -23,7 +23,7 @@ data class ChattyChannel(
     val isDefaultChannel: Boolean = false,
     val isStaffChannel: Boolean = false,
     val format: String = "",
-    @SerialName("messageColor") val _messageColor: String = "white",
+    @SerialName("messageColor") val _messageColor: String? = "white",
     val channelRadius: Int = 0,
     val channelAliases: List<String> = listOf(),
 ) {
@@ -45,9 +45,8 @@ data class ChattyChannel(
         }
     }
     val key by lazy { chatty.config.channels.entries.first { it.value == this }.key }
-    val messageColor: TextColor
-        get() = TextColor.fromHexString(_messageColor) ?: NamedTextColor.NAMES.value(_messageColor)
-        ?: NamedTextColor.WHITE
+    val messageColor: TextColor?
+        get() = _messageColor?.let { TextColor.fromHexString(_messageColor) ?: NamedTextColor.NAMES.value(_messageColor) }
 
 
     fun getAudience(player: Player): Collection<Audience> {
