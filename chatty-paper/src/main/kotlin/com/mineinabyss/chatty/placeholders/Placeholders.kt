@@ -25,7 +25,7 @@ fun chattyPlaceholders(player: Player?, string: String? = null): Map<String, Str
         "all_channels" to getAllChannelNames().joinToString(", "),
         "player_available_channels" to chatty.config.channels.values.filter {
             player?.hasPermission(it.permission) ?: false
-        }.joinToString(", "),
+        }.joinToString(", ") { it.key },
         "player_channel" to channelData?.channelId.toString(),
         "player_channel_permission" to channel?.permission.toString(),
         "player_channel_isdefault" to channel?.isDefaultChannel.toString(),
