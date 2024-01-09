@@ -33,13 +33,8 @@ data class ChattyChannel(
         val position: MessageDeletionPosition = MessageDeletionPosition.PREFIX,
         val format: String = "<gray>[<red>X</red>]</gray>",
         val notifyStaff: Boolean = true,
-        //TODO Find a way to try and edit the original message for a viewer
-        val staffDeletionFormat: StaffDeletionFormat = StaffDeletionFormat.STRIKE,
         val logDeletedMessages: Boolean = true,
     ) {
-        enum class StaffDeletionFormat {
-            DELETE, STRIKE
-        }
         enum class MessageDeletionPosition {
             PREFIX, SUFFIX
         }
