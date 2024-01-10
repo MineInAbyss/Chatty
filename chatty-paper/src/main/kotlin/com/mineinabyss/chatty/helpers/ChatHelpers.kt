@@ -37,13 +37,12 @@ import org.bukkit.profile.PlayerTextures.SkinModel
 import java.util.regex.Pattern
 
 val gson = GsonComponentSerializer.gson()
-val ping = chatty.config.ping
 val getAlternativePingSounds: List<String> =
-    if ("*" in ping.alternativePingSounds || "all" in ping.alternativePingSounds)
-        Sound.entries.map { it.key.toString() }.toList() else ping.alternativePingSounds
+    chatty.config.ping.let { ping -> if ("*" in ping.alternativePingSounds || "all" in ping.alternativePingSounds)
+        Sound.entries.map { it.key.toString() }.toList() else ping.alternativePingSounds }
 
 val getPingEnabledChannels: List<String> =
-    if ("*" in ping.enabledChannels || "all" in ping.enabledChannels) getAllChannelNames() else ping.enabledChannels
+    chatty.config.ping.let { ping -> if ("*" in ping.enabledChannels || "all" in ping.enabledChannels) getAllChannelNames() else ping.enabledChannels }
 
 fun String.checkForPlayerPings(channelId: String): Player? {
     val ping = chatty.config.ping
@@ -51,35 +50,6 @@ fun String.checkForPlayerPings(channelId: String): Player? {
     val pingedName = this.substringAfter(ping.pingPrefix).substringBefore(" ")
     return Bukkit.getOnlinePlayers().firstOrNull { player ->
         player.name == pingedName || player.chattyNickname?.stripTags() == pingedName
-    }
-}
-
-fun Component.handlePlayerPings(player: Player, pingedPlayer: Player, pingedChannelData: ChannelData) {
-    val ping = chatty.config.ping
-    val pingSound = pingedChannelData.pingSound ?: ping.defaultPingSound
-    val pingRegex = "${ping.pingPrefix}(${pingedPlayer.chattyNickname}|${pingedPlayer.name})+".toRegex()
-
-    pingRegex.find(this.serialize())?.let { match ->
-
-        val pingMessage = this.replaceText(
-            TextReplacementConfig.builder()
-                .match(match.value)
-                .replacement((ping.pingReceiveFormat +
-                ("<insert:@${player.name} ><hover:show_text:'<red>Shift + Click to mention!'>".takeIf { ping.clickToReply } ?: "")
-                    + match.value).miniMsg())
-                .build()
-        )
-        if (!pingedChannelData.disablePingSound)
-            pingedPlayer.playSound(pingedPlayer.location, pingSound, SoundCategory.VOICE, ping.pingVolume, ping.pingPitch)
-        pingedPlayer.sendMessage(pingMessage)
-
-        val pingerMessage = this.replaceText(
-            TextReplacementConfig.builder()
-                .match(match.value)
-                .replacement((ping.pingSendFormat + match.value).miniMsg())
-                .build()
-        )
-        player.sendMessage(pingerMessage)
     }
 }
 
@@ -250,6 +220,7 @@ fun formatModerationMessage(messageDeletion: ChattyChannel.MessageDeletion, mess
 }
 
 private fun appendPingInsert(matchResult: MatchResult, audience: Player, pingedPlayer: Player, source: Player) : Component {
+    val ping = chatty.config.ping
     return when (audience) {
         pingedPlayer ->
             (ping.pingReceiveFormat + matchResult.value).miniMsg()
