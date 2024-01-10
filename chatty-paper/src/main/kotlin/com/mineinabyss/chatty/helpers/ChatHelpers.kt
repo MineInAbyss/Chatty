@@ -4,11 +4,13 @@ import com.combimagnetron.imageloader.Avatar
 import com.combimagnetron.imageloader.Image.ColorType
 import com.combimagnetron.imageloader.ImageUtils
 import com.mineinabyss.chatty.ChattyChannel
+import com.mineinabyss.chatty.ChattyConfig
 import com.mineinabyss.chatty.chatty
 import com.mineinabyss.chatty.components.ChannelData
 import com.mineinabyss.chatty.components.ChannelType
 import com.mineinabyss.chatty.components.chattyNickname
 import com.mineinabyss.chatty.placeholders.chattyPlaceholderTags
+import com.mineinabyss.idofront.messaging.warn
 import com.mineinabyss.idofront.textcomponents.miniMsg
 import com.mineinabyss.idofront.textcomponents.serialize
 import me.clip.placeholderapi.PlaceholderAPI
@@ -270,4 +272,34 @@ fun formatPlayerPingMessage(source: Player, pingedPlayer: Player?, audience: Aud
                 .build()
         )
     } ?: message
+}
+
+fun handleChatFilters(message: Component, player: Player, audience: Player) : Component {
+    var finalMessage = message
+    val serialized = finalMessage.serialize()
+    if (!player.hasPermission(ChattyPermissions.BYPASS_CHAT_FILTERS_PERM)) chatty.config.chat.filters.forEach { filter ->
+        filter.findAll(serialized).forEach { match ->
+            finalMessage = finalMessage.replaceText(TextReplacementConfig.builder()
+                .matchLiteral(match.value)
+                .replacement(Component.textOfChildren(
+                    when (chatty.config.chat.filterFormat) {
+                        ChattyConfig.Chat.FilterFormat.STRIKETHROUGH -> Component.text(match.value).style(Style.style(TextDecoration.STRIKETHROUGH))
+                        ChattyConfig.Chat.FilterFormat.CENSOR -> Component.text("*".repeat(match.value.length))
+                        ChattyConfig.Chat.FilterFormat.DELETE -> Component.empty()
+                        ChattyConfig.Chat.FilterFormat.BLOCK -> {
+                            player.warn("Your message contained a blocked word: <i>${match.value}")
+                            if (audience.hasPermission(ChattyPermissions.MODERATION_PERM))
+                                audience.sendFormattedMessage("Player <h:${player.name}> <red>sent a blocked message: <i>${match.value}")
+                            return Component.empty()
+                        }
+                    }.let {
+                        if (audience.hasPermission(ChattyPermissions.MODERATION_PERM))
+                            it.hoverEventShowText(Component.text(match.value).style(Style.style(TextDecoration.ITALIC)))
+                        else it
+                    }
+                ))
+                .build())
+        }
+    }
+    return finalMessage
 }

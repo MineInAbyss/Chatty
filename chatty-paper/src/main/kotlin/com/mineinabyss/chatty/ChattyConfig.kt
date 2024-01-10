@@ -1,8 +1,9 @@
 package com.mineinabyss.chatty
 
+import com.charleskorn.kaml.YamlComment
 import com.mineinabyss.chatty.components.ChannelType
 import com.mineinabyss.idofront.serialization.DurationSerializer
-import kotlinx.serialization.Serializable
+import kotlinx.serialization.*
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
 
@@ -25,7 +26,16 @@ data class ChattyConfig(
     data class Chat(
         val disableChatSigning: Boolean = true,
         val commandSpyFormat: String = "<gold><chatty_nickname>: ",
-    )
+        @YamlComment("Valid formats: STRIKETHROUGH, CENSOR, DELETE, BLOCK", "STRIKETHROUGH: Replaces filtered words with a strikethrough", "CENSOR: Replaces filtered words with a censor", "DELETE: Deletes filtered words", "BLOCK: Blocks filtered words from being sent")
+        val filterFormat: FilterFormat = FilterFormat.CENSOR,
+        @SerialName("filters") val _filters: List<String> = listOf(),
+    ) {
+        enum class FilterFormat {
+            STRIKETHROUGH, CENSOR, DELETE, BLOCK
+        }
+        @Transient
+        val filters: List<@Contextual Regex> = _filters.map { it.toRegex() }
+    }
 
     @Serializable
     data class PrivateMessages(

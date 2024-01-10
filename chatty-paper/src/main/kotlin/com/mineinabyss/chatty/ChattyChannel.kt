@@ -4,6 +4,7 @@ import com.mineinabyss.chatty.components.ChannelType
 import com.mineinabyss.chatty.components.SpyOnChannels
 import com.mineinabyss.chatty.queries.SpyingPlayers
 import com.mineinabyss.geary.papermc.tracking.entities.toGeary
+import com.mineinabyss.idofront.textcomponents.miniMsg
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import net.kyori.adventure.audience.Audience
@@ -40,8 +41,9 @@ data class ChattyChannel(
         }
     }
     val key by lazy { chatty.config.channels.entries.first { it.value == this }.key }
-    val messageColor: TextColor?
-        get() = _messageColor?.let { TextColor.fromHexString(_messageColor) ?: NamedTextColor.NAMES.value(_messageColor) }
+    val messageColor: TextColor? get() = _messageColor?.let {
+        TextColor.fromHexString(_messageColor) ?: NamedTextColor.NAMES.value(_messageColor) ?: ("<$_messageColor>").miniMsg().color()
+    }
 
 
     fun getAudience(player: Player): Collection<Audience> {
