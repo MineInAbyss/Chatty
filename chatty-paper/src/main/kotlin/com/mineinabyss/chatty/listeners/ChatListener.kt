@@ -73,13 +73,13 @@ class ChatListener : Listener {
 
         val pingedPlayer = originalMessage().serialize().checkForPlayerPings(channelId)
         val playerViewers = viewers().filterIsInstance<Player>().toSet()
-        var finalMessage = message()
         when {
             viewers().isEmpty() -> player.sendFormattedMessage(chatty.messages.channels.emptyChannelMessage)
             chatty.config.chat.disableChatSigning -> {
                 playerViewers.forEach { receiver ->
-                    finalMessage = handleChatFilters(finalMessage, player, receiver)
+                    var finalMessage = message()
                     finalMessage = appendChannelFormat(finalMessage, player, channel)
+                    finalMessage = handleChatFilters(finalMessage, player, receiver)
                     finalMessage = formatPlayerPingMessage(player, pingedPlayer, receiver, finalMessage)
                     finalMessage = formatModerationMessage(
                         channel.messageDeletion,
@@ -98,23 +98,22 @@ class ChatListener : Listener {
                 //isCancelled = true
             }
 
-            else -> {
+            else -> renderer { source, _, message, audience ->
+                var finalMessage = message()
                 finalMessage = appendChannelFormat(finalMessage, player, channel)
-                renderer { source, _, message, audience ->
-                    finalMessage = handleChatFilters(finalMessage, player, audience as? Player ?: player)
-                    finalMessage = formatPlayerPingMessage(source, pingedPlayer, audience, finalMessage)
-                    finalMessage = formatModerationMessage(
-                        channel.messageDeletion,
-                        finalMessage,
-                        simpleMessage,
-                        signedMessage(),
-                        audience,
-                        source,
-                        playerViewers
-                    )
+                finalMessage = handleChatFilters(finalMessage, player, audience as? Player ?: player)
+                finalMessage = formatPlayerPingMessage(source, pingedPlayer, audience, finalMessage)
+                finalMessage = formatModerationMessage(
+                    channel.messageDeletion,
+                    finalMessage,
+                    simpleMessage,
+                    signedMessage(),
+                    audience,
+                    source,
+                    playerViewers
+                )
 
-                    return@renderer finalMessage
-                }
+                return@renderer finalMessage
             }
         }
     }
