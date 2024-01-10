@@ -11,7 +11,6 @@ import com.mineinabyss.geary.datatypes.family.family
 import com.mineinabyss.geary.papermc.tracking.entities.toGearyOrNull
 import com.mineinabyss.geary.systems.accessors.Pointer
 import com.mineinabyss.geary.systems.query.GearyQuery
-import com.mineinabyss.idofront.textcomponents.miniMsg
 import com.mineinabyss.idofront.textcomponents.serialize
 import io.papermc.paper.event.player.AsyncChatCommandDecorateEvent
 import io.papermc.paper.event.player.AsyncChatDecorateEvent
@@ -19,8 +18,6 @@ import io.papermc.paper.event.player.AsyncChatEvent
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.Style
 import net.kyori.adventure.text.format.TextDecoration
-import net.kyori.adventure.text.minimessage.MiniMessage
-import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
@@ -97,7 +94,7 @@ class ChatListener : Listener {
                 }
 
                 viewers().clear()
-                isCancelled = true
+                //isCancelled = true
             }
 
             else -> renderer { source, _, message, audience ->
@@ -122,6 +119,6 @@ class ChatListener : Listener {
     private fun handleProxyMessage(player: Player, channelId: String, channel: ChattyChannel, message: Component, simpleMessage: Component) {
         if (!channel.proxy) return
         val proxyMessage = Component.textOfChildren(player.name(), Component.text(channelId), message, simpleMessage)
-        player.sendPluginMessage(chatty.plugin, chattyProxyChannel, GsonComponentSerializer.gson().serialize(proxyMessage).toByteArray())
+        player.sendPluginMessage(chatty.plugin, chattyProxyChannel, gson.serialize(proxyMessage).toByteArray())
     }
 }

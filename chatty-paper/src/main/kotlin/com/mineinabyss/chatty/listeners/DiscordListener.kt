@@ -7,7 +7,6 @@ import com.mineinabyss.chatty.components.ChannelData
 import com.mineinabyss.chatty.helpers.parseTags
 import com.mineinabyss.chatty.helpers.translatePlaceholders
 import com.mineinabyss.geary.papermc.tracking.entities.toGeary
-import com.mineinabyss.idofront.textcomponents.miniMsg
 import com.mineinabyss.idofront.textcomponents.serialize
 import github.scarsz.discordsrv.api.ListenerPriority
 import github.scarsz.discordsrv.api.Subscribe
@@ -15,11 +14,9 @@ import github.scarsz.discordsrv.api.events.*
 import github.scarsz.discordsrv.dependencies.jda.api.MessageBuilder
 import github.scarsz.discordsrv.dependencies.jda.api.entities.Message
 import github.scarsz.discordsrv.dependencies.jda.api.entities.MessageEmbed
+import github.scarsz.discordsrv.dependencies.kyori.adventure.text.serializer.gson.GsonComponentSerializer
 import github.scarsz.discordsrv.objects.MessageFormat
-import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
-import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer
-import org.bukkit.Bukkit
 import org.bukkit.entity.Player
 import github.scarsz.discordsrv.dependencies.kyori.adventure.text.Component as ComponentDSV
 
@@ -28,14 +25,11 @@ class DiscordListener {
     private val mm = github.scarsz.discordsrv.dependencies.kyori.adventure.text.minimessage.MiniMessage.miniMessage()
     private val plainText = github.scarsz.discordsrv.dependencies.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer.plainText()
     private val legacy = LegacyComponentSerializer.builder().useUnusualXRepeatedCharacterHexFormat().build()
+    private val gson = GsonComponentSerializer.gson()
 
     @Subscribe(priority = ListenerPriority.HIGHEST)
     fun DiscordGuildMessagePostProcessEvent.sendDiscordToProxy() {
-        minecraftMessage = mm.deserialize(
-            mm.serialize(minecraftMessage).substringBefore(message.contentRaw) + mm.stripTags(message.contentStripped)
-        )
-        Bukkit.getServer()
-            .sendPluginMessage(chatty.plugin, chattyProxyChannel, mm.serialize(minecraftMessage).toByteArray())
+        chatty.plugin.server.sendPluginMessage(chatty.plugin, chattyProxyChannel, gson.serialize(ComponentDSV.textOfChildren(minecraftMessage)).toByteArray())
     }
 
     @Subscribe(priority = ListenerPriority.NORMAL)
@@ -43,12 +37,6 @@ class DiscordListener {
         val data = player.toGeary().get<ChannelData>() ?: return
         val channel = data.channel ?: return
         val lastUsedChannel = data.lastChannelUsed ?: return
-
-        when {
-            isCancelled -> return
-            !channel.discordsrv || (channel != lastUsedChannel && !lastUsedChannel.discordsrv) -> isCancelled = true
-            else -> messageComponent = messageComponent.stripFormat(player, channel)
-        }
     }
 
     // Parse the DSRV Component through the Chatty normal MM instance to format <chatty> tags, then serialize/deserialize it back to DSRV Component
