@@ -99,7 +99,7 @@ class ChatListener : Listener {
             }
 
             else -> renderer { source, _, message, audience ->
-                var finalMessage = message()
+                var finalMessage = message
                 finalMessage = handleChatFilters(finalMessage, player, audience as? Player) ?: return@renderer Component.empty()
                 finalMessage = formatPlayerPingMessage(source, pingedPlayer, audience, finalMessage)
                 finalMessage = appendChannelFormat(finalMessage, player, channel)
