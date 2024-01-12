@@ -3,6 +3,7 @@ package com.mineinabyss.chatty
 import com.charleskorn.kaml.YamlComment
 import com.mineinabyss.chatty.components.ChannelType
 import com.mineinabyss.idofront.serialization.DurationSerializer
+import com.mineinabyss.idofront.textcomponents.miniMsg
 import kotlinx.serialization.*
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
@@ -29,7 +30,20 @@ data class ChattyConfig(
         @YamlComment("Valid formats: STRIKETHROUGH, CENSOR, DELETE, BLOCK", "STRIKETHROUGH: Replaces filtered words with a strikethrough", "CENSOR: Replaces filtered words with a censor", "DELETE: Deletes filtered words", "BLOCK: Blocks filtered words from being sent")
         val filterFormat: FilterFormat = FilterFormat.CENSOR,
         @SerialName("filters") val _filters: List<String> = listOf(),
+        val formatURLs: Boolean = true,
+        val urlReplacements: Set<UrlReplacements> = setOf(
+            UrlReplacements("^https:\\/\\/cdn\\.discordapp\\.com\\/attachments\\/[^\\/]+\\/[^\\/]+\\.png\\?.*\$", "[Discord Image]"),
+            UrlReplacements("^https:\\/\\/cdn\\.discordapp\\.com\\/attachments\\/[^\\/]+\\/[^\\/]+\\.mp4\\?.*\$", "[Discord Video]"),
+            UrlReplacements("youtube.com", "[YouTube]"),
+        )
     ) {
+
+        @Serializable
+        data class UrlReplacements(private val pattern: String, @SerialName("replacement") private val _replacement: String) {
+            @Transient val regex = pattern.toRegex()
+            @Transient val replacement = _replacement.miniMsg()
+        }
+
         enum class FilterFormat {
             STRIKETHROUGH, CENSOR, DELETE, BLOCK
         }

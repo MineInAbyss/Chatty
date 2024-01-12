@@ -291,3 +291,15 @@ fun handleChatFilters(message: Component, player: Player, audience: Player?) : C
 
     return finalMessage.compact().takeIf { it != Component.empty() }
 }
+
+fun handleUrlReplacements(message: Component, player: Player?): Component {
+    var component = message
+    component.clickEvent()?.takeIf { it.action() == ClickEvent.Action.OPEN_URL }?.let { clickEvent ->
+        val (regex, textReplacement) = chatty.config.chat.urlReplacements.firstOrNull { it.regex in clickEvent.value() }?.let { it.regex to it.replacement } ?: return@let
+        component = component.replaceText(TextReplacementConfig.builder().match(regex.pattern).replacement(textReplacement).build())
+
+        val hoverComponent = Component.text(clickEvent.value()).style(Style.style(TextDecoration.UNDERLINED))
+        component = component.hoverEvent(HoverEventSource.unbox(HoverEvent.showText(hoverComponent)))
+    }
+    return component.children(component.children().map { handleUrlReplacements(it, player) })
+}

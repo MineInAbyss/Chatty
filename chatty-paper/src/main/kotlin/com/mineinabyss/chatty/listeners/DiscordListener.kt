@@ -4,6 +4,7 @@ import com.mineinabyss.chatty.chatty
 import com.mineinabyss.chatty.chattyProxyChannel
 import com.mineinabyss.chatty.components.ChannelData
 import com.mineinabyss.chatty.helpers.handleChatFilters
+import com.mineinabyss.chatty.helpers.handleUrlReplacements
 import com.mineinabyss.geary.papermc.tracking.entities.toGeary
 import com.mineinabyss.idofront.textcomponents.miniMsg
 import com.mineinabyss.idofront.textcomponents.serialize
@@ -15,6 +16,7 @@ import github.scarsz.discordsrv.dependencies.jda.api.entities.Message
 import github.scarsz.discordsrv.dependencies.jda.api.entities.MessageEmbed
 import github.scarsz.discordsrv.dependencies.kyori.adventure.text.serializer.gson.GsonComponentSerializer
 import github.scarsz.discordsrv.objects.MessageFormat
+import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
 import github.scarsz.discordsrv.dependencies.kyori.adventure.text.Component as ComponentDSV
 
@@ -27,16 +29,21 @@ class DiscordListener {
 
     @Subscribe(priority = ListenerPriority.HIGHEST)
     fun DiscordGuildMessagePostProcessEvent.sendDiscordToProxy() {
-        chatty.plugin.server.sendPluginMessage(chatty.plugin, chattyProxyChannel, gson.serialize(ComponentDSV.textOfChildren(minecraftMessage)).toByteArray())
+        val minecraftMessage = ComponentDSV.textOfChildren(if (chatty.config.chat.formatURLs) handleUrlReplacements(minecraftMessage.toComponent(), null).toComponentDSV() else minecraftMessage)
+        chatty.plugin.server.sendPluginMessage(chatty.plugin, chattyProxyChannel, gson.serialize(minecraftMessage).toByteArray())
+        setMinecraftMessage(minecraftMessage)
     }
+
+    private fun ComponentDSV.toComponent() = mm.serialize(this).miniMsg()
+    private fun Component.toComponentDSV() = mm.deserialize(this.serialize())
 
     @Subscribe(priority = ListenerPriority.NORMAL)
     fun GameChatMessagePreProcessEvent.onChat() {
         val channel = player.toGeary().get<ChannelData>()?.channel ?: return
-        val filteredMessage = handleChatFilters(mm.serialize(messageComponent).miniMsg(), player, null)
+        val filteredMessage = handleChatFilters(messageComponent.toComponent(), player, null)?.toComponentDSV()
 
         if (!channel.discordsrv || filteredMessage == null) isCancelled = true
-        else messageComponent = mm.deserialize(filteredMessage.serialize())
+        else messageComponent = filteredMessage
     }
 
     @Subscribe
