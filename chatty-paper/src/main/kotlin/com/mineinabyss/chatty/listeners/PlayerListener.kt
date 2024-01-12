@@ -6,6 +6,7 @@ import com.mineinabyss.chatty.components.HideJoinLeave
 import com.mineinabyss.chatty.helpers.*
 import com.mineinabyss.geary.papermc.tracking.entities.toGeary
 import com.mineinabyss.idofront.items.editItemMeta
+import com.mineinabyss.idofront.textcomponents.miniMsg
 import com.mineinabyss.idofront.textcomponents.serialize
 import net.kyori.adventure.text.Component
 import org.bukkit.entity.Player
@@ -24,7 +25,7 @@ class PlayerListener : Listener {
     fun PlayerJoinEvent.onFirstJoin() {
         if (player.toGeary().has<ChannelData>()) return
         if (chatty.config.join.enabled && chatty.config.join.firstJoin.enabled) {
-            joinMessage(translatePlaceholders(player, chatty.messages.joinLeave.firstJoinMessage))
+            joinMessage(translatePlaceholders(player, chatty.messages.joinLeave.firstJoinMessage).miniMsg(player.buildTagResolver(true)))
         }
     }
 
@@ -33,7 +34,7 @@ class PlayerListener : Listener {
         val gearyPlayer = player.toGeary()
         gearyPlayer.getOrSetPersisting { ChannelData() }
         if (chatty.config.join.enabled && !gearyPlayer.has<HideJoinLeave>())
-            joinMessage(translatePlaceholders(player, chatty.messages.joinLeave.joinMessage))
+            joinMessage(translatePlaceholders(player, chatty.messages.joinLeave.joinMessage).miniMsg(player.buildTagResolver(true)))
     }
 
     @EventHandler
@@ -42,7 +43,7 @@ class PlayerListener : Listener {
         player.refreshSkinInCaches()
 
         if (chatty.config.leave.enabled && !player.toGeary().has<HideJoinLeave>())
-            quitMessage(translatePlaceholders(player, chatty.messages.joinLeave.leaveMessage))
+            quitMessage(translatePlaceholders(player, chatty.messages.joinLeave.leaveMessage).miniMsg(player.buildTagResolver(true)))
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
@@ -60,7 +61,7 @@ class PlayerListener : Listener {
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     fun SignChangeEvent.onSign() {
         lines().forEachIndexed { index, line ->
-            line(index, line.serialize().parseTags(player))
+            line(index, line.parseTags(player))
         }
     }
 

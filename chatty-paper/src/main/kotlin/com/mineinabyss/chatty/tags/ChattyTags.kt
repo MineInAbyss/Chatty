@@ -16,6 +16,8 @@ import net.kyori.adventure.text.minimessage.tag.Tag
 import net.kyori.adventure.text.minimessage.tag.resolver.ArgumentQueue
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver
+import net.kyori.adventure.translation.GlobalTranslator
+import org.bukkit.Bukkit
 import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
 
@@ -39,10 +41,8 @@ object ChattyTags {
         { component: Component? -> emit(component) }
     )
 
-    //TODO Figure out why TranslatableComponent here is not properly rendering wihtout converting to plain text (loosing args thus initial component from itemmeta)
     fun HELD_ITEM(player: Player) = (player.inventory.itemInMainHand.takeUnless { it == ItemStack.empty() } ?: player.inventory.itemInOffHand.takeUnless { it == ItemStack.empty() })?.let { item ->
-        val component = item.itemMeta?.displayName()?.let { Component.textOfChildren("[".miniMsg(), it, "]".miniMsg()) }
-            ?: Component.textOfChildren((item.displayName() as TranslatableComponent).let { it.args(it.args().map { it.toPlainText().miniMsg() }) }).toPlainText().miniMsg()
+        val component = item.itemMeta?.displayName()?.let { Component.textOfChildren("[".miniMsg(), it, "]".miniMsg()) } ?: item.displayName()
         Placeholder.component("held_item", component.colorIfAbsent(NamedTextColor.AQUA).hoverEvent(item))
     }
 

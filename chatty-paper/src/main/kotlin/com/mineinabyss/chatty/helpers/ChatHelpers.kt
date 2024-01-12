@@ -42,7 +42,6 @@ import org.bukkit.inventory.ItemStack
 import org.bukkit.profile.PlayerTextures.SkinModel
 import java.util.regex.Pattern
 
-val gson = GsonComponentSerializer.gson()
 val getAlternativePingSounds: List<String> =
     chatty.config.ping.let { ping -> if ("*" in ping.alternativePingSounds || "all" in ping.alternativePingSounds)
         Sound.entries.map { it.key.toString() }.toList() else ping.alternativePingSounds }
@@ -54,21 +53,12 @@ fun String.checkForPlayerPings(channelId: String): Player? {
     val ping = chatty.config.ping
     if (channelId !in getPingEnabledChannels || ping.pingPrefix.isEmpty() || ping.pingPrefix !in this) return null
     val pingedName = this.substringAfter(ping.pingPrefix).substringBefore(" ")
-    return Bukkit.getOnlinePlayers().firstOrNull { player ->
-        player.name == pingedName || player.chattyNickname?.stripTags() == pingedName
-    }
+    return Bukkit.getOnlinePlayers().firstOrNull { it.name == pingedName }
 }
 
 val emptyMiniMessage = MiniMessage.builder().tags(TagResolver.empty()).build()
-
-/** Build a unique instance of MiniMessage with an empty TagResolver and deserializes with a generated one that takes permissions into account
- * @param player Format tags based on a player's permission, or null to parse all tags
- * @param ignorePermissions Whether to ignore permissions and parse all tags
- */
-fun String.parseTags(player: Player? = null, ignorePermissions: Boolean = false): Component {
-    val mm = if (ignorePermissions) MiniMessage.miniMessage() else emptyMiniMessage
-    return mm.deserialize(this.fixSerializedTags(), player.buildTagResolver(ignorePermissions))
-}
+val miniMessage = MiniMessage.builder().tags(TagResolver.standard()).build()
+val gson = GsonComponentSerializer.gson()
 
 fun Player?.buildTagResolver(ignorePermissions: Boolean = false): TagResolver {
     val tagResolver = TagResolver.builder()
@@ -87,8 +77,12 @@ fun Player?.buildTagResolver(ignorePermissions: Boolean = false): TagResolver {
     return tagResolver.build()
 }
 
-fun Component.parseTags(player: Player? = null, ignorePermissions: Boolean = false) =
-    this.serialize().parseTags(player, ignorePermissions)
+//TODO This breaks our custom tags, due to component, Component.text("<chatty_nickname>: hi", NamedTextColor.RED), being serialized to "<red>\<chatty_nickname>: hi"
+// Thus when deserializing, even with the tag resolver, it assumes the tag is escaped
+fun Component.parseTags(player: Player? = null, ignorePermissions: Boolean = false) : Component {
+    val mm = if (ignorePermissions) miniMessage else emptyMiniMessage
+    return mm.deserialize(this.serialize().fixSerializedTags(), player.buildTagResolver(ignorePermissions))
+}
 
 fun Component.removeTrailingSpaces() = this.replaceText(TextReplacementConfig.builder().match(" +\$").replacement("").build())
 
@@ -106,69 +100,9 @@ fun getDefaultChat() =
         ?: getGlobalChat()
         ?: throw IllegalStateException("No Default or Global channel found")
 
-// TODO change to data.channel
-//fun getChannelFromId(channelId: String) =
-//    chatty.config.channels[channelId]
-
-//fun Player.getChannelFromPlayer() =
-//    chatty.config.channels.entries.firstOrNull { it.key == this.chattyData.channelId }?.value
-
 fun getAllChannelNames() = chatty.config.channels.keys.toList()
 
-fun translatePlaceholders(player: Player?, message: String): Component {
-    return PlaceholderAPI.setPlaceholders(player, message).fixLegacy()
-}
-
-val playerHeadMapCache = mutableMapOf<OfflinePlayer, Component>()
-fun OfflinePlayer.translatePlayerHeadComponent(): Component {
-    if (this !in playerHeadMapCache || playerHeadMapCache[this]!!.font() != Key.key(chatty.config.playerHeadFont)) {
-        playerHeadMapCache[this] = runCatching { getPlayerHeadTexture(ascent = -5) }.getOrDefault(Component.empty())
-    }
-    return playerHeadMapCache[this] ?: Component.empty()
-}
-
-val playerBodyMapCache = mutableMapOf<OfflinePlayer, Component>()
-fun Player.refreshSkinInCaches() {
-    playerBodyMapCache -= this
-    playerHeadMapCache -= this
-}
-fun OfflinePlayer.translateFullPlayerSkinComponent(): Component {
-    if (this !in playerBodyMapCache || playerBodyMapCache[this]!!.font() != Key.key(chatty.config.playerHeadFont)) {
-        playerBodyMapCache[this] = runCatching { getFullPlayerBodyTexture(ascent = -5) }.getOrDefault(Component.empty())
-    }
-    return playerBodyMapCache[this] ?: Component.empty()
-}
-
-fun OfflinePlayer.getPlayerHeadTexture(
-    scale: Int = 1,
-    ascent: Int = 0,
-    colorType: ColorType = ColorType.MINIMESSAGE,
-    font: Key = Key.key(chatty.config.playerHeadFont)
-): Component {
-    val image = avatarBuilder(this, scale, ascent, colorType).getBodyBufferedImage(scale).getSubimage(4, 0, 8, 8)
-    return "<font:$font>${ImageUtils.generateStringFromImage(image, colorType, ascent)}</font>".miniMsg()
-}
-
-fun OfflinePlayer.getFullPlayerBodyTexture(
-    scale: Int = 1,
-    ascent: Int = 0,
-    colorType: ColorType = ColorType.MINIMESSAGE,
-    font: Key = Key.key(chatty.config.playerHeadFont)
-): Component {
-    val image = avatarBuilder(this, scale, ascent, colorType).getBodyBufferedImage(scale)
-    return "<font:$font>${ImageUtils.generateStringFromImage(image, colorType, ascent)}</font>".miniMsg()
-}
-
-private fun avatarBuilder(
-    player: OfflinePlayer,
-    scale: Int = 1,
-    ascent: Int = 0,
-    colorType: ColorType = ColorType.MINIMESSAGE
-): Avatar {
-    return Avatar.builder().isSlim(player.playerProfile.apply { this.update() }.textures.skinModel == SkinModel.SLIM)
-        .playerName(player.name)
-        .ascent(ascent).colorType(colorType).scale(scale).build()
-}
+fun translatePlaceholders(player: Player?, message: String) = PlaceholderAPI.setPlaceholders(player, message)
 
 fun String.fixSerializedTags(): String = this.replaceAll("\\\\(?!u)(?!\")(?!:)", "")
 
@@ -184,19 +118,16 @@ fun List<String>.toSentence() = this.joinToString(" ")
 fun String.toPlayer() = Bukkit.getPlayer(this)
 
 fun Player.sendFormattedMessage(message: String) =
-    this.sendMessage(translatePlaceholders(this, message).parseTags(player, true))
+    this.sendMessage(translatePlaceholders(this, message).miniMsg(buildTagResolver(true)))
 
 fun Player.sendFormattedMessage(vararg message: String, optionalPlayer: Player? = null) =
     this.sendMessage(
-        translatePlaceholders((optionalPlayer ?: this), message.joinToString(" ")).parseTags(
-            optionalPlayer ?: this,
-            true
-        )
+        translatePlaceholders((optionalPlayer ?: this), message.joinToString(" ")).miniMsg((optionalPlayer ?: this).buildTagResolver(true))
     )
 
 fun appendChannelFormat(message: Component, player: Player, channel: ChattyChannel): Component {
-    val parsedFormat = translatePlaceholders(player, channel.format).parseTags(player, true)
-    val parsedMessage = Component.empty().color(channel.messageColor).append(message.parseTags(player, false))
+    val parsedFormat = translatePlaceholders(player, channel.format).miniMsg(player.buildTagResolver(true))
+    val parsedMessage = Component.empty().color(channel.messageColor).append(message)
 
     return parsedFormat.compact().append(parsedMessage)
 }

@@ -22,6 +22,7 @@ import io.papermc.paper.event.player.AsyncChatDecorateEvent
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
+import net.kyori.adventure.text.Component
 import org.bukkit.Bukkit
 import org.bukkit.command.Command
 import org.bukkit.command.CommandSender
@@ -334,14 +335,16 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
 
     companion object {
         private fun CommandSender.sendFormattedMessage(message: String, optionalPlayer: Player? = null) =
-            this.sendMessage(translatePlaceholders((optionalPlayer ?: this as? Player), message).parseTags(this as? Player, true))
+            (optionalPlayer ?: this as? Player)?.let { player ->
+                this.sendMessage(translatePlaceholders(player, message).miniMsg(player.buildTagResolver(true)))
+            }
 
         private fun Player.sendFormattedPrivateMessage(messageFormat: String, message: String, receiver: Player) =
-            this.sendMessage(
-                (translatePlaceholders(receiver, messageFormat).serialize() + message)
-                    .parseTags(receiver, true)
+            this.sendMessage(Component.textOfChildren(
+                translatePlaceholders(receiver, messageFormat).miniMsg(receiver.buildTagResolver(true)),
+                message.miniMsg(receiver.buildTagResolver(true)))
             )
-        private fun CommandSender.sendConsoleMessage(message: String) = this.sendMessage(message.parseTags(null, true))
+        private fun CommandSender.sendConsoleMessage(message: String) = this.sendMessage(message.miniMsg().parseTags(null, true))
 
         private fun List<String>.removeFirstArgumentOfStringList(): String =
             this.filter { it != this.first() }.toSentence()
