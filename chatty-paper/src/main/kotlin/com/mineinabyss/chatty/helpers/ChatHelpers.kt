@@ -83,6 +83,8 @@ fun Player?.buildTagResolver(ignorePermissions: Boolean = false): TagResolver {
 fun Component.parseTags(player: Player? = null, ignorePermissions: Boolean = false) =
     this.serialize().parseTags(player, ignorePermissions)
 
+fun Component.removeTrailingSpaces() = this.replaceText(TextReplacementConfig.builder().match(" +\$").replacement("").build())
+
 fun getGlobalChat() =
     chatty.config.channels.entries.firstOrNull { it.value.channelType == ChannelType.GLOBAL }
 
@@ -276,10 +278,8 @@ fun handleChatFilters(message: Component, player: Player, audience: Player?) : C
                     else it
                 } ?: Component.empty()
             ))
-            .build())
+            .build()).removeTrailingSpaces()
     }
-
-    if ((finalMessage as TextComponent).content().isEmpty()) finalMessage = Component.empty()
 
     // If filterFormat is DELETE and message is empty, aka only containing blocked words
     // Give feedback to player and notify staff
