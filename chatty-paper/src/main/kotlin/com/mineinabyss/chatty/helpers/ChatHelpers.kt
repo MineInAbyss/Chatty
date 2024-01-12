@@ -245,7 +245,7 @@ fun formatPlayerPingMessage(source: Player, pingedPlayer: Player?, audience: Aud
     } ?: message
 }
 
-fun handleChatFilters(message: Component, player: Player, audience: Player) : Component {
+fun handleChatFilters(message: Component, player: Player, audience: Player?) : Component {
     var finalMessage = message
     val serialized = finalMessage.serialize()
     if (!player.hasPermission(ChattyPermissions.BYPASS_CHAT_FILTERS_PERM)) chatty.config.chat.filters.forEach { filter ->
@@ -259,12 +259,12 @@ fun handleChatFilters(message: Component, player: Player, audience: Player) : Co
                         ChattyConfig.Chat.FilterFormat.DELETE -> Component.empty()
                         ChattyConfig.Chat.FilterFormat.BLOCK -> {
                             player.warn("Your message contained a blocked word: <i>${match.value}")
-                            if (audience.hasPermission(ChattyPermissions.MODERATION_PERM))
+                            if (audience?.hasPermission(ChattyPermissions.MODERATION_PERM) == true)
                                 audience.sendFormattedMessage("Player <h:${player.name}> <red>sent a blocked message: <i>${match.value}")
                             return Component.empty()
                         }
                     }.let {
-                        if (audience.hasPermission(ChattyPermissions.MODERATION_PERM))
+                        if (audience?.hasPermission(ChattyPermissions.MODERATION_PERM) == true)
                             it.hoverEventShowText(Component.text(match.value).style(Style.style(TextDecoration.ITALIC)))
                         else it
                     }

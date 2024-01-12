@@ -1,12 +1,11 @@
 package com.mineinabyss.chatty.listeners
 
-import com.mineinabyss.chatty.ChattyChannel
 import com.mineinabyss.chatty.chatty
 import com.mineinabyss.chatty.chattyProxyChannel
 import com.mineinabyss.chatty.components.ChannelData
-import com.mineinabyss.chatty.helpers.parseTags
-import com.mineinabyss.chatty.helpers.translatePlaceholders
+import com.mineinabyss.chatty.helpers.handleChatFilters
 import com.mineinabyss.geary.papermc.tracking.entities.toGeary
+import com.mineinabyss.idofront.textcomponents.miniMsg
 import com.mineinabyss.idofront.textcomponents.serialize
 import github.scarsz.discordsrv.api.ListenerPriority
 import github.scarsz.discordsrv.api.Subscribe
@@ -17,7 +16,6 @@ import github.scarsz.discordsrv.dependencies.jda.api.entities.MessageEmbed
 import github.scarsz.discordsrv.dependencies.kyori.adventure.text.serializer.gson.GsonComponentSerializer
 import github.scarsz.discordsrv.objects.MessageFormat
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
-import org.bukkit.entity.Player
 import github.scarsz.discordsrv.dependencies.kyori.adventure.text.Component as ComponentDSV
 
 
@@ -36,6 +34,9 @@ class DiscordListener {
     fun GameChatMessagePreProcessEvent.onChat() {
         val channel = player.toGeary().get<ChannelData>()?.channel ?: return
         if (!channel.discordsrv) isCancelled = true
+        val filteredMessage = handleChatFilters(mm.serialize(messageComponent).miniMsg(), player, null)
+        if (filteredMessage == ComponentDSV.empty()) isCancelled = true
+        messageComponent = mm.deserialize(filteredMessage.serialize())
     }
 
     @Subscribe
