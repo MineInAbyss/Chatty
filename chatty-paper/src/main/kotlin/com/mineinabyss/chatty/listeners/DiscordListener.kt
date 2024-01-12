@@ -34,18 +34,9 @@ class DiscordListener {
 
     @Subscribe(priority = ListenerPriority.NORMAL)
     fun GameChatMessagePreProcessEvent.onChat() {
-        val data = player.toGeary().get<ChannelData>() ?: return
-        val channel = data.channel ?: return
-        val lastUsedChannel = data.lastChannelUsed ?: return
+        val channel = player.toGeary().get<ChannelData>()?.channel ?: return
+        if (!channel.discordsrv) isCancelled = true
     }
-
-    // Parse the DSRV Component through the Chatty normal MM instance to format <chatty> tags, then serialize/deserialize it back to DSRV Component
-    private fun ComponentDSV.stripFormat(player: Player, channel: ChattyChannel): ComponentDSV =
-        mm.deserialize(plainText.serialize(this).replace(
-            plainText.serialize(
-                mm.deserialize(translatePlaceholders(player, channel.format).parseTags(player, true).serialize())
-            ), ""
-        ))
 
     @Subscribe
     fun DeathMessagePreProcessEvent.onDeath() {
