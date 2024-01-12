@@ -33,10 +33,10 @@ class DiscordListener {
     @Subscribe(priority = ListenerPriority.NORMAL)
     fun GameChatMessagePreProcessEvent.onChat() {
         val channel = player.toGeary().get<ChannelData>()?.channel ?: return
-        if (!channel.discordsrv) isCancelled = true
         val filteredMessage = handleChatFilters(mm.serialize(messageComponent).miniMsg(), player, null)
-        if (filteredMessage == ComponentDSV.empty()) isCancelled = true
-        messageComponent = mm.deserialize(filteredMessage.serialize())
+
+        if (!channel.discordsrv || filteredMessage == null) isCancelled = true
+        else messageComponent = mm.deserialize(filteredMessage.serialize())
     }
 
     @Subscribe

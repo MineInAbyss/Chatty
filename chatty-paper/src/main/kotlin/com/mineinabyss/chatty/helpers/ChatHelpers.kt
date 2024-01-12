@@ -7,6 +7,8 @@ import com.mineinabyss.chatty.ChattyChannel
 import com.mineinabyss.chatty.ChattyConfig
 import com.mineinabyss.chatty.chatty
 import com.mineinabyss.chatty.components.ChannelData
+import com.mineinabyss.chatty.ChattyConfig.Chat.*
+import com.mineinabyss.chatty.ChattyMessages
 import com.mineinabyss.chatty.components.ChannelType
 import com.mineinabyss.chatty.components.chattyNickname
 import com.mineinabyss.chatty.placeholders.chattyPlaceholderTags
@@ -18,6 +20,7 @@ import net.kyori.adventure.audience.Audience
 import net.kyori.adventure.chat.SignedMessage
 import net.kyori.adventure.key.Key
 import net.kyori.adventure.text.Component
+import net.kyori.adventure.text.TextComponent
 import net.kyori.adventure.text.TextReplacementConfig
 import net.kyori.adventure.text.event.ClickEvent
 import net.kyori.adventure.text.event.HoverEvent
@@ -245,32 +248,46 @@ fun formatPlayerPingMessage(source: Player, pingedPlayer: Player?, audience: Aud
     } ?: message
 }
 
-fun handleChatFilters(message: Component, player: Player, audience: Player?) : Component {
+fun handleChatFilters(message: Component, player: Player, audience: Player?) : Component? {
     var finalMessage = message
     val serialized = finalMessage.serialize()
-    if (!player.hasPermission(ChattyPermissions.BYPASS_CHAT_FILTERS_PERM)) chatty.config.chat.filters.forEach { filter ->
-        filter.findAll(serialized).forEach { match ->
-            finalMessage = finalMessage.replaceText(TextReplacementConfig.builder()
-                .matchLiteral(match.value)
-                .replacement(Component.textOfChildren(
-                    when (chatty.config.chat.filterFormat) {
-                        ChattyConfig.Chat.FilterFormat.STRIKETHROUGH -> Component.text(match.value).style(Style.style(TextDecoration.STRIKETHROUGH))
-                        ChattyConfig.Chat.FilterFormat.CENSOR -> Component.text("*".repeat(match.value.length))
-                        ChattyConfig.Chat.FilterFormat.DELETE -> Component.empty()
-                        ChattyConfig.Chat.FilterFormat.BLOCK -> {
-                            player.warn("Your message contained a blocked word: <i>${match.value}")
-                            if (audience?.hasPermission(ChattyPermissions.MODERATION_PERM) == true)
-                                audience.sendFormattedMessage("Player <h:${player.name}> <red>sent a blocked message: <i>${match.value}")
-                            return Component.empty()
-                        }
-                    }.let {
+    val filterFormat = chatty.config.chat.filterFormat
+    if (player.hasPermission(ChattyPermissions.BYPASS_CHAT_FILTERS_PERM)) return finalMessage
+
+    val matchResults = chatty.config.chat.filters.flatMap { filter -> filter.findAll(serialized) }
+    val blockedWords = matchResults.joinToString(", ") { it.value }
+    matchResults.forEach { match ->
+        finalMessage = finalMessage.replaceText(TextReplacementConfig.builder()
+            .matchLiteral(match.value)
+            .replacement(Component.textOfChildren(
+                when (filterFormat) {
+                    FilterFormat.STRIKETHROUGH -> Component.text(match.value).style(Style.style(TextDecoration.STRIKETHROUGH))
+                    FilterFormat.CENSOR -> Component.text("*".repeat(match.value.length))
+                    FilterFormat.DELETE -> Component.empty()
+                    FilterFormat.BLOCK -> {
+                        player.sendFormattedMessage(chatty.messages.chatFilter.blockMessage, blockedWords)
                         if (audience?.hasPermission(ChattyPermissions.MODERATION_PERM) == true)
-                            it.hoverEventShowText(Component.text(match.value).style(Style.style(TextDecoration.ITALIC)))
-                        else it
+                            audience.sendFormattedMessage(chatty.messages.chatFilter.notifyStaff + blockedWords)
+                        return null
                     }
-                ))
-                .build())
-        }
+                }.takeIf { it != Component.empty() }?.let {
+                    if (audience?.hasPermission(ChattyPermissions.MODERATION_PERM) == true)
+                        it.hoverEventShowText(Component.text(match.value).style(Style.style(TextDecoration.ITALIC)))
+                    else it
+                } ?: Component.empty()
+            ))
+            .build())
     }
-    return finalMessage
+
+    if ((finalMessage as TextComponent).content().isEmpty()) finalMessage = Component.empty()
+
+    // If filterFormat is DELETE and message is empty, aka only containing blocked words
+    // Give feedback to player and notify staff
+    if (finalMessage == Component.empty() && filterFormat == FilterFormat.DELETE) {
+        if (audience == player) player.sendFormattedMessage(chatty.messages.chatFilter.deleteWordsEmptyMessage)
+        else if (audience?.hasPermission(ChattyPermissions.MODERATION_PERM) == true)
+            audience.sendFormattedMessage(chatty.messages.chatFilter.notifyStaff, blockedWords, optionalPlayer = player)
+    }
+
+    return finalMessage.compact().takeIf { it != Component.empty() }
 }

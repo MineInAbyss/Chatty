@@ -9,11 +9,19 @@ class ChattyMessages(
     val spying: Spying = Spying(),
     val ping: Pings = Pings(),
     val messageDeletion: MessageDeletion = MessageDeletion(),
+    val chatFilter: ChatFilter = ChatFilter(),
     val channels: Channels = Channels(),
     val proxies: Proxies = Proxies(),
     val joinLeave: JoinLeave = JoinLeave(),
     val other: Other = Other()
 ) {
+
+    @Serializable
+    data class ChatFilter(
+        val blockMessage: String = "<yellow>⚠<gray>Your message contained blocked words:<i>",
+        val deleteWordsEmptyMessage: String = "<yellow>⚠<gray>Your message was not sent as it contained only blocked words.",
+        val notifyStaff: String = "<yellow>⚠<gray><chatty_nickname> sent a message containing blocked words:<i>"
+    )
 
     @Serializable
     data class MessageDeletion(

@@ -78,9 +78,10 @@ class ChatListener : Listener {
             chatty.config.chat.disableChatSigning -> {
                 playerViewers.forEach { receiver ->
                     var finalMessage = message()
-                    finalMessage = appendChannelFormat(finalMessage, player, channel)
-                    finalMessage = handleChatFilters(finalMessage, player, receiver)
+                    finalMessage = handleChatFilters(finalMessage, player, receiver) ?: return@forEach
+
                     finalMessage = formatPlayerPingMessage(player, pingedPlayer, receiver, finalMessage)
+                    finalMessage = appendChannelFormat(finalMessage, player, channel)
                     finalMessage = formatModerationMessage(
                         channel.messageDeletion,
                         finalMessage,
@@ -100,9 +101,10 @@ class ChatListener : Listener {
 
             else -> renderer { source, _, message, audience ->
                 var finalMessage = message()
-                finalMessage = appendChannelFormat(finalMessage, player, channel)
-                finalMessage = handleChatFilters(finalMessage, player, audience as? Player ?: player)
+                finalMessage = handleChatFilters(finalMessage, player, audience as? Player ?: player) ?: return@renderer Component.empty()
+
                 finalMessage = formatPlayerPingMessage(source, pingedPlayer, audience, finalMessage)
+                finalMessage = appendChannelFormat(finalMessage, player, channel)
                 finalMessage = formatModerationMessage(
                     channel.messageDeletion,
                     finalMessage,
