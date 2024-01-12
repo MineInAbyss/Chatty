@@ -12,6 +12,7 @@ import com.mineinabyss.chatty.ChattyMessages
 import com.mineinabyss.chatty.components.ChannelType
 import com.mineinabyss.chatty.components.chattyNickname
 import com.mineinabyss.chatty.placeholders.chattyPlaceholderTags
+import com.mineinabyss.chatty.tags.ChattyTags
 import com.mineinabyss.idofront.messaging.warn
 import com.mineinabyss.idofront.textcomponents.miniMsg
 import com.mineinabyss.idofront.textcomponents.serialize
@@ -29,6 +30,7 @@ import net.kyori.adventure.text.format.NamedTextColor
 import net.kyori.adventure.text.format.Style
 import net.kyori.adventure.text.format.TextDecoration
 import net.kyori.adventure.text.minimessage.MiniMessage
+import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer
 import org.bukkit.Bukkit
@@ -36,6 +38,7 @@ import org.bukkit.OfflinePlayer
 import org.bukkit.Sound
 import org.bukkit.SoundCategory
 import org.bukkit.entity.Player
+import org.bukkit.inventory.ItemStack
 import org.bukkit.profile.PlayerTextures.SkinModel
 import java.util.regex.Pattern
 
@@ -74,8 +77,12 @@ fun Player?.buildTagResolver(ignorePermissions: Boolean = false): TagResolver {
         // custom tags
         tagResolver.resolver(chattyPlaceholderTags)
         tagResolver.resolvers(ChattyPermissions.chatFormattingPerms.values)
+        this?.let { ChattyTags.HELD_ITEM(this)?.let { tagResolver.resolver(it) } }
     }
-    else tagResolver.resolvers(ChattyPermissions.chatFormattingPerms.filter { hasPermission(it.key) }.values)
+    else {
+        tagResolver.resolvers(ChattyPermissions.chatFormattingPerms.filter { hasPermission(it.key) }.values)
+        if (hasPermission(ChattyPermissions.HELD_ITEM_RESOLVER)) ChattyTags.HELD_ITEM(this)?.let { tagResolver.resolver(it) }
+    }
 
     return tagResolver.build()
 }

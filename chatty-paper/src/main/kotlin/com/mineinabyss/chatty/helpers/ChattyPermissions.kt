@@ -29,4 +29,5 @@ object ChattyPermissions {
         Permission("chatty.tags.head") to ChattyTags.HEAD_RESOLVER,
         Permission("chatty.tags.skin") to ChattyTags.SKIN_RESOLVER,
     )
+    const val HELD_ITEM_RESOLVER = "chatty.tags.held_item"
 }
