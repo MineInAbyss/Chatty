@@ -102,7 +102,7 @@ fun getDefaultChat() =
 
 fun getAllChannelNames() = chatty.config.channels.keys.toList()
 
-fun translatePlaceholders(player: Player?, message: String) = PlaceholderAPI.setPlaceholders(player, message)
+fun translatePlaceholders(player: Player?, message: String) = if (chatty.isPlaceholderApiLoaded) PlaceholderAPI.setPlaceholders(player, message) else message
 
 fun String.fixSerializedTags(): String = this.replaceAll("\\\\(?!u)(?!\")(?!:)", "")
 
