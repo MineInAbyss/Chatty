@@ -117,12 +117,10 @@ class DiscordListener {
 
     private fun String.translateEmoteIDs(): String {
         var translated = this
-        chatty.emotefixer.emotes.entries.forEach { (emoteId, replacement) ->
-            val id = ":$emoteId:"
-            if (id in this) {
-                translated = translated.replace(id, replacement)
-            }
+        chatty.emotefixer.emotes.entries.map { ":${it.key}:" to it.value }.forEach { (emoteId, replacement) ->
+            translated = translated.replace(emoteId, replacement)
         }
+
         return translated.cleanUpHackyFix()
     }
 }

@@ -156,8 +156,8 @@ fun formatModerationMessage(messageDeletion: ChattyChannel.MessageDeletion, mess
 
     return when {
         !messageDeletion.enabled || audience !is Player || audience == source || !audience.hasPermission(ChattyPermissions.MODERATION_PERM) -> message
-        messageDeletion.position == ChattyChannel.MessageDeletion.MessageDeletionPosition.PREFIX -> messageDeletion.format.miniMsg().appendDeletionHover(audience).append(message)
-        messageDeletion.position == ChattyChannel.MessageDeletion.MessageDeletionPosition.SUFFIX -> message.append(messageDeletion.format.miniMsg().appendDeletionHover(audience))
+        messageDeletion.position == ChattyChannel.MessageDeletion.MessageDeletionPosition.PREFIX -> Component.textOfChildren(messageDeletion.format.miniMsg().appendDeletionHover(audience), message)
+        messageDeletion.position == ChattyChannel.MessageDeletion.MessageDeletionPosition.SUFFIX -> Component.textOfChildren(message, messageDeletion.format.miniMsg().appendDeletionHover(audience))
         else -> message
     }
 }
