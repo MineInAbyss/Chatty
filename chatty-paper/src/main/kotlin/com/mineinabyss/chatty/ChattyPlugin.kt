@@ -1,6 +1,7 @@
 package com.mineinabyss.chatty
 
 import com.mineinabyss.chatty.commands.ChattyBrigadierCommands
+import com.deepl.api.Translator
 import com.mineinabyss.chatty.components.ChannelData
 import com.mineinabyss.chatty.components.ChattyNickname
 import com.mineinabyss.chatty.helpers.DiscordEmoteFixer
@@ -57,6 +58,7 @@ class ChattyPlugin : JavaPlugin() {
         val chattyContext = object : ChattyContext {
             override val plugin: ChattyPlugin = this@ChattyPlugin
             override val config: ChattyConfig by config("config", dataFolder.toPath(), ChattyConfig())
+            override val translator: Translator = Translator(config.translation.authKey)
             override val messages: ChattyMessages by config("messages", dataFolder.toPath(), ChattyMessages())
             override val emotefixer: DiscordEmoteFixer by config("emotefixer", dataFolder.toPath(), DiscordEmoteFixer())
             override val isPlaceholderApiLoaded: Boolean get() = Plugins.isEnabled("PlaceholderAPI")
