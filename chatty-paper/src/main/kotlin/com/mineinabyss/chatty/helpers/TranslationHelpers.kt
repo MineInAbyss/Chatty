@@ -1,13 +1,12 @@
 package com.mineinabyss.chatty.helpers
 
 import com.mineinabyss.chatty.ChattyChannel
-import com.mineinabyss.chatty.ChattyConfig
 import com.mineinabyss.chatty.ChattyChannel.Translation.*
 import com.mineinabyss.chatty.chatty
 import com.mineinabyss.chatty.components.ChattyTranslation
+import com.mineinabyss.chatty.extensions.CacheMap
 import com.mineinabyss.idofront.textcomponents.miniMsg
 import com.mineinabyss.idofront.textcomponents.serialize
-import korlibs.datastructure.CacheMap
 import net.kyori.adventure.chat.SignedMessage
 import net.kyori.adventure.text.Component
 import org.bukkit.entity.Player
@@ -33,7 +32,13 @@ fun handleMessageTranslation(source: Player, channel: ChattyChannel, sourceTrans
     // We cache translations to avoid translating the same message multiple times
     return cachedTranslations.computeIfAbsent(signedMessage) {
         TranslatedMessage(targetLanguage,
-            Component.textOfChildren(chatty.translator.translateText(component.serialize(), sourceTranslation?.language?.languageCode, targetLanguage.languageCode).text.miniMsg().hoverEventShowText(component), Component.text("*"))
+            Component.textOfChildren(
+                *component.children().dropLast(1).toTypedArray(),
+                chatty.translator.translateText(
+                    component.children().last().serialize(), sourceTranslation?.language?.languageCode, targetLanguage.languageCode
+                ).text.miniMsg().hoverEventShowText(component.children().last()),
+                Component.text("*")
+            )
         )
     }.translatedMessage
 }

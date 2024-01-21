@@ -19,6 +19,7 @@ import io.papermc.paper.chat.ChatRenderer
 import io.papermc.paper.event.player.AsyncChatCommandDecorateEvent
 import io.papermc.paper.event.player.AsyncChatDecorateEvent
 import io.papermc.paper.event.player.AsyncChatEvent
+import net.kyori.adventure.chat.SignedMessage
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.Style
 import net.kyori.adventure.text.format.TextDecoration
@@ -109,13 +110,11 @@ class ChatListener : Listener {
                 }
 
                 viewers().clear()
-                //isCancelled = true
             }
 
             else -> renderer { source, _, message, audience ->
                 if (audience !is Player) return@renderer Component.empty()
-
-                val audienceTranslation = audience.toGearyOrNull()?.get<ChattyTranslation>()
+                val audienceTranslation = runCatching { audience.toGearyOrNull()?.get<ChattyTranslation>() }.getOrNull()
                 var finalMessage = message
                 finalMessage = handleMessageTranslation(player, channel, playerTranslation, audienceTranslation, finalMessage, signedMessage())
                 finalMessage = handleChatFilters(finalMessage, player, audience)
@@ -134,6 +133,15 @@ class ChatListener : Listener {
                 return@renderer finalMessage
             }
         }
+    }
+
+    private fun handleFinalMessage(source: Player, channel: ChattyChannel, message: Component, signedMessage: SignedMessage, simpleMessage: Component, audience: Player, playerTranslation: ChattyTranslation?, audienceTranslation: ChattyTranslation?, pingedPlayer: Player?, playerViewers: Set<Player>) : Component {
+        return message
+            .let { handleMessageTranslation(source, channel, playerTranslation, audienceTranslation, it, signedMessage) }
+            .let { handleChatFilters(it, source, audience) }
+            .let { formatPlayerPingMessage(source, pingedPlayer, audience, message) }
+            .let { appendChannelFormat(it, source, channel) }
+            .let { formatModerationMessage(channel.messageDeletion, it, simpleMessage, signedMessage, audience, source, playerViewers) }
     }
 
     private fun handleProxyMessage(

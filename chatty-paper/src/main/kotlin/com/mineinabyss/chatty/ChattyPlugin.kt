@@ -58,7 +58,7 @@ class ChattyPlugin : JavaPlugin() {
         val chattyContext = object : ChattyContext {
             override val plugin: ChattyPlugin = this@ChattyPlugin
             override val config: ChattyConfig by config("config", dataFolder.toPath(), ChattyConfig())
-            override val translator: Translator = Translator(config.translation.authKey)
+            override val translator: Translator = Translator(config.translation.authKey.takeUnless { it.isNullOrEmpty() } ?: "x")
             override val messages: ChattyMessages by config("messages", dataFolder.toPath(), ChattyMessages())
             override val emotefixer: DiscordEmoteFixer by config("emotefixer", dataFolder.toPath(), DiscordEmoteFixer())
             override val isPlaceholderApiLoaded: Boolean get() = Plugins.isEnabled("PlaceholderAPI")

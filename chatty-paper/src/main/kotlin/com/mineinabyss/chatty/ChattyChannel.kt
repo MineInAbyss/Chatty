@@ -2,10 +2,7 @@ package com.mineinabyss.chatty
 
 import com.charleskorn.kaml.YamlComment
 import com.mineinabyss.chatty.components.ChannelType
-import com.mineinabyss.chatty.components.SpyOnChannels
 import com.mineinabyss.chatty.helpers.TranslationLanguage
-import com.mineinabyss.chatty.queries.SpyingPlayers
-import com.mineinabyss.geary.papermc.tracking.entities.toGeary
 import com.mineinabyss.idofront.textcomponents.miniMsg
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -42,7 +39,7 @@ data class ChattyChannel(
         )
         val type: TargetLanguageType = TargetLanguageType.NONE,
         @YamlComment("The default language for this channel to translate to.")
-        val targetLanguage: TranslationLanguage = chatty.config.translation.defaultLanguage,
+        val targetLanguage: TranslationLanguage = TranslationLanguage.English_US,
         //@YamlComment("Whether there should be a rate limitation per player for this channel.")
         //val rateLimitPerPlayer: Boolean = true,
     ) {

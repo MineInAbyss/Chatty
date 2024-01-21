@@ -11,4 +11,4 @@ velocity = { module = "com.velocitypowered:velocity-api", version.ref = "velocit
 discordsrv = { module = "com.discordsrv:discordsrv", version.ref = "discordsrv" }
 placeholderapi = { module = "me.clip:placeholderapi", version.ref = "placeholderapi" }
 imageloader = { module = "com.combimagnetron:imageloader", version.ref = "imageloader" }
-deepl = { module = "com.deepl.api:deepl-java", version = "1.4.0" }
+deepl = { module = "com.deepl.api:deepl-java", version = "1.5.0" }
