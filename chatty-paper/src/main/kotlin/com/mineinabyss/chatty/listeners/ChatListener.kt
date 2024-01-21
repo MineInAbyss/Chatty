@@ -92,7 +92,7 @@ class ChatListener : Listener {
                 playerViewers.forEach { audience ->
                     val audienceTranslation = audience.toGearyOrNull()?.get<ChattyTranslation>()
                     var finalMessage = message()
-                    finalMessage = handleMessageTranslation(playerTranslation, audienceTranslation, finalMessage, signedMessage())
+                    finalMessage = handleMessageTranslation(channel, playerTranslation, audienceTranslation, finalMessage, signedMessage())
                     finalMessage = handleChatFilters(finalMessage, player, audience) ?: return@forEach
                     finalMessage = formatPlayerPingMessage(player, pingedPlayer, audience, finalMessage)
                     finalMessage = formatModerationMessage(
@@ -117,7 +117,7 @@ class ChatListener : Listener {
 
                 val audienceTranslation = audience.toGearyOrNull()?.get<ChattyTranslation>()
                 var finalMessage = message
-                finalMessage = handleMessageTranslation(playerTranslation, audienceTranslation, finalMessage, signedMessage())
+                finalMessage = handleMessageTranslation(channel, playerTranslation, audienceTranslation, finalMessage, signedMessage())
                 finalMessage = handleChatFilters(finalMessage, player, audience)
                     ?: return@renderer Component.empty()
                 finalMessage = formatPlayerPingMessage(source, pingedPlayer, audience, finalMessage)

@@ -13,8 +13,7 @@ import kotlin.time.Duration.Companion.minutes
 
 @Serializable
 data class ChattyConfig(
-    @YamlComment("The default language for this server to translate to if a channel has unspecified targetLanguage.")
-    val defaultTranslationLanguage: TranslationLanguage = TranslationLanguage.English_US,
+    val translation: Translation = Translation(),
     val playerHeadFont: String = "minecraft:chatty_heads",
     val nicknames: Nickname = Nickname(),
     val chat: Chat = Chat(),
@@ -27,6 +26,14 @@ data class ChattyConfig(
     // Might be a safer way to do this but 3AM so first solution is the best solution
     val channels: MutableMap<String, ChattyChannel> = mutableMapOf("global" to ChattyChannel(ChannelType.GLOBAL, messageDeletion = ChattyChannel.MessageDeletion(true))),
 ) {
+
+    @Serializable
+    data class Translation(
+        @YamlComment("The default language for this server to translate to if a channel has unspecified targetLanguage.")
+        val defaultLanguage: TranslationLanguage = TranslationLanguage.English_US,
+        @YamlComment("The authKey for your DeepL Account. Can be found here: https://www.deepl.com/your-account/summary")
+        internal val authKey: String? = null,
+    )
 
     @Serializable
     data class Chat(
