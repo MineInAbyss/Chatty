@@ -9,6 +9,9 @@ import com.mineinabyss.chatty.components.*
 import com.mineinabyss.chatty.helpers.*
 import com.mineinabyss.geary.papermc.tracking.entities.toGeary
 import com.mineinabyss.geary.papermc.tracking.entities.toGearyOrNull
+import com.mineinabyss.idofront.commands.arguments.booleanArg
+import com.mineinabyss.idofront.commands.arguments.enumArg
+import com.mineinabyss.idofront.commands.arguments.optionArg
 import com.mineinabyss.idofront.commands.arguments.stringArg
 import com.mineinabyss.idofront.commands.execution.IdofrontCommandExecutor
 import com.mineinabyss.idofront.commands.extensions.actions.ensureSenderIsPlayer
@@ -16,6 +19,8 @@ import com.mineinabyss.idofront.commands.extensions.actions.playerAction
 import com.mineinabyss.idofront.entities.toPlayer
 import com.mineinabyss.idofront.events.call
 import com.mineinabyss.idofront.messaging.broadcast
+import com.mineinabyss.idofront.messaging.error
+import com.mineinabyss.idofront.messaging.success
 import com.mineinabyss.idofront.textcomponents.miniMsg
 import com.mineinabyss.idofront.textcomponents.serialize
 import io.papermc.paper.event.player.AsyncChatDecorateEvent
@@ -37,6 +42,26 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
                 action {
                     chatty.plugin.createChattyContext()
                     sender.sendConsoleMessage("<green>Chatty has been reloaded!")
+                }
+            }
+            "translation" {
+                "language" {
+                    val language by optionArg(TranslationLanguage.entries.map { it.name })
+                    playerAction {
+                        val translation = player.toGearyOrNull()?.get<ChattyTranslation>() ?: ChattyTranslation()
+                        player.toGearyOrNull()?.setPersisting(translation.copy(language = TranslationLanguage.valueOf(language))) ?: return@playerAction sender.error("Failed to handle translation for ${player.name}")
+                        player.success("Your language has been set to ${language}")
+                    }
+                }
+                "translateSameLanguage" {
+                    val translateSameLanguage by booleanArg()
+                    playerAction {
+                        val translation = player.toGearyOrNull()?.get<ChattyTranslation>() ?: ChattyTranslation()
+                        player.toGearyOrNull()?.setPersisting(translation.copy(translateSameLanguage = translateSameLanguage))
+                            ?: return@playerAction sender.error("Failed to handle translation for ${player.name}")
+                        if (translateSameLanguage) player.success("Messages with same language as yours will now be translated to ${chatty.config.translation.targetLanguage.name}")
+                        else player.success("Messages with same language as yours will no longer be translated to ${chatty.config.translation.targetLanguage.name}")
+                    }
                 }
             }
             "ping"(desc = "Commands related to the chat-ping feature.") {
@@ -218,6 +243,7 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
             "chatty" -> {
                 when (args.size) {
                     1 -> listOf(
+                        "translation",
                         "message",
                         "ping",
                         "reload",
@@ -233,7 +259,7 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
                             chatty.config.channels.entries.filter { s ->
                                 s.key.startsWith(args[1], true) && s.value.channelType != ChannelType.GLOBAL
                             }.map { it.key }
-
+                        "translation" -> listOf("language", "translateSameLanguage").filter { s -> s.startsWith(args[1]) }
                         else -> emptyList()
                     }
 
@@ -242,7 +268,8 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
                         args[1].startsWith(otherPrefix) -> onlinePlayers.filter { s ->
                             s.replace(otherPrefix.toString(), "").startsWith(args[2], true)
                         }
-
+                        args[1] == "language" -> TranslationLanguage.entries.map { it.name }.filter { s -> s.startsWith(args[2], true) }
+                        args[1] == "translateSameLanguage" -> listOf("true", "false").filter { s -> s.startsWith(args[2], true) }
                         else -> emptyList()
                     }
 

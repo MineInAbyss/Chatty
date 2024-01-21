@@ -1,5 +1,6 @@
 package com.mineinabyss.chatty
 
+import com.deepl.api.Translator
 import com.mineinabyss.chatty.helpers.DiscordEmoteFixer
 import com.mineinabyss.chatty.queries.SpyingPlayers
 import com.mineinabyss.idofront.config.IdofrontConfig
@@ -11,6 +12,7 @@ val chatty by DI.observe<ChattyContext>()
 interface ChattyContext {
     val plugin: ChattyPlugin
     val config: ChattyConfig
+    val translator: Translator
     val messages: ChattyMessages
     val emotefixer: DiscordEmoteFixer
     val isPlaceholderApiLoaded: Boolean

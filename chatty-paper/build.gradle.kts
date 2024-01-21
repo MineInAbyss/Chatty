@@ -32,6 +32,7 @@ dependencies {
 
     // Shaded
     implementation(chattyLibs.imageloader)
+    implementation(chattyLibs.deepl)
 
 }
 

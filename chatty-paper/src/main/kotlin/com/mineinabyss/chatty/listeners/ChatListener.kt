@@ -4,6 +4,7 @@ import com.mineinabyss.chatty.ChattyChannel
 import com.mineinabyss.chatty.chatty
 import com.mineinabyss.chatty.chattyProxyChannel
 import com.mineinabyss.chatty.components.ChannelData
+import com.mineinabyss.chatty.components.ChattyTranslation
 import com.mineinabyss.chatty.components.CommandSpy
 import com.mineinabyss.chatty.events.ChattyPlayerChatEvent
 import com.mineinabyss.chatty.helpers.*
@@ -73,25 +74,28 @@ class ChatListener : Listener {
 
         val pingedPlayer = originalMessage().serialize().checkForPlayerPings(channelId)
         val playerViewers = viewers().filterIsInstance<Player>().toSet()
+        val playerTranslation = player.toGearyOrNull()?.get<ChattyTranslation>()
         when {
             viewers().isEmpty() -> player.sendFormattedMessage(chatty.messages.channels.emptyChannelMessage)
             chatty.config.chat.disableChatSigning -> {
-                playerViewers.forEach { receiver ->
+                playerViewers.forEach { audience ->
+                    val audienceTranslation = audience.toGearyOrNull()?.get<ChattyTranslation>()
                     var finalMessage = message()
-                    finalMessage = handleChatFilters(finalMessage, player, receiver) ?: return@forEach
-                    finalMessage = formatPlayerPingMessage(player, pingedPlayer, receiver, finalMessage)
+                    finalMessage = handleMessageTranslation(playerTranslation, audienceTranslation, finalMessage, signedMessage())
+                    finalMessage = handleChatFilters(finalMessage, player, audience) ?: return@forEach
+                    finalMessage = formatPlayerPingMessage(player, pingedPlayer, audience, finalMessage)
                     finalMessage = appendChannelFormat(finalMessage, player, channel)
                     finalMessage = formatModerationMessage(
                         channel.messageDeletion,
                         finalMessage,
                         simpleMessage,
                         signedMessage(),
-                        receiver,
+                        audience,
                         player,
                         playerViewers
                     )
 
-                    receiver.sendMessage(finalMessage)
+                    audience.sendMessage(finalMessage)
                 }
 
                 viewers().clear()
@@ -99,8 +103,12 @@ class ChatListener : Listener {
             }
 
             else -> renderer { source, _, message, audience ->
+                if (audience !is Player) return@renderer Component.empty()
+
+                val audienceTranslation = audience.toGearyOrNull()?.get<ChattyTranslation>()
                 var finalMessage = message
-                finalMessage = handleChatFilters(finalMessage, player, audience as? Player) ?: return@renderer Component.empty()
+                finalMessage = handleMessageTranslation(playerTranslation, audienceTranslation, finalMessage, signedMessage())
+                finalMessage = handleChatFilters(finalMessage, player, audience) ?: return@renderer Component.empty()
                 finalMessage = formatPlayerPingMessage(source, pingedPlayer, audience, finalMessage)
                 finalMessage = appendChannelFormat(finalMessage, player, channel)
                 finalMessage = formatModerationMessage(
