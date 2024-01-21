@@ -42,7 +42,7 @@ data class ChattyChannel(
         )
         val type: TargetLanguageType = TargetLanguageType.NONE,
         @YamlComment("The default language for this channel to translate to.")
-        val targetLanguage: TranslationLanguage = TranslationLanguage.English_US,
+        val targetLanguage: TranslationLanguage = chatty.config.defaultTranslationLanguage,
         //@YamlComment("Whether there should be a rate limitation per player for this channel.")
         //val rateLimitPerPlayer: Boolean = true,
         @YamlComment("The authKey for your DeepL Account. Can be found here: https://www.deepl.com/your-account/summary")
