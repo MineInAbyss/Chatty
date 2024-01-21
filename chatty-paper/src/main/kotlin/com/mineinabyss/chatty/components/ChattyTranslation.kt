@@ -9,4 +9,4 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 @SerialName("chatty:translation")
-data class ChattyTranslation(val language: TranslationLanguage = chatty.config.defaultTranslationLanguage, val translateSameLanguage: Boolean = false)
+data class ChattyTranslation(val language: TranslationLanguage = chatty.config.translation.defaultLanguage, val translateSameLanguage: Boolean = false)

@@ -59,8 +59,8 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
                         val translation = player.toGearyOrNull()?.get<ChattyTranslation>() ?: ChattyTranslation()
                         player.toGearyOrNull()?.setPersisting(translation.copy(translateSameLanguage = translateSameLanguage))
                             ?: return@playerAction sender.error("Failed to handle translation for ${player.name}")
-                        if (translateSameLanguage) player.success("Messages with same language as yours will now be translated to ${chatty.config.translation.targetLanguage.name}")
-                        else player.success("Messages with same language as yours will no longer be translated to ${chatty.config.translation.targetLanguage.name}")
+                        if (translateSameLanguage) player.success("Messages with same language as yours will now be translated")
+                        else player.success("Messages with same language as yours will no longer be translated")
                     }
                 }
             }
