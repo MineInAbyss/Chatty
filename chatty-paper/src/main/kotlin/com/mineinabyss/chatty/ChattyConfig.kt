@@ -13,6 +13,8 @@ import kotlin.time.Duration.Companion.minutes
 
 @Serializable
 data class ChattyConfig(
+    @YamlComment("The default language for this server to translate to if a channel has unspecified targetLanguage.")
+    val defaultTranslationLanguage: TranslationLanguage = TranslationLanguage.English_US,
     val playerHeadFont: String = "minecraft:chatty_heads",
     val nicknames: Nickname = Nickname(),
     val chat: Chat = Chat(),
