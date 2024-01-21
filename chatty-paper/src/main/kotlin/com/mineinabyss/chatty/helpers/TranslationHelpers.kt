@@ -10,10 +10,11 @@ import com.mineinabyss.idofront.textcomponents.serialize
 import korlibs.datastructure.CacheMap
 import net.kyori.adventure.chat.SignedMessage
 import net.kyori.adventure.text.Component
+import org.bukkit.entity.Player
 
 data class TranslatedMessage(val language: TranslationLanguage, val translatedMessage: Component)
 val cachedTranslations = CacheMap<SignedMessage, TranslatedMessage>(8)
-fun handleMessageTranslation(channel: ChattyChannel, sourceTranslation: ChattyTranslation?, audienceTranslation: ChattyTranslation?, component: Component, signedMessage: SignedMessage): Component {
+fun handleMessageTranslation(source: Player, channel: ChattyChannel, sourceTranslation: ChattyTranslation?, audienceTranslation: ChattyTranslation?, component: Component, signedMessage: SignedMessage): Component {
     val targetLanguage = when (channel.translation.type) {
         // Force translation with targetLanguage
         TargetLanguageType.FORCE -> channel.translation.targetLanguage
@@ -23,7 +24,7 @@ fun handleMessageTranslation(channel: ChattyChannel, sourceTranslation: ChattyTr
         TargetLanguageType.ALL_SAME_LANGUAGE -> audienceTranslation?.language?.takeUnless { it != sourceTranslation?.language }
         // No translation
         TargetLanguageType.NONE -> null
-    } ?: return component
+    }?.takeUnless { source.hasPermission(ChattyPermissions.BYPASS_TRANSLATION) } ?: return component
 
     // Only translate if the audience has a different language set, or if it is set to translate same languages
     //if (sourceTranslation?.language == targetLanguage) return component

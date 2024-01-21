@@ -11,6 +11,7 @@ object ChattyPermissions {
     const val BYPASS_TAG_PERM = "chatty.tags.bypass"
     const val BYPASS_CHAT_FILTERS_PERM = "chatty.chat.filters.bypass"
     const val MODERATION_PERM = "chatty.moderation"
+    const val BYPASS_TRANSLATION = "chatty.translation.bypass"
     val chatFormattingPerms = mapOf(
         Permission("chatty.tags.color") to StandardTags.color(),
         Permission("chatty.tags.rainbow") to StandardTags.rainbow(),
