@@ -4,6 +4,7 @@ import com.mineinabyss.chatty.ChattyChannel
 import com.mineinabyss.chatty.chatty
 import com.mineinabyss.chatty.chattyProxyChannel
 import com.mineinabyss.chatty.components.ChannelData
+import com.mineinabyss.chatty.components.ChattyTranslation
 import com.mineinabyss.chatty.components.CommandSpy
 import com.mineinabyss.chatty.events.ChattyPlayerChatEvent
 import com.mineinabyss.chatty.helpers.*
@@ -15,6 +16,7 @@ import com.mineinabyss.idofront.textcomponents.serialize
 import io.papermc.paper.event.player.AsyncChatCommandDecorateEvent
 import io.papermc.paper.event.player.AsyncChatDecorateEvent
 import io.papermc.paper.event.player.AsyncChatEvent
+import net.kyori.adventure.chat.SignedMessage
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.Style
 import net.kyori.adventure.text.format.TextDecoration
@@ -73,49 +75,33 @@ class ChatListener : Listener {
 
         val pingedPlayer = originalMessage().serialize().checkForPlayerPings(channelId)
         val playerViewers = viewers().filterIsInstance<Player>().toSet()
+        val playerTranslation = player.toGearyOrNull()?.get<ChattyTranslation>()
         when {
             viewers().isEmpty() -> player.sendFormattedMessage(chatty.messages.channels.emptyChannelMessage)
             chatty.config.chat.disableChatSigning -> {
-                playerViewers.forEach { receiver ->
-                    var finalMessage = message()
-                    finalMessage = handleChatFilters(finalMessage, player, receiver) ?: return@forEach
-                    finalMessage = formatPlayerPingMessage(player, pingedPlayer, receiver, finalMessage)
-                    finalMessage = appendChannelFormat(finalMessage, player, channel)
-                    finalMessage = formatModerationMessage(
-                        channel.messageDeletion,
-                        finalMessage,
-                        simpleMessage,
-                        signedMessage(),
-                        receiver,
-                        player,
-                        playerViewers
-                    )
-
-                    receiver.sendMessage(finalMessage)
+                playerViewers.forEach { audience ->
+                    val audienceTranslation = audience.toGearyOrNull()?.get<ChattyTranslation>()
+                    audience.sendMessage(handleFinalMessage(player, channel, message(), signedMessage(), simpleMessage, audience, playerTranslation, audienceTranslation, pingedPlayer, playerViewers))
                 }
 
                 viewers().clear()
-                //isCancelled = true
             }
 
             else -> renderer { source, _, message, audience ->
-                var finalMessage = message
-                finalMessage = handleChatFilters(finalMessage, player, audience as? Player) ?: return@renderer Component.empty()
-                finalMessage = formatPlayerPingMessage(source, pingedPlayer, audience, finalMessage)
-                finalMessage = appendChannelFormat(finalMessage, player, channel)
-                finalMessage = formatModerationMessage(
-                    channel.messageDeletion,
-                    finalMessage,
-                    simpleMessage,
-                    signedMessage(),
-                    audience,
-                    source,
-                    playerViewers
-                )
-
-                return@renderer finalMessage
+                if (audience !is Player) return@renderer Component.empty()
+                val audienceTranslation = audience.toGearyOrNull()?.get<ChattyTranslation>()
+                return@renderer handleFinalMessage(source, channel, message, signedMessage(), simpleMessage, audience, playerTranslation, audienceTranslation, pingedPlayer, playerViewers)
             }
         }
+    }
+
+    private fun handleFinalMessage(source: Player, channel: ChattyChannel, message: Component, signedMessage: SignedMessage, simpleMessage: Component, audience: Player, playerTranslation: ChattyTranslation?, audienceTranslation: ChattyTranslation?, pingedPlayer: Player?, playerViewers: Set<Player>) : Component {
+        return message
+            .let { handleMessageTranslation(source, channel, playerTranslation, audienceTranslation, it, signedMessage) }
+            .let { handleChatFilters(it, source, audience) }
+            .let { formatPlayerPingMessage(source, pingedPlayer, audience, message) }
+            .let { appendChannelFormat(it, source, channel) }
+            .let { formatModerationMessage(channel.messageDeletion, it, simpleMessage, signedMessage, audience, source, playerViewers) }
     }
 
     private fun handleProxyMessage(player: Player, channelId: String, channel: ChattyChannel, message: Component, simpleMessage: Component) {

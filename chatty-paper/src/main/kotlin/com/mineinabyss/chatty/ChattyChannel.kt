@@ -1,7 +1,9 @@
 package com.mineinabyss.chatty
 
+import com.charleskorn.kaml.YamlComment
 import com.mineinabyss.chatty.components.ChannelType
 import com.mineinabyss.chatty.components.SpyOnChannels
+import com.mineinabyss.chatty.helpers.TranslationLanguage
 import com.mineinabyss.chatty.queries.SpyingPlayers
 import com.mineinabyss.geary.papermc.tracking.entities.toGeary
 import com.mineinabyss.idofront.textcomponents.miniMsg
@@ -21,6 +23,7 @@ data class ChattyChannel(
     val proxy: Boolean = false,
     val discordsrv: Boolean = true,
     val messageDeletion: MessageDeletion = MessageDeletion(),
+    val translation: Translation = Translation(),
     val isDefaultChannel: Boolean = false,
     val isStaffChannel: Boolean = false,
     val format: String = "",
@@ -28,6 +31,25 @@ data class ChattyChannel(
     val channelRadius: Int = 0,
     val channelAliases: List<String> = listOf(),
 ) {
+
+    @Serializable
+    data class Translation(
+        @YamlComment("Which type of translation should be done for the target language.",
+            "FORCE - Forces all messages to be translated to the target language",
+            "SKIP_SAME_LANGUAGE - Avoids translating a message if the senders language is same as ones own",
+            "ALL_SAME_LANGUAGE - Translates all messages to the receivers language",
+            "NONE - Disables translation"
+        )
+        val type: TargetLanguageType = TargetLanguageType.NONE,
+        @YamlComment("The default language for this channel to translate to.")
+        val targetLanguage: TranslationLanguage = chatty.config.translation.defaultLanguage,
+        //@YamlComment("Whether there should be a rate limitation per player for this channel.")
+        //val rateLimitPerPlayer: Boolean = true,
+    ) {
+        enum class TargetLanguageType {
+            FORCE, SKIP_SAME_LANGUAGE, ALL_SAME_LANGUAGE, NONE
+        }
+    }
 
     @Serializable data class MessageDeletion(
         val enabled: Boolean = false,
