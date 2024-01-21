@@ -1,7 +1,8 @@
 package com.mineinabyss.chatty.helpers
 
+import com.mineinabyss.chatty.ChattyChannel
 import com.mineinabyss.chatty.ChattyConfig
-import com.mineinabyss.chatty.ChattyConfig.Translation.*
+import com.mineinabyss.chatty.ChattyChannel.Translation.*
 import com.mineinabyss.chatty.chatty
 import com.mineinabyss.chatty.components.ChattyTranslation
 import com.mineinabyss.idofront.textcomponents.miniMsg
@@ -12,14 +13,16 @@ import net.kyori.adventure.text.Component
 
 data class TranslatedMessage(val language: TranslationLanguage, val translatedMessage: Component)
 val cachedTranslations = CacheMap<SignedMessage, TranslatedMessage>(8)
-fun handleMessageTranslation(sourceTranslation: ChattyTranslation?, audienceTranslation: ChattyTranslation?, component: Component, signedMessage: SignedMessage): Component {
-    val targetLanguage = when (chatty.config.translation.type) {
+fun handleMessageTranslation(channel: ChattyChannel, sourceTranslation: ChattyTranslation?, audienceTranslation: ChattyTranslation?, component: Component, signedMessage: SignedMessage): Component {
+    val targetLanguage = when (channel.translation.type) {
         // Force translation with targetLanguage
-        TargetLanguageType.FORCE -> chatty.config.translation.targetLanguage
+        TargetLanguageType.FORCE -> channel.translation.targetLanguage
         // If the sourceLanguage is the same as audienceLanguage, avoid translating
-        TargetLanguageType.SKIP_SAME_LANGUAGE -> chatty.config.translation.targetLanguage.takeUnless { sourceTranslation != null && sourceTranslation == audienceTranslation }
+        TargetLanguageType.SKIP_SAME_LANGUAGE -> channel.translation.targetLanguage.takeUnless { sourceTranslation != null && sourceTranslation == audienceTranslation }
         // If the audience has no language set, or the source language is the same, avoid translating
         TargetLanguageType.ALL_SAME_LANGUAGE -> audienceTranslation?.language?.takeUnless { it != sourceTranslation?.language }
+        // No translation
+        TargetLanguageType.NONE -> null
     } ?: return component
 
     // Only translate if the audience has a different language set, or if it is set to translate same languages

@@ -13,7 +13,6 @@ import kotlin.time.Duration.Companion.minutes
 
 @Serializable
 data class ChattyConfig(
-    val translation: Translation = Translation(),
     val playerHeadFont: String = "minecraft:chatty_heads",
     val nicknames: Nickname = Nickname(),
     val chat: Chat = Chat(),
@@ -26,23 +25,6 @@ data class ChattyConfig(
     // Might be a safer way to do this but 3AM so first solution is the best solution
     val channels: MutableMap<String, ChattyChannel> = mutableMapOf("global" to ChattyChannel(ChannelType.GLOBAL, messageDeletion = ChattyChannel.MessageDeletion(true))),
 ) {
-
-    @Serializable
-    data class Translation(
-        @YamlComment("Which type of translation should be done for the target language.",
-            "FORCE - Forces all messages to be translated to the target language",
-            "SKIP_SAME_LANGUAGE - Avoids translating a message if the senders language is same as ones own",
-            "ALL_SAME_LANGUAGE - Translates all messages to the receivers language"
-        )
-        val type: TargetLanguageType = TargetLanguageType.FORCE,
-        val targetLanguage: TranslationLanguage = TranslationLanguage.English_US,
-        val rateLimitPerPlayer: Boolean = true,
-        internal val authKey: String? = null
-    ) {
-        enum class TargetLanguageType {
-            FORCE, SKIP_SAME_LANGUAGE, ALL_SAME_LANGUAGE
-        }
-    }
 
     @Serializable
     data class Chat(
