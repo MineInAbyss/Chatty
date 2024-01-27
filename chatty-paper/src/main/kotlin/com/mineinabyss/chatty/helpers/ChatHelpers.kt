@@ -13,6 +13,7 @@ import com.mineinabyss.chatty.components.ChannelType
 import com.mineinabyss.chatty.components.chattyNickname
 import com.mineinabyss.chatty.placeholders.chattyPlaceholderTags
 import com.mineinabyss.chatty.tags.ChattyTags
+import com.mineinabyss.geary.papermc.tracking.entities.toGearyOrNull
 import com.mineinabyss.idofront.messaging.warn
 import com.mineinabyss.idofront.textcomponents.miniMsg
 import com.mineinabyss.idofront.textcomponents.serialize
@@ -125,11 +126,16 @@ fun Player.sendFormattedMessage(vararg message: String, optionalPlayer: Player? 
         translatePlaceholders((optionalPlayer ?: this), message.joinToString(" ")).miniMsg((optionalPlayer ?: this).buildTagResolver(true))
     )
 
+fun appendChannelFormat(message: Component, player: Player): Component {
+    val channelData = player.toGearyOrNull()?.get<ChannelData>() ?: return message
+    val channel = channelData.withChannelVerified().channel ?: return message
+    return appendChannelFormat(message, player, channel)
+}
 fun appendChannelFormat(message: Component, player: Player, channel: ChattyChannel): Component {
     val parsedFormat = translatePlaceholders(player, channel.format).miniMsg(player.buildTagResolver(true))
     val parsedMessage = Component.empty().color(channel.messageColor).append(message)
 
-    return parsedFormat.compact().append(parsedMessage)
+    return Component.textOfChildren(parsedFormat, parsedMessage)
 }
 
 fun Component.hoverEventShowText(text: Component) = this.hoverEvent(HoverEventSource.unbox(HoverEvent.showText(text)))

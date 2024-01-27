@@ -50,7 +50,10 @@ class ChatListener : Listener {
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     fun AsyncChatDecorateEvent.onChatPreview() {
-        player()?.let { result(result().parseTags(it, false)) }
+        player()?.let { player ->
+            result(result().parseTags(player, false))
+            result(appendChannelFormat(result(), player))
+        }
     }
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
@@ -59,6 +62,7 @@ class ChatListener : Listener {
         val channelData = ogChannelData.withChannelVerified()
         val channelId = channelData.channelId
         val channel = channelData.channel ?: return
+        val baseMessage = message().children().last()
 
         if (viewers().isNotEmpty()) viewers().clear()
         viewers() += channel.getAudience(player)
@@ -67,7 +71,7 @@ class ChatListener : Listener {
         if (chattyEvent.callEvent()) message(chattyEvent.message)
         else viewers().clear()
 
-        val simpleMessage = Component.textOfChildren(player.name().style(Style.style(TextDecoration.ITALIC)), Component.text(": "), message())
+        val simpleMessage = Component.textOfChildren(player.name().style(Style.style(TextDecoration.ITALIC)), Component.text(": "), baseMessage)
         if (channel.logToConsole) Bukkit.getConsoleSender().sendMessage(simpleMessage)
         handleProxyMessage(player, channelId, channel, message(), simpleMessage)
 
@@ -80,7 +84,6 @@ class ChatListener : Listener {
                     var finalMessage = message()
                     finalMessage = handleChatFilters(finalMessage, player, receiver) ?: return@forEach
                     finalMessage = formatPlayerPingMessage(player, pingedPlayer, receiver, finalMessage)
-                    finalMessage = appendChannelFormat(finalMessage, player, channel)
                     finalMessage = formatModerationMessage(
                         channel.messageDeletion,
                         finalMessage,
@@ -102,7 +105,6 @@ class ChatListener : Listener {
                 var finalMessage = message
                 finalMessage = handleChatFilters(finalMessage, player, audience as? Player) ?: return@renderer Component.empty()
                 finalMessage = formatPlayerPingMessage(source, pingedPlayer, audience, finalMessage)
-                finalMessage = appendChannelFormat(finalMessage, player, channel)
                 finalMessage = formatModerationMessage(
                     channel.messageDeletion,
                     finalMessage,
