@@ -1,7 +1,3 @@
-val kotlinVersion: String by project
-val velocityVersion: String by project
-val coroutinesVersion: String by project
-
 plugins {
     kotlin("jvm")
     kotlin("kapt")
@@ -22,10 +18,12 @@ repositories {
 
 dependencies {
     implementation(kotlin("reflect"))
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.0")
-    api(platform("org.jetbrains.kotlinx:kotlinx-coroutines-bom:$coroutinesVersion"))
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:$coroutinesVersion")
+//    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.0")
+//    api(platform("org.jetbrains.kotlinx:kotlinx-coroutines-bom:$coroutinesVersion"))
+    implementation(libs.kotlinx.coroutines)
+    implementation(libs.kotlinx.serialization.json)
+//    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
+//    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:$coroutinesVersion")
     implementation("net.kyori:adventure-extra-kotlin:4.11.0")
 
     compileOnly(chattyLibs.velocity)

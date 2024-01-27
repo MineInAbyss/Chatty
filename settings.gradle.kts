@@ -27,7 +27,10 @@ dependencyResolutionManagement {
     }
 
     versionCatalogs {
-        create("libs").from("com.mineinabyss:catalog:$idofrontVersion")
+        create("libs") {
+            from("com.mineinabyss:catalog:$idofrontVersion")
+            version("kotlin", "1.9.22")
+        }
         create("chattyLibs").from(files("gradle/chattyLibs.versions.toml"))
     }
 }
