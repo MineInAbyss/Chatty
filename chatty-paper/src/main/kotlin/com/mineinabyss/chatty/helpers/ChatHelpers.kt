@@ -1,28 +1,20 @@
 package com.mineinabyss.chatty.helpers
 
-import com.combimagnetron.imageloader.Avatar
-import com.combimagnetron.imageloader.Image.ColorType
-import com.combimagnetron.imageloader.ImageUtils
 import com.mineinabyss.chatty.ChattyChannel
-import com.mineinabyss.chatty.ChattyConfig
+import com.mineinabyss.chatty.ChattyConfig.Chat.FilterFormat
 import com.mineinabyss.chatty.chatty
 import com.mineinabyss.chatty.components.ChannelData
-import com.mineinabyss.chatty.ChattyConfig.Chat.*
-import com.mineinabyss.chatty.ChattyMessages
 import com.mineinabyss.chatty.components.ChannelType
 import com.mineinabyss.chatty.components.chattyNickname
 import com.mineinabyss.chatty.placeholders.chattyPlaceholderTags
 import com.mineinabyss.chatty.tags.ChattyTags
 import com.mineinabyss.geary.papermc.tracking.entities.toGearyOrNull
-import com.mineinabyss.idofront.messaging.warn
 import com.mineinabyss.idofront.textcomponents.miniMsg
 import com.mineinabyss.idofront.textcomponents.serialize
 import me.clip.placeholderapi.PlaceholderAPI
 import net.kyori.adventure.audience.Audience
 import net.kyori.adventure.chat.SignedMessage
-import net.kyori.adventure.key.Key
 import net.kyori.adventure.text.Component
-import net.kyori.adventure.text.TextComponent
 import net.kyori.adventure.text.TextReplacementConfig
 import net.kyori.adventure.text.event.ClickEvent
 import net.kyori.adventure.text.event.HoverEvent
@@ -31,28 +23,23 @@ import net.kyori.adventure.text.format.NamedTextColor
 import net.kyori.adventure.text.format.Style
 import net.kyori.adventure.text.format.TextDecoration
 import net.kyori.adventure.text.minimessage.MiniMessage
-import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer
 import org.bukkit.Bukkit
-import org.bukkit.OfflinePlayer
 import org.bukkit.Sound
-import org.bukkit.SoundCategory
 import org.bukkit.entity.Player
-import org.bukkit.inventory.ItemStack
-import org.bukkit.profile.PlayerTextures.SkinModel
 import java.util.regex.Pattern
 
-val getAlternativePingSounds: List<String> =
+val alternativePingSounds: List<String> =
     chatty.config.ping.let { ping -> if ("*" in ping.alternativePingSounds || "all" in ping.alternativePingSounds)
         Sound.entries.map { it.key.toString() }.toList() else ping.alternativePingSounds }
 
-val getPingEnabledChannels: List<String> =
-    chatty.config.ping.let { ping -> if ("*" in ping.enabledChannels || "all" in ping.enabledChannels) getAllChannelNames() else ping.enabledChannels }
+val pingEnabledChannels: List<String> =
+    chatty.config.ping.let { ping -> if ("*" in ping.enabledChannels || "all" in ping.enabledChannels) channelNames() else ping.enabledChannels }
 
 fun String.checkForPlayerPings(channelId: String): Player? {
     val ping = chatty.config.ping
-    if (channelId !in getPingEnabledChannels || ping.pingPrefix.isEmpty() || ping.pingPrefix !in this) return null
+    if (channelId !in pingEnabledChannels || ping.pingPrefix.isEmpty() || ping.pingPrefix !in this) return null
     val pingedName = this.substringAfter(ping.pingPrefix).substringBefore(" ")
     return Bukkit.getOnlinePlayers().firstOrNull { it.name == pingedName }
 }
@@ -87,32 +74,27 @@ fun Component.parseTags(player: Player? = null, ignorePermissions: Boolean = fal
 
 fun Component.removeTrailingSpaces() = this.replaceText(TextReplacementConfig.builder().match(" +\$").replacement("").build())
 
-fun getGlobalChat() =
+fun globalChannel() =
     chatty.config.channels.entries.firstOrNull { it.value.channelType == ChannelType.GLOBAL }
 
-fun getRadiusChannel() =
+fun radiusChannel() =
     chatty.config.channels.entries.firstOrNull { it.value.channelType == ChannelType.RADIUS }
 
-fun getAdminChannel() =
+fun adminChannel() =
     chatty.config.channels.entries.firstOrNull { it.value.isStaffChannel }
 
-fun getDefaultChat() =
+fun defaultChannel() =
     chatty.config.channels.entries.firstOrNull { it.value.isDefaultChannel }
-        ?: getGlobalChat()
+        ?: globalChannel()
         ?: throw IllegalStateException("No Default or Global channel found")
 
-fun getAllChannelNames() = chatty.config.channels.keys.toList()
+fun channelNames() = chatty.config.channels.keys.toList()
 
 fun translatePlaceholders(player: Player?, message: String) = if (chatty.isPlaceholderApiLoaded) PlaceholderAPI.setPlaceholders(player, message) else message
 
 fun String.fixSerializedTags(): String = this.replaceAll("\\\\(?!u)(?!\")(?!:)", "")
 
 fun String.replaceAll(regex: String, replacement: String): String = Pattern.compile(regex).matcher(this).replaceAll(replacement)
-
-fun String.fixLegacy(): Component {
-    return if ("§" in this) legacy.deserialize(this)
-    else this.fixSerializedTags().miniMsg()
-}
 
 fun List<String>.toSentence() = this.joinToString(" ")
 

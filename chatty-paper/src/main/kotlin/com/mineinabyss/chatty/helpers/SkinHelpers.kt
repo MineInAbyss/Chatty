@@ -14,7 +14,7 @@ import org.bukkit.profile.PlayerTextures
 val playerHeadMapCache = mutableMapOf<OfflinePlayer, Component>()
 fun OfflinePlayer.translatePlayerHeadComponent(): Component {
     if (this !in playerHeadMapCache || playerHeadMapCache[this]!!.font() != Key.key(chatty.config.playerHeadFont)) {
-        playerHeadMapCache[this] = runCatching { getPlayerHeadTexture(ascent = -5) }.getOrDefault(Component.empty())
+        playerHeadMapCache[this] = runCatching { playerHeadTexture(ascent = -5) }.getOrDefault(Component.empty())
     }
     return playerHeadMapCache[this] ?: Component.empty()
 }
@@ -26,12 +26,12 @@ fun Player.refreshSkinInCaches() {
 }
 fun OfflinePlayer.translateFullPlayerSkinComponent(): Component {
     if (this !in playerBodyMapCache || playerBodyMapCache[this]!!.font() != Key.key(chatty.config.playerHeadFont)) {
-        playerBodyMapCache[this] = runCatching { getFullPlayerBodyTexture(ascent = -5) }.getOrDefault(Component.empty())
+        playerBodyMapCache[this] = runCatching { fullPlayerBodyTexture(ascent = -5) }.getOrDefault(Component.empty())
     }
     return playerBodyMapCache[this] ?: Component.empty()
 }
 
-fun OfflinePlayer.getPlayerHeadTexture(
+fun OfflinePlayer.playerHeadTexture(
     scale: Int = 1,
     ascent: Int = 0,
     colorType: Image.ColorType = Image.ColorType.MINIMESSAGE,
@@ -41,7 +41,7 @@ fun OfflinePlayer.getPlayerHeadTexture(
     return "<font:$font>${ImageUtils.generateStringFromImage(image, colorType, ascent)}</font>".miniMsg()
 }
 
-fun OfflinePlayer.getFullPlayerBodyTexture(
+fun OfflinePlayer.fullPlayerBodyTexture(
     scale: Int = 1,
     ascent: Int = 0,
     colorType: Image.ColorType = Image.ColorType.MINIMESSAGE,

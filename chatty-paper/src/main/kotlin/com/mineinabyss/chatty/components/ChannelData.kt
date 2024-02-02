@@ -2,7 +2,7 @@ package com.mineinabyss.chatty.components
 
 import com.mineinabyss.chatty.ChattyChannel
 import com.mineinabyss.chatty.chatty
-import com.mineinabyss.chatty.helpers.getDefaultChat
+import com.mineinabyss.chatty.helpers.defaultChannel
 import com.mineinabyss.idofront.serialization.UUIDSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -11,7 +11,7 @@ import java.util.*
 @Serializable
 @SerialName("chatty:chatty_data")
 data class ChannelData(
-    val channelId: String = getDefaultChat().key,
+    val channelId: String = defaultChannel().key,
     val lastChannelUsedId: String = channelId,
     val disablePingSound: Boolean = false,
     val pingSound: String? = null,
@@ -22,7 +22,7 @@ data class ChannelData(
 
     fun withChannelVerified(): ChannelData {
         if (channelId !in chatty.config.channels)
-            return copy(channelId = getDefaultChat().key)
+            return copy(channelId = defaultChannel().key)
         return this
     }
 }

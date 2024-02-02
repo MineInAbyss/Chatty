@@ -15,9 +15,7 @@ import com.mineinabyss.idofront.commands.extensions.actions.ensureSenderIsPlayer
 import com.mineinabyss.idofront.commands.extensions.actions.playerAction
 import com.mineinabyss.idofront.entities.toPlayer
 import com.mineinabyss.idofront.events.call
-import com.mineinabyss.idofront.messaging.broadcast
 import com.mineinabyss.idofront.textcomponents.miniMsg
-import com.mineinabyss.idofront.textcomponents.serialize
 import io.papermc.paper.event.player.AsyncChatDecorateEvent
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -53,7 +51,7 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
                     playerAction {
                         val gearyPlayer = player.toGeary()
                         val oldData = gearyPlayer.get<ChannelData>() ?: return@playerAction
-                        if (soundName in getAlternativePingSounds) {
+                        if (soundName in alternativePingSounds) {
                             gearyPlayer.setPersisting(oldData.copy(pingSound = soundName))
                             player.sendFormattedMessage(chatty.messages.ping.changedPingSound)
                         } else player.sendFormattedMessage(chatty.messages.ping.invalidPingSound)
@@ -83,7 +81,7 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
                         }
 
                         arguments.first().startsWith(chatty.config.nicknames.nickNameOtherPrefix) -> {
-                            val otherPlayer = arguments.getPlayerToNick()
+                            val otherPlayer = arguments.playerToNick()
                             val otherNick = nick.removePlayerToNickFromString()
 
                             when {
@@ -173,19 +171,19 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
         ("global" / "g") {
             ensureSenderIsPlayer()
             action {
-                (sender as? Player)?.shortcutCommand(getGlobalChat(), arguments)
+                (sender as? Player)?.shortcutCommand(globalChannel(), arguments)
             }
         }
         ("local" / "l") {
             ensureSenderIsPlayer()
             action {
-                (sender as? Player)?.shortcutCommand(getRadiusChannel(), arguments)
+                (sender as? Player)?.shortcutCommand(radiusChannel(), arguments)
             }
         }
         ("admin" / "a") {
             ensureSenderIsPlayer()
             action {
-                (sender as? Player)?.shortcutCommand(getAdminChannel(), arguments)
+                (sender as? Player)?.shortcutCommand(adminChannel(), arguments)
             }
         }
         ("message" / "msg")(desc = "Private message another player") {
@@ -241,7 +239,7 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
 
                     3 -> when {
                         args[0] == "ping" && args[1] == "sound" ->
-                            getAlternativePingSounds.filter { s -> s.startsWith(args[2], true) }
+                            alternativePingSounds.filter { s -> s.startsWith(args[2], true) }
 
                         args[0] == "nickname" -> args[1].drop(1).takeIf { args[1].startsWith(otherPrefix) && it.isNotEmpty() }?.toPlayer()?.let { player ->
                                 listOf(player.chattyNickname ?: player.name).filter { s -> s.startsWith(args[2], true) }

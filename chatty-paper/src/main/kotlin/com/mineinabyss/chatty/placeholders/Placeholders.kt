@@ -4,7 +4,7 @@ import com.mineinabyss.chatty.chatty
 import com.mineinabyss.chatty.components.ChannelData
 import com.mineinabyss.chatty.components.SpyOnChannels
 import com.mineinabyss.chatty.components.chattyNickname
-import com.mineinabyss.chatty.helpers.getAllChannelNames
+import com.mineinabyss.chatty.helpers.channelNames
 import com.mineinabyss.chatty.helpers.translateFullPlayerSkinComponent
 import com.mineinabyss.chatty.helpers.translatePlayerHeadComponent
 import com.mineinabyss.geary.papermc.tracking.entities.toGeary
@@ -22,7 +22,7 @@ fun chattyPlaceholders(player: Player?, string: String? = null): Map<String, Str
     val shift = string?.substringAfter("shift_", "0")?.toIntOrNull() ?: 0
 
     return mapOf(
-        "all_channels" to getAllChannelNames().joinToString(", "),
+        "all_channels" to channelNames().joinToString(", "),
         "player_available_channels" to chatty.config.channels.values.filter {
             player?.hasPermission(it.permission) ?: false
         }.joinToString(", ") { it.key },

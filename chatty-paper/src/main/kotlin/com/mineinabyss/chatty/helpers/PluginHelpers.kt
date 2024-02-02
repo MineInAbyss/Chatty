@@ -11,7 +11,6 @@ import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
 import org.bukkit.entity.Player
 
-val legacy = LegacyComponentSerializer.builder().useUnusualXRepeatedCharacterHexFormat().build()
 fun GenericChattyDecorateEvent(player: Player, msg: Component) =
     AsyncChatDecorateEvent(true, player, msg, msg)
 fun GenericChattyChatEvent(player: Player, msg: Component) =

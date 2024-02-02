@@ -2,7 +2,6 @@ package com.mineinabyss.chatty.helpers
 
 import com.mineinabyss.chatty.chatty
 import net.kyori.adventure.text.minimessage.MiniMessage
-import org.bukkit.Bukkit
 import org.bukkit.entity.Player
 fun String.stripTags() = MiniMessage.miniMessage().stripTags(this)
 fun String.verifyNickLength(): Boolean {
@@ -12,7 +11,7 @@ fun String.verifyNickLength(): Boolean {
     }
 }
 
-fun List<String>.getPlayerToNick(): Player? =
+fun List<String>.playerToNick(): Player? =
     this.first().replace(chatty.config.nicknames.nickNameOtherPrefix.toString(), "").toPlayer()
 
 fun String.removePlayerToNickFromString(): String =
