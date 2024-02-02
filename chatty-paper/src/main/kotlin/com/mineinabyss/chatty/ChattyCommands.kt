@@ -109,7 +109,7 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
                             }
                         }
 
-                        else  -> {
+                        else -> {
                             if (!bypassFormatPerm && !nick.verifyNickLength()) {
                                 sender.sendFormattedMessage(nickMessage.tooLong)
                             } else {
@@ -229,19 +229,23 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
 
                     2 -> when (args[0]) {
                         "ping" -> listOf("toggle", "sound").filter { s -> s.startsWith(args[1]) }
-                        "spy" ->
-                            chatty.config.channels.entries.filter { s ->
-                                s.key.startsWith(args[1], true) && s.value.channelType != ChannelType.GLOBAL
-                            }.map { it.key }
+                        "spy" -> chatty.config.channels.entries.filter { s ->
+                            s.key.startsWith(args[1], true) && s.value.channelType != ChannelType.GLOBAL
+                        }.map { it.key }
 
+                        "nickname" -> (onlinePlayers.takeIf { args[1].startsWith(otherPrefix) }?.map { otherPrefix + it }
+                            ?: (sender as? Player)?.let { player -> listOf(player.chattyNickname ?: player.name) }
+                            ?: emptyList()).filter { s -> s.startsWith(args[1], true) }
                         else -> emptyList()
                     }
 
                     3 -> when {
-                        args[1] == "sound" -> getAlternativePingSounds.filter { s -> s.startsWith(args[2], true) }
-                        args[1].startsWith(otherPrefix) -> onlinePlayers.filter { s ->
-                            s.replace(otherPrefix.toString(), "").startsWith(args[2], true)
-                        }
+                        args[0] == "ping" && args[1] == "sound" ->
+                            getAlternativePingSounds.filter { s -> s.startsWith(args[2], true) }
+
+                        args[0] == "nickname" -> args[1].drop(1).takeIf { args[1].startsWith(otherPrefix) && it.isNotEmpty() }?.toPlayer()?.let { player ->
+                                listOf(player.chattyNickname ?: player.name).filter { s -> s.startsWith(args[2], true) }
+                            } ?: emptyList()
 
                         else -> emptyList()
                     }
@@ -249,11 +253,13 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
                     else -> emptyList()
                 }
             }
+
             "message", "msg" ->
                 when (args.size) {
                     0, 1 -> onlinePlayers.filter { s -> s.startsWith(args[0], true) }.take(25)
                     else -> emptyList()
                 }
+
             else -> emptyList()
         }
     }
@@ -332,7 +338,6 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
     }
 
 
-
     companion object {
         private fun CommandSender.sendFormattedMessage(message: String, optionalPlayer: Player? = null) =
             (optionalPlayer ?: this as? Player)?.let { player ->
@@ -340,11 +345,15 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
             }
 
         private fun Player.sendFormattedPrivateMessage(messageFormat: String, message: String, receiver: Player) =
-            this.sendMessage(Component.textOfChildren(
-                translatePlaceholders(receiver, messageFormat).miniMsg(receiver.buildTagResolver(true)),
-                message.miniMsg(receiver.buildTagResolver(true)))
+            this.sendMessage(
+                Component.textOfChildren(
+                    translatePlaceholders(receiver, messageFormat).miniMsg(receiver.buildTagResolver(true)),
+                    message.miniMsg(receiver.buildTagResolver(true))
+                )
             )
-        private fun CommandSender.sendConsoleMessage(message: String) = this.sendMessage(message.miniMsg().parseTags(null, true))
+
+        private fun CommandSender.sendConsoleMessage(message: String) =
+            this.sendMessage(message.miniMsg().parseTags(null, true))
 
         private fun List<String>.removeFirstArgumentOfStringList(): String =
             this.filter { it != this.first() }.toSentence()

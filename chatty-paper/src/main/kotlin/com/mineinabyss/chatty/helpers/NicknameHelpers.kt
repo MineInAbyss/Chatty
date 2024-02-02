@@ -12,9 +12,8 @@ fun String.verifyNickLength(): Boolean {
     }
 }
 
-fun List<String>.getPlayerToNick(): Player? = Bukkit.getPlayer(
-    this.first().replace(chatty.config.nicknames.nickNameOtherPrefix.toString(), "")
-)
+fun List<String>.getPlayerToNick(): Player? =
+    this.first().replace(chatty.config.nicknames.nickNameOtherPrefix.toString(), "").toPlayer()
 
 fun String.removePlayerToNickFromString(): String =
     this.split(" ").filter { it != this.split(" ").first() }.toSentence()
