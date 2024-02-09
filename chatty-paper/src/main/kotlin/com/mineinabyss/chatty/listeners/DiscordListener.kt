@@ -38,7 +38,7 @@ class DiscordListener {
         val message = if (chatty.config.chat.formatURLs) handleUrlReplacements(minecraftMessage.toComponent(), null).toComponentDSV() else minecraftMessage
         val minecraftMessage = ComponentDSV.textOfChildren(senderName, channelId, message, simpleMessage)
         chatty.plugin.server.sendPluginMessage(chatty.plugin, chattyProxyChannel, gson.serialize(minecraftMessage).toByteArray())
-        setMinecraftMessage(minecraftMessage)
+        setMinecraftMessage(message)
     }
 
     private fun ComponentDSV.toComponent() = mm.serialize(this).miniMsg()
