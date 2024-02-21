@@ -7,6 +7,7 @@ import com.mineinabyss.idofront.di.DI
 import org.bukkit.Bukkit
 
 const val chattyProxyChannel = "chatty:proxy"
+const val discordSrvChannel = "chatty:discordsrv"
 val chatty by DI.observe<ChattyContext>()
 interface ChattyContext {
     val plugin: ChattyPlugin

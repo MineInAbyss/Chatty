@@ -12,6 +12,9 @@ import com.velocitypowered.api.proxy.ProxyServer
 import com.velocitypowered.api.proxy.messages.MinecraftChannelIdentifier
 import org.slf4j.Logger
 
+val chattyChannel: MinecraftChannelIdentifier = MinecraftChannelIdentifier.create("chatty", "proxy")
+val discordChannel: MinecraftChannelIdentifier = MinecraftChannelIdentifier.create("chatty", "discordsrv")
+
 @Plugin(id = "chatty", name = "chatty", version = "0.3")
 class ChattyPlugin @Inject constructor(
     private val server: ProxyServer,
@@ -25,9 +28,9 @@ class ChattyPlugin @Inject constructor(
 
     @Subscribe(order = PostOrder.FIRST)
     fun onInit(e: ProxyInitializeEvent) {
-        val chattyChannel = MinecraftChannelIdentifier.create("chatty", "proxy")
         logger.info("The Kotlin Language Adapter is initialized!")
         server.channelRegistrar.register(chattyChannel)
+        server.channelRegistrar.register(discordChannel)
         eventManager.register(this, ChattyProxyListener(server, logger))
     }
 }
@@ -45,7 +48,7 @@ class ChattyProxyListener @Inject constructor(
 
     @Subscribe(order = PostOrder.NORMAL)
     fun PluginMessageEvent.onPluginMessage() {
-        if (identifier != MinecraftChannelIdentifier.create("chatty", "proxy")) return
+        if (identifier != chattyChannel && identifier != discordChannel) return
         //Hacky way of knowing what the old server was, prob a better way lol
         server.allServers.filter { (it.serverInfo.name !in this.source.toString()) }.forEach {
             it.sendPluginMessage(identifier, this.data)

@@ -5,9 +5,11 @@ import com.mineinabyss.chatty.chatty
 import com.mineinabyss.chatty.chattyProxyChannel
 import com.mineinabyss.chatty.components.ChannelData
 import com.mineinabyss.chatty.components.ChannelType
+import com.mineinabyss.chatty.discordSrvChannel
 import com.mineinabyss.chatty.helpers.gson
 import com.mineinabyss.chatty.helpers.toPlayer
 import com.mineinabyss.geary.papermc.tracking.entities.toGeary
+import com.mineinabyss.idofront.plugin.Plugins
 import com.mineinabyss.idofront.textcomponents.serialize
 import github.scarsz.discordsrv.Debug
 import github.scarsz.discordsrv.DiscordSRV
@@ -25,7 +27,7 @@ import org.bukkit.plugin.messaging.PluginMessageListener
 
 class ChattyProxyListener : PluginMessageListener {
     override fun onPluginMessageReceived(ch: String, player: Player, byteArray: ByteArray) {
-        if (ch != chattyProxyChannel) return
+        if (ch != chattyProxyChannel && ch == discordSrvChannel && Plugins.isEnabled("DiscordSRV")) return
         val decoded = gson.deserialize(byteArray.decodeToString())
         val senderName = (decoded.children()[0] as? TextComponent)?.content() ?: return
         val channelId = (decoded.children()[1] as? TextComponent)?.content() ?: return
