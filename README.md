@@ -32,7 +32,7 @@ This feature essentially relies on DiscordSRV and is built around BondrewdLikesH
 
 ## Requirements
 - [Idofront Platform](https://github.com/MineInAbyss/Idofront)
-- [Geary](https://github.com/MineInAbyss/Geary)  
+- [Geary](https://github.com/MineInAbyss/geary-papermc)  
 #### Note: Only required on the servers, not the proxy
 
 ## Recommended addons
