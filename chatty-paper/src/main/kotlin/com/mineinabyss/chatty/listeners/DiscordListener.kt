@@ -1,8 +1,8 @@
 package com.mineinabyss.chatty.listeners
 
 import com.mineinabyss.chatty.chatty
-import com.mineinabyss.chatty.chattyProxyChannel
 import com.mineinabyss.chatty.components.ChannelData
+import com.mineinabyss.chatty.discordSrvChannel
 import com.mineinabyss.chatty.helpers.defaultChannel
 import com.mineinabyss.chatty.helpers.globalChannel
 import com.mineinabyss.chatty.helpers.handleChatFilters
@@ -37,7 +37,7 @@ class DiscordListener {
         val simpleMessage = mm.deserialize(message.author.name + ": " + message.contentRaw)
         val message = if (chatty.config.chat.formatURLs) handleUrlReplacements(minecraftMessage.toComponent(), null).toComponentDSV() else minecraftMessage
         val minecraftMessage = ComponentDSV.textOfChildren(senderName, channelId, message, simpleMessage)
-        chatty.plugin.server.sendPluginMessage(chatty.plugin, chattyProxyChannel, gson.serialize(minecraftMessage).toByteArray())
+        chatty.plugin.server.sendPluginMessage(chatty.plugin, discordSrvChannel, gson.serialize(minecraftMessage).toByteArray())
         setMinecraftMessage(message)
     }
 
