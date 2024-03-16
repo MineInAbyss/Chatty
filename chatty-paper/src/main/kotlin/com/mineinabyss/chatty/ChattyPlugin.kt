@@ -15,9 +15,9 @@ import com.mineinabyss.geary.modules.geary
 import com.mineinabyss.geary.systems.builders.cachedQuery
 import com.mineinabyss.idofront.config.config
 import com.mineinabyss.idofront.di.DI
+import com.mineinabyss.idofront.plugin.Plugins
 import com.mineinabyss.idofront.plugin.listeners
 import github.scarsz.discordsrv.DiscordSRV
-import org.bukkit.Bukkit
 import org.bukkit.plugin.java.JavaPlugin
 
 class ChattyPlugin : JavaPlugin() {
@@ -57,8 +57,8 @@ class ChattyPlugin : JavaPlugin() {
             override val config: ChattyConfig by config("config", dataFolder.toPath(), ChattyConfig())
             override val messages: ChattyMessages by config("messages", dataFolder.toPath(), ChattyMessages())
             override val emotefixer: DiscordEmoteFixer by config("emotefixer", dataFolder.toPath(), DiscordEmoteFixer())
-            override val isPlaceholderApiLoaded: Boolean = Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")
-            override val isDiscordSRVLoaded: Boolean = Bukkit.getPluginManager().isPluginEnabled("DiscordSRV")
+            override val isPlaceholderApiLoaded: Boolean get() = Plugins.isEnabled("PlaceholderAPI")
+            override val isDiscordSRVLoaded: Boolean get() = Plugins.isEnabled("DiscordSRV")
             override val spyingPlayers = geary.cachedQuery(SpyingPlayersQuery())
         }
 
