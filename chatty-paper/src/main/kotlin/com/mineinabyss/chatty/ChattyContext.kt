@@ -1,10 +1,9 @@
 package com.mineinabyss.chatty
 
 import com.mineinabyss.chatty.helpers.DiscordEmoteFixer
-import com.mineinabyss.chatty.queries.SpyingPlayers
-import com.mineinabyss.idofront.config.IdofrontConfig
+import com.mineinabyss.chatty.queries.SpyingPlayersQuery
+import com.mineinabyss.geary.systems.query.CachedQueryRunner
 import com.mineinabyss.idofront.di.DI
-import org.bukkit.Bukkit
 
 const val chattyProxyChannel = "chatty:proxy"
 const val discordSrvChannel = "chatty:discordsrv"
@@ -16,5 +15,5 @@ interface ChattyContext {
     val emotefixer: DiscordEmoteFixer
     val isPlaceholderApiLoaded: Boolean
     val isDiscordSRVLoaded: Boolean
-    val spyingPlayers: SpyingPlayers
+    val spyingPlayers: CachedQueryRunner<SpyingPlayersQuery>
 }

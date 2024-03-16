@@ -36,10 +36,9 @@ class ChattyProxyListener : PluginMessageListener {
         val channel = chatty.config.channels[channelId]
         val onlinePlayers = Bukkit.getOnlinePlayers().filter { it.server == Bukkit.getServer() }
 
-        val canSpy = chatty.spyingPlayers.run {
-            toList { query -> query.player.takeIf { query.spying.channels.contains(channelId) } }
-                .filterNotNull()
-        }
+        val canSpy = chatty.spyingPlayers.map {
+            this.player.takeIf { spying.channels.contains(channelId) }
+        }.filterNotNull()
 
         // If the channel is not found, it is discord
         if (channel != null) {
@@ -87,7 +86,7 @@ class ChattyProxyListener : PluginMessageListener {
                     .run { if (!reserializer) MessageUtil.strip(this) else this }
                     .run {
                         if (translateMentions)
-                            DiscordUtil.convertMentionsFromNames(this,DiscordSRV.getPlugin().mainGuild)
+                            DiscordUtil.convertMentionsFromNames(this, DiscordSRV.getPlugin().mainGuild)
                         else this
                     }
 

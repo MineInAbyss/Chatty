@@ -1,17 +1,16 @@
-@Suppress("DSL_SCOPE_VIOLATION")
 plugins {
-    alias(libs.plugins.mia.kotlin.jvm)
-    alias(libs.plugins.kotlinx.serialization)
-    alias(libs.plugins.mia.papermc)
-    alias(libs.plugins.mia.testing)
-    alias(libs.plugins.mia.publication)
-    alias(libs.plugins.mia.autoversion)
+    alias(idofrontLibs.plugins.mia.kotlin.jvm)
+    alias(idofrontLibs.plugins.kotlinx.serialization)
+    alias(idofrontLibs.plugins.mia.papermc)
+    alias(idofrontLibs.plugins.mia.testing)
+    alias(idofrontLibs.plugins.mia.publication)
+    alias(idofrontLibs.plugins.mia.autoversion)
 }
 
 dependencies {
     // MineInAbyss platform
-    compileOnly(libs.kotlinx.serialization.json)
-    compileOnly(libs.kotlinx.serialization.kaml)
-    compileOnly(libs.kotlinx.coroutines)
-    compileOnly(libs.minecraft.mccoroutine)
+    compileOnly(idofrontLibs.kotlinx.serialization.json)
+    compileOnly(idofrontLibs.kotlinx.serialization.kaml)
+    compileOnly(idofrontLibs.kotlinx.coroutines)
+    compileOnly(idofrontLibs.minecraft.mccoroutine)
 }

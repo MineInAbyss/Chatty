@@ -4,7 +4,7 @@ plugins {
     kotlin("plugin.serialization")
     id("com.github.johnrengelman.shadow")
     `maven-publish`
-    id(libs.plugins.mia.copyjar.get().pluginId)
+    id(idofrontLibs.plugins.mia.copyjar.get().pluginId)
 }
 
 copyJar {
@@ -20,14 +20,14 @@ dependencies {
     implementation(kotlin("reflect"))
 //    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.0")
 //    api(platform("org.jetbrains.kotlinx:kotlinx-coroutines-bom:$coroutinesVersion"))
-    implementation(libs.kotlinx.coroutines)
-    implementation(libs.kotlinx.serialization.json)
+    implementation(idofrontLibs.kotlinx.coroutines)
+    implementation(idofrontLibs.kotlinx.serialization.json)
 //    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
 //    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:$coroutinesVersion")
     implementation("net.kyori:adventure-extra-kotlin:4.11.0")
 
-    compileOnly(chattyLibs.velocity)
-    kapt(chattyLibs.velocity)
+    compileOnly(libs.velocity)
+    kapt(libs.velocity)
 }
 
 copyJar {

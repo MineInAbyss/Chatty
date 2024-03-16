@@ -2,17 +2,17 @@ package com.mineinabyss.chatty
 
 import com.mineinabyss.chatty.components.ChannelData
 import com.mineinabyss.chatty.components.ChattyNickname
-import com.mineinabyss.chatty.components.CommandSpy
 import com.mineinabyss.chatty.helpers.DiscordEmoteFixer
 import com.mineinabyss.chatty.listeners.ChatListener
 import com.mineinabyss.chatty.listeners.ChattyProxyListener
 import com.mineinabyss.chatty.listeners.DiscordListener
 import com.mineinabyss.chatty.listeners.PlayerListener
 import com.mineinabyss.chatty.placeholders.PlaceholderAPIHook
-import com.mineinabyss.chatty.queries.SpyingPlayers
+import com.mineinabyss.chatty.queries.SpyingPlayersQuery
 import com.mineinabyss.geary.autoscan.autoscan
 import com.mineinabyss.geary.helpers.componentId
 import com.mineinabyss.geary.modules.geary
+import com.mineinabyss.geary.systems.builders.cachedQuery
 import com.mineinabyss.idofront.config.config
 import com.mineinabyss.idofront.di.DI
 import com.mineinabyss.idofront.plugin.listeners
@@ -59,9 +59,7 @@ class ChattyPlugin : JavaPlugin() {
             override val emotefixer: DiscordEmoteFixer by config("emotefixer", dataFolder.toPath(), DiscordEmoteFixer())
             override val isPlaceholderApiLoaded: Boolean = Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")
             override val isDiscordSRVLoaded: Boolean = Bukkit.getPluginManager().isPluginEnabled("DiscordSRV")
-            override val spyingPlayers: SpyingPlayers = SpyingPlayers().apply {
-                registerIfNotRegistered()
-            }
+            override val spyingPlayers = geary.cachedQuery(SpyingPlayersQuery())
         }
 
         DI.add<ChattyContext>(chattyContext)

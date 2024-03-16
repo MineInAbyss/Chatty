@@ -1,9 +1,6 @@
 package com.mineinabyss.chatty
 
 import com.mineinabyss.chatty.components.ChannelType
-import com.mineinabyss.chatty.components.SpyOnChannels
-import com.mineinabyss.chatty.queries.SpyingPlayers
-import com.mineinabyss.geary.papermc.tracking.entities.toGeary
 import com.mineinabyss.idofront.textcomponents.miniMsg
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -29,7 +26,8 @@ data class ChattyChannel(
     val channelAliases: List<String> = listOf(),
 ) {
 
-    @Serializable data class MessageDeletion(
+    @Serializable
+    data class MessageDeletion(
         val enabled: Boolean = false,
         val position: MessageDeletionPosition = MessageDeletionPosition.PREFIX,
         val format: String = "<gray>[<red>X</red>]</gray>",
@@ -40,10 +38,13 @@ data class ChattyChannel(
             PREFIX, SUFFIX
         }
     }
+
     val key by lazy { chatty.config.channels.entries.first { it.value == this }.key }
-    val messageColor: TextColor? get() = _messageColor?.let {
-        TextColor.fromHexString(_messageColor) ?: NamedTextColor.NAMES.value(_messageColor) ?: ("<$_messageColor>").miniMsg().color()
-    }
+    val messageColor: TextColor?
+        get() = _messageColor?.let {
+            TextColor.fromHexString(_messageColor) ?: NamedTextColor.NAMES.value(_messageColor)
+            ?: ("<$_messageColor>").miniMsg().color()
+        }
 
 
     fun getAudience(player: Player): Collection<Audience> {
@@ -65,9 +66,9 @@ data class ChattyChannel(
         }
 
         // Add spying players
-        val spies = chatty.spyingPlayers.run {
-            toList { query -> query.player.takeIf { query.spying.channels.contains(key) } }.filterNotNull()
-        }
+        val spies = chatty.spyingPlayers.map {
+            this.player.takeIf { spying.channels.contains(key) }
+        }.filterNotNull()
         audiences.addAll(spies)
 
         return audiences

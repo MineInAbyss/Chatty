@@ -6,6 +6,7 @@ pluginManagement {
         mavenCentral()
         gradlePluginPortal()
         maven("https://repo.mineinabyss.com/releases")
+        maven("https://repo.mineinabyss.com/snapshots")
         maven("https://repo.papermc.io/repository/maven-public/")
         google()
     }
@@ -24,14 +25,13 @@ dependencyResolutionManagement {
 
     repositories {
         maven("https://repo.mineinabyss.com/releases")
+        maven("https://repo.mineinabyss.com/snapshots")
     }
 
     versionCatalogs {
-        create("libs") {
+        create("idofrontLibs") {
             from("com.mineinabyss:catalog:$idofrontVersion")
-            version("kotlin", "1.9.22")
         }
-        create("chattyLibs").from(files("gradle/chattyLibs.versions.toml"))
     }
 }
 

@@ -7,9 +7,9 @@ import com.mineinabyss.chatty.components.ChannelData
 import com.mineinabyss.chatty.components.CommandSpy
 import com.mineinabyss.chatty.events.ChattyPlayerChatEvent
 import com.mineinabyss.chatty.helpers.*
-import com.mineinabyss.geary.datatypes.family.family
+import com.mineinabyss.geary.modules.geary
 import com.mineinabyss.geary.papermc.tracking.entities.toGearyOrNull
-import com.mineinabyss.geary.systems.accessors.Pointer
+import com.mineinabyss.geary.systems.builders.cachedQuery
 import com.mineinabyss.geary.systems.query.GearyQuery
 import com.mineinabyss.idofront.textcomponents.serialize
 import io.papermc.paper.event.player.AsyncChatCommandDecorateEvent
@@ -29,16 +29,16 @@ import org.bukkit.event.player.PlayerCommandPreprocessEvent
 @Suppress("UnstableApiUsage")
 class ChatListener : Listener {
     val plainText = PlainTextComponentSerializer.plainText()
-    val commandSpyQuery = CommandSpyQuery()
+    val commandSpyQuery = geary.cachedQuery(CommandSpyQuery())
 
     class CommandSpyQuery : GearyQuery() {
-        val Pointer.player by get<Player>()
-        val Pointer.commandSpy by family { has<CommandSpy>() }
+        val player by get<Player>()
+        override fun ensure() = this { has<CommandSpy>() }
     }
 
     @EventHandler
     fun PlayerCommandPreprocessEvent.onPlayerCommand() {
-        commandSpyQuery.run { toList { it.player } }.filter { it != player }.forEach { p ->
+        commandSpyQuery.map { player }.filter { it != player }.forEach { p ->
             p.sendFormattedMessage(chatty.config.chat.commandSpyFormat, message, optionalPlayer = player)
         }
     }
@@ -71,7 +71,11 @@ class ChatListener : Listener {
         if (chattyEvent.callEvent()) message(chattyEvent.message)
         else viewers().clear()
 
-        val simpleMessage = Component.textOfChildren(player.name().style(Style.style(TextDecoration.ITALIC)), Component.text(": "), baseMessage)
+        val simpleMessage = Component.textOfChildren(
+            player.name().style(Style.style(TextDecoration.ITALIC)),
+            Component.text(": "),
+            baseMessage
+        )
         if (channel.logToConsole) Bukkit.getConsoleSender().sendMessage(simpleMessage)
         handleProxyMessage(player, channelId, channel, message(), simpleMessage)
 
@@ -103,7 +107,8 @@ class ChatListener : Listener {
 
             else -> renderer { source, _, message, audience ->
                 var finalMessage = message
-                finalMessage = handleChatFilters(finalMessage, player, audience as? Player) ?: return@renderer Component.empty()
+                finalMessage = handleChatFilters(finalMessage, player, audience as? Player)
+                    ?: return@renderer Component.empty()
                 finalMessage = formatPlayerPingMessage(source, pingedPlayer, audience, finalMessage)
                 finalMessage = formatModerationMessage(
                     channel.messageDeletion,
@@ -120,7 +125,13 @@ class ChatListener : Listener {
         }
     }
 
-    private fun handleProxyMessage(player: Player, channelId: String, channel: ChattyChannel, message: Component, simpleMessage: Component) {
+    private fun handleProxyMessage(
+        player: Player,
+        channelId: String,
+        channel: ChattyChannel,
+        message: Component,
+        simpleMessage: Component
+    ) {
         if (!channel.proxy) return
         val proxyMessage = Component.textOfChildren(player.name(), Component.text(channelId), message, simpleMessage)
         player.sendPluginMessage(chatty.plugin, chattyProxyChannel, gson.serialize(proxyMessage).toByteArray())

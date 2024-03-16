@@ -1,11 +1,10 @@
-@Suppress("DSL_SCOPE_VIOLATION")
 plugins {
-    alias(libs.plugins.mia.kotlin.jvm)
-    alias(libs.plugins.mia.papermc)
-    alias(libs.plugins.mia.testing)
-    alias(libs.plugins.mia.publication)
-    id(libs.plugins.mia.copyjar.get().pluginId)
-    alias(libs.plugins.kotlinx.serialization)
+    alias(idofrontLibs.plugins.mia.kotlin.jvm)
+    alias(idofrontLibs.plugins.mia.papermc)
+    alias(idofrontLibs.plugins.mia.testing)
+    alias(idofrontLibs.plugins.mia.publication)
+    id(idofrontLibs.plugins.mia.copyjar.get().pluginId)
+    alias(idofrontLibs.plugins.kotlinx.serialization)
 }
 
 repositories {
@@ -17,21 +16,21 @@ repositories {
 
 dependencies {
     // MineInAbyss platform
-    compileOnly(libs.kotlinx.serialization.json)
-    compileOnly(libs.kotlinx.serialization.kaml)
-    compileOnly(libs.kotlinx.coroutines)
-    compileOnly(libs.minecraft.mccoroutine)
-    compileOnly(libs.bundles.idofront.core)
+    compileOnly(idofrontLibs.kotlinx.serialization.json)
+    compileOnly(idofrontLibs.kotlinx.serialization.kaml)
+    compileOnly(idofrontLibs.kotlinx.coroutines)
+    compileOnly(idofrontLibs.minecraft.mccoroutine)
+    compileOnly(idofrontLibs.bundles.idofront.core)
 
     // Other plugins
-    compileOnly(chattyLibs.geary.papermc)
+    compileOnly(libs.geary.papermc)
 
     /// Third-party plugins
-    compileOnly(chattyLibs.placeholderapi)
-    compileOnly(chattyLibs.discordsrv)
+    compileOnly(libs.placeholderapi)
+    compileOnly(libs.discordsrv)
 
     // Shaded
-    implementation(chattyLibs.imageloader)
+    implementation(libs.imageloader)
 
 }
 
