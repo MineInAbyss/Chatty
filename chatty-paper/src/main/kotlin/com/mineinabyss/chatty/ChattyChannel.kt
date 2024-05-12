@@ -66,9 +66,7 @@ data class ChattyChannel(
         }
 
         // Add spying players
-        val spies = chatty.spyingPlayers.map {
-            this.player.takeIf { spying.channels.contains(key) }
-        }.filterNotNull()
+        val spies = chatty.spyingPlayers.mapWithEntity { this.player.takeIf { key in this.spying.channels } }.mapNotNull { it.data }
         audiences.addAll(spies)
 
         return audiences

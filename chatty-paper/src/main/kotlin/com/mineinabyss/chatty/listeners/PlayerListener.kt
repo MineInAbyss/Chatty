@@ -5,6 +5,7 @@ import com.mineinabyss.chatty.components.ChannelData
 import com.mineinabyss.chatty.components.HideJoinLeave
 import com.mineinabyss.chatty.helpers.*
 import com.mineinabyss.geary.papermc.tracking.entities.toGeary
+import com.mineinabyss.geary.serialization.getOrSetPersisting
 import com.mineinabyss.idofront.items.editItemMeta
 import com.mineinabyss.idofront.textcomponents.miniMsg
 import com.mineinabyss.idofront.textcomponents.serialize

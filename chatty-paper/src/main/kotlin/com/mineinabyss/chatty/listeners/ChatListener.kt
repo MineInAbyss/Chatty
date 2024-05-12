@@ -9,7 +9,7 @@ import com.mineinabyss.chatty.events.ChattyPlayerChatEvent
 import com.mineinabyss.chatty.helpers.*
 import com.mineinabyss.geary.modules.geary
 import com.mineinabyss.geary.papermc.tracking.entities.toGearyOrNull
-import com.mineinabyss.geary.systems.builders.cachedQuery
+import com.mineinabyss.geary.systems.builders.cache
 import com.mineinabyss.geary.systems.query.GearyQuery
 import com.mineinabyss.idofront.textcomponents.serialize
 import io.papermc.paper.event.player.AsyncChatCommandDecorateEvent
@@ -29,7 +29,7 @@ import org.bukkit.event.player.PlayerCommandPreprocessEvent
 @Suppress("UnstableApiUsage")
 class ChatListener : Listener {
     val plainText = PlainTextComponentSerializer.plainText()
-    val commandSpyQuery = geary.cachedQuery(CommandSpyQuery())
+    val commandSpyQuery = geary.cache(CommandSpyQuery())
 
     class CommandSpyQuery : GearyQuery() {
         val player by get<Player>()

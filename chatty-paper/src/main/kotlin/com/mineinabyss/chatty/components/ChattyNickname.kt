@@ -3,6 +3,7 @@ package com.mineinabyss.chatty.components
 import com.mineinabyss.chatty.chatty
 import com.mineinabyss.chatty.helpers.parseTags
 import com.mineinabyss.geary.papermc.tracking.entities.toGeary
+import com.mineinabyss.geary.serialization.setPersisting
 import com.mineinabyss.idofront.textcomponents.miniMsg
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable

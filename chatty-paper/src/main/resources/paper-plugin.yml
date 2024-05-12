@@ -11,10 +11,6 @@ dependencies:
       required: true
       load: BEFORE
       join-classpath: true
-    BondrewdLikesHisEmotes:
-      required: false
-      load: BEFORE
-      join-classpath: true
     PlaceholderAPI:
       required: false
       load: BEFORE

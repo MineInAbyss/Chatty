@@ -12,7 +12,7 @@ import com.mineinabyss.chatty.queries.SpyingPlayersQuery
 import com.mineinabyss.geary.autoscan.autoscan
 import com.mineinabyss.geary.helpers.componentId
 import com.mineinabyss.geary.modules.geary
-import com.mineinabyss.geary.systems.builders.cachedQuery
+import com.mineinabyss.geary.systems.builders.cache
 import com.mineinabyss.idofront.config.config
 import com.mineinabyss.idofront.di.DI
 import com.mineinabyss.idofront.plugin.Plugins
@@ -59,7 +59,7 @@ class ChattyPlugin : JavaPlugin() {
             override val emotefixer: DiscordEmoteFixer by config("emotefixer", dataFolder.toPath(), DiscordEmoteFixer())
             override val isPlaceholderApiLoaded: Boolean get() = Plugins.isEnabled("PlaceholderAPI")
             override val isDiscordSRVLoaded: Boolean get() = Plugins.isEnabled("DiscordSRV")
-            override val spyingPlayers = geary.cachedQuery(SpyingPlayersQuery())
+            override val spyingPlayers = geary.cache(SpyingPlayersQuery())
         }
 
         DI.add<ChattyContext>(chattyContext)

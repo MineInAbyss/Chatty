@@ -9,6 +9,8 @@ import com.mineinabyss.chatty.components.*
 import com.mineinabyss.chatty.helpers.*
 import com.mineinabyss.geary.papermc.tracking.entities.toGeary
 import com.mineinabyss.geary.papermc.tracking.entities.toGearyOrNull
+import com.mineinabyss.geary.serialization.getOrSetPersisting
+import com.mineinabyss.geary.serialization.setPersisting
 import com.mineinabyss.idofront.commands.arguments.stringArg
 import com.mineinabyss.idofront.commands.execution.IdofrontCommandExecutor
 import com.mineinabyss.idofront.commands.extensions.actions.ensureSenderIsPlayer
@@ -80,7 +82,7 @@ class ChattyCommands : IdofrontCommandExecutor(), TabCompleter {
                             sender.sendFormattedMessage(nickMessage.selfEmpty)
                         }
 
-                        arguments.first().startsWith(chatty.config.nicknames.nickNameOtherPrefix) -> {
+                        arguments[0].startsWith(chatty.config.nicknames.nickNameOtherPrefix) -> {
                             val otherPlayer = arguments.playerToNick()
                             val otherNick = nick.removePlayerToNickFromString()
 

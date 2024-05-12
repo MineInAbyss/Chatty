@@ -1,7 +1,6 @@
 plugins {
     alias(idofrontLibs.plugins.mia.kotlin.jvm)
     alias(idofrontLibs.plugins.mia.papermc)
-    alias(idofrontLibs.plugins.mia.testing)
     alias(idofrontLibs.plugins.mia.publication)
     id(idofrontLibs.plugins.mia.copyjar.get().pluginId)
     alias(idofrontLibs.plugins.kotlinx.serialization)
@@ -12,6 +11,7 @@ repositories {
     maven("https://repo.mineinabyss.com/snapshots")
     maven("https://repo.extendedclip.com/content/repositories/placeholderapi/")
     maven("https://nexus.scarsz.me/content/groups/public/") // DiscordSRV
+    mavenLocal()
 }
 
 dependencies {
