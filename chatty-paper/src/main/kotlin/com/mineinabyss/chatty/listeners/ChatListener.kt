@@ -62,7 +62,7 @@ class ChatListener : Listener {
         val channelData = ogChannelData.withChannelVerified()
         val channelId = channelData.channelId
         val channel = channelData.channel ?: return
-        val baseMessage = message().children().last()
+        val baseMessage = message().children().lastOrNull() ?: message()
 
         if (viewers().isNotEmpty()) viewers().clear()
         viewers() += channel.getAudience(player)
