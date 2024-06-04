@@ -11,7 +11,5 @@ import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
 import org.bukkit.entity.Player
 
-fun GenericChattyDecorateEvent(player: Player, msg: Component) =
-    AsyncChatDecorateEvent(player, msg)
 fun GenericChattyChatEvent(player: Player, msg: Component) =
     AsyncChatEvent(true, player, mutableSetOf(), ChatRenderer.defaultRenderer(), msg, msg, SignedMessage.system(msg.serialize(), null))
