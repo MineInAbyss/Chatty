@@ -1,5 +1,6 @@
 package com.mineinabyss.chatty
 
+import com.mineinabyss.chatty.commands.ChattyBrigadierCommands
 import com.mineinabyss.chatty.components.ChannelData
 import com.mineinabyss.chatty.components.ChattyNickname
 import com.mineinabyss.chatty.helpers.DiscordEmoteFixer
@@ -41,7 +42,8 @@ class ChattyPlugin : JavaPlugin() {
         // Register the proxy listener
         registerProxyChannels()
 
-        ChattyCommands()
+        //ChattyCommands()
+        ChattyBrigadierCommands.registerCommands()
         listeners(ChatListener(), PlayerListener())
         if (chatty.isPlaceholderApiLoaded)
             PlaceholderAPIHook().register()
