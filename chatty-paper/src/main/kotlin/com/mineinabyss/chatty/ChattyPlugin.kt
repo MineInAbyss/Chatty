@@ -41,7 +41,8 @@ class ChattyPlugin : JavaPlugin() {
         // Register the proxy listener
         registerProxyChannels()
 
-        ChattyCommands()
+        //ChattyCommands()
+        ChattyBrigadierCommands.registerCommands()
         listeners(ChatListener(), PlayerListener())
         if (chatty.isPlaceholderApiLoaded)
             PlaceholderAPIHook().register()
