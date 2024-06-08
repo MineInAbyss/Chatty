@@ -29,6 +29,8 @@ data class ChattyConfig(
 
     @Serializable
     data class Translation(
+        @YamlComment("The character to append on translated messages")
+        val translationMark: String = "𝒯",
         @YamlComment("The default language for this server to translate to if a channel has unspecified targetLanguage.")
         val defaultLanguage: TranslationLanguage = TranslationLanguage.English_US,
         @YamlComment("The authKey for your DeepL Account. Can be found here: https://www.deepl.com/your-account/summary")

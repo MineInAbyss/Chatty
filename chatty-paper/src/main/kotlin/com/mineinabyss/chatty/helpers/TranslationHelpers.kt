@@ -36,8 +36,8 @@ fun handleMessageTranslation(source: Player, channel: ChattyChannel, sourceTrans
                 *component.children().dropLast(1).toTypedArray(),
                 chatty.translator.translateText(
                     component.children().last().serialize(), sourceTranslation?.language?.languageCode, targetLanguage.languageCode
-                ).text.miniMsg().hoverEventShowText(component.children().last()),
-                Component.text("*")
+                ).text.miniMsg().hoverEventShowText("Original Message: ".miniMsg().append(component.children().last())),
+                Component.space(), chatty.config.translation.translationMark.miniMsg().hoverEventShowText("Translated Message".miniMsg()),
             )
         )
     }.translatedMessage
