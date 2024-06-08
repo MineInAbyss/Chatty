@@ -5,6 +5,7 @@ import com.deepl.api.Translator
 import com.mineinabyss.chatty.components.ChannelData
 import com.mineinabyss.chatty.components.ChattyNickname
 import com.mineinabyss.chatty.helpers.DiscordEmoteFixer
+import com.mineinabyss.chatty.helpers.translatorStatus
 import com.mineinabyss.chatty.listeners.ChatListener
 import com.mineinabyss.chatty.listeners.ChattyProxyListener
 import com.mineinabyss.chatty.listeners.DiscordListener
@@ -17,6 +18,8 @@ import com.mineinabyss.geary.modules.geary
 import com.mineinabyss.geary.systems.builders.cache
 import com.mineinabyss.idofront.config.config
 import com.mineinabyss.idofront.di.DI
+import com.mineinabyss.idofront.messaging.ComponentLogger
+import com.mineinabyss.idofront.messaging.observeLogger
 import com.mineinabyss.idofront.plugin.Plugins
 import com.mineinabyss.idofront.plugin.listeners
 import github.scarsz.discordsrv.DiscordSRV
@@ -54,10 +57,12 @@ class ChattyPlugin : JavaPlugin() {
     }
 
     fun createChattyContext() {
+        translatorStatus = true
         DI.remove<ChattyContext>()
         val chattyContext = object : ChattyContext {
             override val plugin: ChattyPlugin = this@ChattyPlugin
             override val config: ChattyConfig by config("config", dataFolder.toPath(), ChattyConfig())
+            override val logger: ComponentLogger by plugin.observeLogger()
             override val translator: Translator = Translator(config.translation.authKey.takeUnless { it.isNullOrEmpty() } ?: "x")
             override val messages: ChattyMessages by config("messages", dataFolder.toPath(), ChattyMessages())
             override val emotefixer: DiscordEmoteFixer by config("emotefixer", dataFolder.toPath(), DiscordEmoteFixer())

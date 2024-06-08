@@ -1,7 +1,7 @@
 package com.mineinabyss.chatty.helpers
 
 import com.mineinabyss.chatty.ChattyChannel
-import com.mineinabyss.chatty.ChattyChannel.Translation.*
+import com.mineinabyss.chatty.ChattyChannel.Translation.TargetLanguageType
 import com.mineinabyss.chatty.chatty
 import com.mineinabyss.chatty.components.ChattyTranslation
 import com.mineinabyss.chatty.extensions.CacheMap
@@ -11,9 +11,21 @@ import net.kyori.adventure.chat.SignedMessage
 import net.kyori.adventure.text.Component
 import org.bukkit.entity.Player
 
+internal var translatorStatus: Boolean = true
+
 data class TranslatedMessage(val language: TranslationLanguage, val translatedMessage: Component)
+
 val cachedTranslations = CacheMap<SignedMessage, TranslatedMessage>(8)
-fun handleMessageTranslation(source: Player, channel: ChattyChannel, sourceTranslation: ChattyTranslation?, audienceTranslation: ChattyTranslation?, component: Component, signedMessage: SignedMessage): Component {
+fun handleMessageTranslation(
+    source: Player,
+    channel: ChattyChannel,
+    sourceTranslation: ChattyTranslation?,
+    audienceTranslation: ChattyTranslation?,
+    component: Component,
+    signedMessage: SignedMessage
+): Component {
+    if (!translatorStatus) return component
+
     val targetLanguage = when (channel.translation.type) {
         // Force translation with targetLanguage
         TargetLanguageType.FORCE -> channel.translation.targetLanguage
@@ -30,14 +42,30 @@ fun handleMessageTranslation(source: Player, channel: ChattyChannel, sourceTrans
     //if (audienceTranslation?.translateSameLanguage != true && sourceTranslation?.language != null  && sourceTranslation.language == audienceTranslation?.language) return component
 
     // We cache translations to avoid translating the same message multiple times
-    return cachedTranslations.computeIfAbsent(signedMessage) {
-        TranslatedMessage(targetLanguage,
+    return cachedTranslations.entries.firstOrNull {
+        it.value.translatedMessage.children().dropLast(2).lastOrNull() == component.children().dropLast(2).lastOrNull()
+    }?.value?.translatedMessage ?: cachedTranslations.computeIfAbsent(signedMessage) {
+        val translatedBaseMessage = runCatching {
+            chatty.translator.translateText(
+                component.children().last().serialize(),
+                sourceTranslation?.language?.languageCode,
+                targetLanguage.languageCode
+            ).text.miniMsg().hoverEventShowText("Original Message: ".miniMsg().append(component.children().last()))
+        }.getOrElse {
+            if (translatorStatus) {
+                chatty.logger.e("DeepL API-Key Limit likely hit...")
+                chatty.logger.e("Stopping translations for now")
+                translatorStatus = false
+            }
+            return@computeIfAbsent TranslatedMessage(targetLanguage, component)
+        }
+
+        TranslatedMessage(
+            targetLanguage,
             Component.textOfChildren(
-                *component.children().dropLast(1).toTypedArray(),
-                chatty.translator.translateText(
-                    component.children().last().serialize(), sourceTranslation?.language?.languageCode, targetLanguage.languageCode
-                ).text.miniMsg().hoverEventShowText("Original Message: ".miniMsg().append(component.children().last())),
-                Component.space(), chatty.config.translation.translationMark.miniMsg().hoverEventShowText("Translated Message".miniMsg()),
+                *component.children().dropLast(1).toTypedArray(), translatedBaseMessage, Component.space(),
+                chatty.config.translation.translationMark.miniMsg()
+                    .hoverEventShowText("Translated Message".miniMsg())
             )
         )
     }.translatedMessage
