@@ -49,7 +49,7 @@ class ChattyProxyListener : PluginMessageListener {
                 ChannelType.GLOBAL -> onlinePlayers
                 ChannelType.RADIUS -> canSpy
                 ChannelType.PERMISSION -> onlinePlayers.filter { it.hasPermission(channel.permission) || it in canSpy }
-                ChannelType.PRIVATE -> onlinePlayers.filter {
+                ChannelType.CUSTOM -> onlinePlayers.filter {
                     it.toGeary().get<ChannelData>()?.withChannelVerified()?.channel == channel || it in canSpy
                 }
             }.forEach { it.sendMessage(message) }

@@ -33,5 +33,5 @@ enum class ChannelType {
     GLOBAL,
     RADIUS,
     PERMISSION,
-    PRIVATE
+    CUSTOM
 }

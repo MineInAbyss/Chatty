@@ -62,7 +62,7 @@ data class ChattyChannel(
 
             ChannelType.PERMISSION -> audiences.addAll(onlinePlayers.filter { p -> p.hasPermission(permission) })
             // Intended for Guilds etc., want to consider finding a non-permission way for this
-            ChannelType.PRIVATE -> audiences.add(player)
+            ChannelType.CUSTOM -> audiences.add(player)
         }
 
         // Add spying players
