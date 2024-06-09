@@ -1,5 +1,6 @@
 package com.mineinabyss.chatty
 
+import com.github.shynixn.mccoroutine.bukkit.launch
 import com.mineinabyss.chatty.commands.ChattyBrigadierCommands
 import com.mineinabyss.chatty.components.ChannelData
 import com.mineinabyss.chatty.components.ChattyNickname
@@ -18,7 +19,17 @@ import com.mineinabyss.idofront.config.config
 import com.mineinabyss.idofront.di.DI
 import com.mineinabyss.idofront.plugin.Plugins
 import com.mineinabyss.idofront.plugin.listeners
+import com.mineinabyss.idofront.textcomponents.miniMsg
+import com.mojang.brigadier.Command
 import github.scarsz.discordsrv.DiscordSRV
+import io.papermc.paper.command.brigadier.Commands
+import io.papermc.paper.command.brigadier.argument.ArgumentTypes
+import io.papermc.paper.command.brigadier.argument.SignedMessageResolver
+import io.papermc.paper.event.player.AsyncChatEvent
+import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents
+import kotlinx.coroutines.future.await
+import net.kyori.adventure.chat.ChatType
+import net.kyori.adventure.chat.SignedMessage
 import org.bukkit.plugin.java.JavaPlugin
 
 class ChattyPlugin : JavaPlugin() {
@@ -42,8 +53,9 @@ class ChattyPlugin : JavaPlugin() {
         // Register the proxy listener
         registerProxyChannels()
 
-        //ChattyCommands()
         ChattyBrigadierCommands.registerCommands()
+        ChattyBrigadierCommands.registerSignedCommands()
+
         listeners(ChatListener(), PlayerListener())
         if (chatty.isPlaceholderApiLoaded)
             PlaceholderAPIHook().register()
