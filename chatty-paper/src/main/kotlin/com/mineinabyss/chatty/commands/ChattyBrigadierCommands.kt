@@ -71,6 +71,9 @@ object ChattyBrigadierCommands {
                         }
                     }
                     "sound" {
+                        playerExecutes {
+                            player.error("Missing sound-argument...")
+                        }
                         val soundName by StringArgumentType.word().suggests {
                             suggest(
                                 chatty.config.ping.alternativePingSounds
@@ -94,6 +97,9 @@ object ChattyBrigadierCommands {
                     }
                 }
                 "channel" {
+                    playerExecutes {
+                        player.error("Missing channel-argument...")
+                    }
                     val channel by ChattyChannelArgument().suggests {
                         suggest(chatty.config.channels.entries.asSequence()
                             .filter { it.value.channelType != ChannelType.CUSTOM }
@@ -120,6 +126,9 @@ object ChattyBrigadierCommands {
                     }
                 }
                 "spy" {
+                    playerExecutes {
+                        player.error("Missing channel-argument...")
+                    }
                     val channel by ChattyChannelArgument().suggests {
                         suggest(chatty.config.channels.entries
                             .filter {
@@ -156,58 +165,54 @@ object ChattyBrigadierCommands {
                     }
                 }
                 "nickname" {
+                    val nickMessage = chatty.messages.nicknames
+                    playerExecutes {
+                        player.chattyNickname = null
+                        sender.sendFormattedMessage(nickMessage.selfEmpty)
+                    }
+
                     val nickname by StringArgumentType.greedyString().suggests {
                         (context.source.executor as? Player)?.chattyNickname?.let {
                             suggestFiltering(it)
                         }
                     }
-                    playerExecutes {
-                        val nickname = nickname()
-                        val nickMessage = chatty.messages.nicknames
-                        val bypassFormatPerm = sender.hasPermission(ChattyPermissions.BYPASS_TAG_PERM)
 
+                    fun String.nicknameTooLong(): Boolean {
+                        return when (chatty.config.nicknames.countTagsInLength) {
+                            true -> this.length > chatty.config.nicknames.maxLength
+                            false -> this.stripTags().length >= chatty.config.nicknames.maxLength
+                        }
+                    }
+
+                    fun handleNickname(player: Player, applyTo: Player, nick: String) {
                         when {
-                            !sender.hasPermission(ChattyPermissions.NICKNAME) ->
-                                sender.sendFormattedMessage(nickMessage.selfDenied)
+                            !player.hasPermission(ChattyPermissions.NICKNAME) ->
+                                player.sendFormattedMessage(nickMessage.selfDenied)
 
-                            player.uniqueId != (sender as? Player)?.uniqueId -> {
-                                when {
-                                    !sender.hasPermission(ChattyPermissions.NICKNAME_OTHERS) ->
-                                        sender.sendFormattedMessage(nickMessage.otherDenied, player)
+                            player.uniqueId != applyTo.uniqueId && !player.hasPermission(ChattyPermissions.NICKNAME_OTHERS) ->
+                                player.sendFormattedMessage(nickMessage.otherDenied, applyTo)
 
-                                    nickname.isNullOrEmpty() -> {
-                                        player.chattyNickname = null
-                                        player.sendFormattedMessage(nickMessage.selfEmpty)
-                                        sender.sendFormattedMessage(nickMessage.otherEmpty, player)
-                                    }
-
-                                    !bypassFormatPerm && !nickname.verifyNickLength() ->
-                                        sender.sendFormattedMessage(nickMessage.tooLong)
-
-                                    nickname.isNotEmpty() -> {
-                                        player.chattyNickname = nickname
-                                        sender.sendFormattedMessage(nickMessage.otherSuccess, player)
-                                    }
-                                }
+                            player.uniqueId != applyTo.uniqueId && nick.isEmpty() -> {
+                                applyTo.chattyNickname = null
+                                applyTo.sendFormattedMessage(nickMessage.selfEmpty)
+                                player.sendFormattedMessage(nickMessage.otherEmpty, applyTo)
                             }
 
-                            else -> {
-                                when {
-                                    nickname.isNullOrEmpty() -> {
-                                        player.chattyNickname = null
-                                        sender.sendFormattedMessage(nickMessage.selfEmpty)
-                                    }
+                            !player.hasPermission(ChattyPermissions.BYPASS_TAG_PERM) && nick.nicknameTooLong() ->
+                                player.sendFormattedMessage(nickMessage.tooLong)
 
-                                    !bypassFormatPerm && !nickname.verifyNickLength() ->
-                                        sender.sendFormattedMessage(nickMessage.tooLong)
-
-                                    else -> {
-                                        (sender as? Player)?.chattyNickname = nickname
-                                        sender.sendFormattedMessage(nickMessage.selfSuccess)
-                                    }
-                                }
+                            nick.isNotEmpty() -> {
+                                applyTo.chattyNickname = nick
+                                if (player.uniqueId != applyTo.uniqueId) player.sendFormattedMessage(nickMessage.otherSuccess, player)
+                                else player.sendFormattedMessage(nickMessage.selfSuccess)
                             }
                         }
+                    }
+
+                    playerExecutes {
+                        val nickname = nickname() ?: return@playerExecutes
+                        val applyTo = nickname.substringBefore(" ").toPlayer()?.takeIf { it.uniqueId != player.uniqueId } ?: player
+                        handleNickname(player, applyTo, nickname.removePrefix(applyTo.name.takeIf { applyTo.uniqueId != player.uniqueId } ?: ""))
                     }
                 }
             }
