@@ -1,7 +1,10 @@
 package com.mineinabyss.chatty
 
 import com.charleskorn.kaml.YamlComment
+import com.deepl.api.Language
+import com.deepl.api.LanguageCode
 import com.mineinabyss.chatty.components.ChannelType
+import com.mineinabyss.chatty.helpers.TranslationLanguage
 import com.mineinabyss.idofront.serialization.DurationSerializer
 import com.mineinabyss.idofront.textcomponents.miniMsg
 import kotlinx.serialization.*
@@ -10,6 +13,7 @@ import kotlin.time.Duration.Companion.minutes
 
 @Serializable
 data class ChattyConfig(
+    val translation: Translation = Translation(),
     val playerHeadFont: String = "minecraft:chatty_heads",
     val nicknames: Nickname = Nickname(),
     val chat: Chat = Chat(),
@@ -22,6 +26,16 @@ data class ChattyConfig(
     // Might be a safer way to do this but 3AM so first solution is the best solution
     val channels: MutableMap<String, ChattyChannel> = mutableMapOf("global" to ChattyChannel(ChannelType.GLOBAL, messageDeletion = ChattyChannel.MessageDeletion(true))),
 ) {
+
+    @Serializable
+    data class Translation(
+        @YamlComment("The character to append on translated messages")
+        val translationMark: String = "𝒯",
+        @YamlComment("The default language for this server to translate to if a channel has unspecified targetLanguage.")
+        val defaultLanguage: TranslationLanguage = TranslationLanguage.English_US,
+        @YamlComment("The authKey for your DeepL Account. Can be found here: https://www.deepl.com/your-account/summary")
+        internal val authKey: String? = null,
+    )
 
     @Serializable
     data class Chat(

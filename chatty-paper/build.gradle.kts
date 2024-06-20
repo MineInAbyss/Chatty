@@ -31,6 +31,7 @@ dependencies {
 
     // Shaded
     implementation(libs.imageloader)
+    implementation(libs.deepl)
 
 }
 
