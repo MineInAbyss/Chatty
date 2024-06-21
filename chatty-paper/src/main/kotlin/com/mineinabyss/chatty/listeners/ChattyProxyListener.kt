@@ -27,7 +27,7 @@ import org.bukkit.plugin.messaging.PluginMessageListener
 
 class ChattyProxyListener : PluginMessageListener {
     override fun onPluginMessageReceived(ch: String, player: Player, byteArray: ByteArray) {
-        if (ch != chattyProxyChannel && ch == discordSrvChannel && Plugins.isEnabled("DiscordSRV")) return
+        if (ch != chattyProxyChannel && (ch != discordSrvChannel || chatty.isDiscordSRVLoaded)) return
         val decoded = gson.deserialize(byteArray.decodeToString())
         val senderName = (decoded.children()[0] as? TextComponent)?.content() ?: return
         val channelId = (decoded.children()[1] as? TextComponent)?.content() ?: return

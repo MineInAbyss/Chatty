@@ -52,6 +52,7 @@ class ChattyPlugin : JavaPlugin() {
 
         // Register the proxy listener
         registerProxyChannels()
+        registerDiscordChannels()
 
         ChattyBrigadierCommands.registerCommands()
         ChattyBrigadierCommands.registerSignedCommands()
@@ -91,10 +92,18 @@ class ChattyPlugin : JavaPlugin() {
     }
 
     private fun registerProxyChannels() {
-        try {
+        runCatching {
             server.messenger.registerIncomingPluginChannel(this, chattyProxyChannel, ChattyProxyListener())
             server.messenger.registerOutgoingPluginChannel(this, chattyProxyChannel)
-        } catch (e: IllegalArgumentException) {
+        }.onFailure {
+            logger.warning("Could not register proxy channel. Is another plugin using it?")
+        }
+    }
+
+    private fun registerDiscordChannels() {
+        runCatching {
+            server.messenger.registerOutgoingPluginChannel(this, discordSrvChannel)
+        }.onFailure {
             logger.warning("Could not register proxy channel. Is another plugin using it?")
         }
     }
