@@ -3,13 +3,14 @@ package com.mineinabyss.chatty.listeners
 import com.mineinabyss.chatty.chatty
 import com.mineinabyss.chatty.components.ChannelData
 import com.mineinabyss.chatty.components.HideJoinLeave
-import com.mineinabyss.chatty.helpers.*
+import com.mineinabyss.chatty.helpers.buildTagResolver
+import com.mineinabyss.chatty.helpers.parseTags
+import com.mineinabyss.chatty.helpers.refreshSkinInCaches
+import com.mineinabyss.chatty.helpers.translatePlaceholders
 import com.mineinabyss.geary.papermc.tracking.entities.toGeary
 import com.mineinabyss.geary.serialization.getOrSetPersisting
 import com.mineinabyss.idofront.items.editItemMeta
 import com.mineinabyss.idofront.textcomponents.miniMsg
-import com.mineinabyss.idofront.textcomponents.serialize
-import net.kyori.adventure.text.Component
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
@@ -47,9 +48,9 @@ class PlayerListener : Listener {
             quitMessage(translatePlaceholders(player, chatty.messages.joinLeave.leaveMessage).miniMsg(player.buildTagResolver(true)))
     }
 
-    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     fun PlayerEditBookEvent.onBookSign() {
-        newBookMeta = newBookMeta.apply {
+        if (isSigning) newBookMeta = newBookMeta.apply {
             if (hasAuthor())
                 author(author().parseTags(player))
             if (hasTitle())
@@ -68,7 +69,6 @@ class PlayerListener : Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     fun PrepareAnvilEvent.onAnvilRename() {
-        if (result?.itemMeta?.hasDisplayName() != true) return
         result = result?.editItemMeta {
             if (!hasDisplayName()) return@editItemMeta
             displayName(displayName()?.parseTags(viewers.firstOrNull() as? Player))
