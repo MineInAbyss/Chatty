@@ -41,11 +41,11 @@ class PlayerListener : Listener {
 
     @EventHandler
     fun PlayerQuitEvent.onDisconnect() {
-        // Remove player incase they switch skins
-        player.refreshSkinInCaches()
-
         if (chatty.config.leave.enabled && !player.toGeary().has<HideJoinLeave>())
             quitMessage(translatePlaceholders(player, chatty.messages.joinLeave.leaveMessage).miniMsg(player.buildTagResolver(true)))
+
+        // Remove player incase they switch skins
+        player.refreshSkinInCaches()
     }
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
