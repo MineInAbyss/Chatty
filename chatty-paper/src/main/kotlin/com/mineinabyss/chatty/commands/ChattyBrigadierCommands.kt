@@ -120,7 +120,7 @@ object ChattyBrigadierCommands {
                             gearyPlayer.remove<CommandSpy>()
                             player.sendFormattedMessage(chatty.messages.spying.commandSpyOff)
                         } else {
-                            gearyPlayer.getOrSetPersisting { CommandSpy() }
+                            gearyPlayer.getOrSetPersisting<CommandSpy> { CommandSpy() }
                             player.sendFormattedMessage(chatty.messages.spying.commandSpyOn)
                         }
                     }
@@ -143,7 +143,7 @@ object ChattyBrigadierCommands {
                             player.sendFormattedMessage(chatty.messages.channels.noChannelWithName)
                             return@playerExecutes
                         }
-                        val spy = player.toGeary().getOrSetPersisting { SpyOnChannels() }
+                        val spy = player.toGeary().getOrSetPersisting<SpyOnChannels> { SpyOnChannels() }
 
                         when {
                             channel.channelType == ChannelType.GLOBAL ->

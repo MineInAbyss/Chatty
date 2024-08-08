@@ -33,7 +33,7 @@ class PlayerListener : Listener {
     @EventHandler(priority = EventPriority.NORMAL)
     fun PlayerJoinEvent.onJoin() {
         val gearyPlayer = player.toGeary()
-        gearyPlayer.getOrSetPersisting { ChannelData() }
+        gearyPlayer.getOrSetPersisting<ChannelData> { ChannelData() }
         if (chatty.config.join.enabled && !gearyPlayer.has<HideJoinLeave>())
             joinMessage(translatePlaceholders(player, chatty.messages.joinLeave.joinMessage).miniMsg(player.buildTagResolver(true)))
     }
