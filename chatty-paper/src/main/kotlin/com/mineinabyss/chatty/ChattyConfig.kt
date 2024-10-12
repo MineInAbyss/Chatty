@@ -29,9 +29,9 @@ data class ChattyConfig(
     data class Chat(
         val disableChatSigning: Boolean = true,
         val commandSpyFormat: String = "<gold><chatty_nickname>: ",
+
         @YamlComment("Valid formats: STRIKETHROUGH, CENSOR, DELETE, BLOCK", "STRIKETHROUGH: Replaces filtered words with a strikethrough", "CENSOR: Replaces filtered words with a censor", "DELETE: Deletes filtered words", "BLOCK: Blocks filtered words from being sent")
-        val filterFormat: FilterFormat = FilterFormat.CENSOR,
-        @SerialName("filters") private val _filters: List<String> = listOf(),
+        @SerialName("filters") private val _filters: List<Filter> = listOf(Filter("", FilterFormat.STRIKETHROUGH)),
         val formatURLs: Boolean = true,
         val urlReplacements: Set<UrlReplacements> = setOf(
             UrlReplacements("^https:\\/\\/cdn\\.discordapp\\.com\\/attachments\\/[^\\/]+\\/[^\\/]+\\.png\\?.*\$", "[Discord Image]"),
@@ -41,15 +41,22 @@ data class ChattyConfig(
     ) {
 
         @Serializable
+        data class Filter(val pattern: String, val format: FilterFormat)
+
+        data class RegexFilter(val regex: Regex, val format: FilterFormat)
+
+        enum class FilterFormat {
+            STRIKETHROUGH, CENSOR, DELETE, BLOCK
+        }
+
+        @Serializable
         data class UrlReplacements(private val pattern: String, @SerialName("replacement") private val _replacement: String) {
             @Transient val regex = pattern.toRegex()
             @Transient val replacement = _replacement.miniMsg()
         }
 
-        enum class FilterFormat {
-            STRIKETHROUGH, CENSOR, DELETE, BLOCK
-        }
-        @Transient val filters: List<Regex> = _filters.map { it.toRegex() }
+
+        @Transient val filters: List<RegexFilter> = _filters.mapNotNull { it.takeUnless { it.pattern.isEmpty() }?.let { RegexFilter(it.pattern.toRegex(), it.format) } }
     }
 
     @Serializable

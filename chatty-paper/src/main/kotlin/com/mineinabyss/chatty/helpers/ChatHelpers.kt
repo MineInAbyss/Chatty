@@ -181,16 +181,15 @@ fun formatPlayerPingMessage(source: Player, pingedPlayer: Player?, audience: Aud
 fun handleChatFilters(message: Component, player: Player?, audience: Player?) : Component? {
     var finalMessage = message
     val serialized = finalMessage.asFlatTextContent()
-    val filterFormat = chatty.config.chat.filterFormat
     if (player?.hasPermission(ChattyPermissions.BYPASS_CHAT_FILTERS_PERM) == true) return finalMessage
 
-    val matchResults = chatty.config.chat.filters.flatMap { filter -> filter.findAll(serialized) }
-    val blockedWords = matchResults.joinToString(", ") { it.value }
-    matchResults.forEach { match ->
+    val matchResults = chatty.config.chat.filters.flatMap { it.regex.findAll(serialized).map { m -> m to it.format  } }
+    val blockedWords = matchResults.joinToString(", ") { it.first.value }
+    matchResults.forEach { (match, format) ->
         finalMessage = finalMessage.replaceText(TextReplacementConfig.builder()
             .matchLiteral(match.value)
             .replacement(Component.textOfChildren(
-                when (filterFormat) {
+                when (format) {
                     FilterFormat.STRIKETHROUGH -> Component.text(match.value).style(Style.style(TextDecoration.STRIKETHROUGH))
                     FilterFormat.CENSOR -> Component.text("⁎".repeat(match.value.length))
                     FilterFormat.DELETE -> Component.empty()
@@ -211,7 +210,7 @@ fun handleChatFilters(message: Component, player: Player?, audience: Player?) : 
 
     // If filterFormat is DELETE and message is empty, aka only containing blocked words
     // Give feedback to player and notify staff
-    if (finalMessage == Component.empty() && filterFormat == FilterFormat.DELETE) {
+    if (finalMessage == Component.empty() && matchResults.any { it.second == FilterFormat.DELETE }) {
         if (audience == player) player?.sendFormattedMessage(chatty.messages.chatFilter.deleteWordsEmptyMessage)
         else if (audience?.hasPermission(ChattyPermissions.MODERATION_PERM) == true)
             audience.sendFormattedMessage(chatty.messages.chatFilter.notifyStaff, blockedWords, optionalPlayer = player)
