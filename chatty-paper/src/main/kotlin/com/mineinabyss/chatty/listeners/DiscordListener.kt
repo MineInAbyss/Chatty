@@ -35,10 +35,12 @@ class DiscordListener {
         val channel = defaultChannel().takeIf { it.value.discordsrv } ?: globalChannel()?.takeIf { it.value.discordsrv } ?: chatty.config.channels.entries.firstOrNull { it.value.discordsrv } ?: return
         val channelId = ComponentDSV.text(channel.key)
         val simpleMessage = mm.deserialize(message.author.name + ": " + message.contentRaw)
-        val message = if (chatty.config.chat.formatURLs) handleUrlReplacements(minecraftMessage.toComponent(), null).toComponentDSV() else minecraftMessage
-        val minecraftMessage = ComponentDSV.textOfChildren(senderName, channelId, message, simpleMessage)
+        var message = handleUrlReplacements(minecraftMessage.toComponent(), null)
+        message = handleChatFilters(message, null, null) ?: run { isCancelled = true; return }
+
+        val minecraftMessage = ComponentDSV.textOfChildren(senderName, channelId, message.toComponentDSV(), simpleMessage)
         chatty.plugin.server.sendPluginMessage(chatty.plugin, discordSrvChannel, gson.serialize(minecraftMessage).toByteArray())
-        setMinecraftMessage(message)
+        setMinecraftMessage(message.toComponentDSV())
     }
 
     private fun ComponentDSV.toComponent() = mm.serialize(this).miniMsg()
@@ -46,10 +48,9 @@ class DiscordListener {
 
     @Subscribe(priority = ListenerPriority.NORMAL)
     fun GameChatMessagePreProcessEvent.onChat() {
-        val channel = player.toGeary().get<ChannelData>()?.channel ?: return
+        val channel = player.toGeary().get<ChannelData>()?.withChannelVerified()?.channel ?: return
         val baseMessage = messageComponent.children().last().toComponent()
         val filteredMessage = handleChatFilters(baseMessage, player, null)?.toComponentDSV()
-
         if (!channel.discordsrv || filteredMessage == null) isCancelled = true
         else messageComponent = filteredMessage
     }

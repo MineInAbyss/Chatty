@@ -9,12 +9,14 @@ import com.mineinabyss.chatty.components.chattyNickname
 import com.mineinabyss.chatty.placeholders.chattyPlaceholderTags
 import com.mineinabyss.chatty.tags.ChattyTags
 import com.mineinabyss.geary.papermc.tracking.entities.toGearyOrNull
+import com.mineinabyss.idofront.font.Space
 import com.mineinabyss.idofront.textcomponents.miniMsg
 import com.mineinabyss.idofront.textcomponents.serialize
 import me.clip.placeholderapi.PlaceholderAPI
 import net.kyori.adventure.audience.Audience
 import net.kyori.adventure.chat.SignedMessage
 import net.kyori.adventure.text.Component
+import net.kyori.adventure.text.TextComponent
 import net.kyori.adventure.text.TextReplacementConfig
 import net.kyori.adventure.text.event.ClickEvent
 import net.kyori.adventure.text.event.HoverEvent
@@ -176,11 +178,11 @@ fun formatPlayerPingMessage(source: Player, pingedPlayer: Player?, audience: Aud
     } ?: message
 }
 
-fun handleChatFilters(message: Component, player: Player, audience: Player?) : Component? {
+fun handleChatFilters(message: Component, player: Player?, audience: Player?) : Component? {
     var finalMessage = message
-    val serialized = finalMessage.serialize()
+    val serialized = finalMessage.asFlatTextContent()
     val filterFormat = chatty.config.chat.filterFormat
-    if (player.hasPermission(ChattyPermissions.BYPASS_CHAT_FILTERS_PERM)) return finalMessage
+    if (player?.hasPermission(ChattyPermissions.BYPASS_CHAT_FILTERS_PERM) == true) return finalMessage
 
     val matchResults = chatty.config.chat.filters.flatMap { filter -> filter.findAll(serialized) }
     val blockedWords = matchResults.joinToString(", ") { it.value }
@@ -190,17 +192,17 @@ fun handleChatFilters(message: Component, player: Player, audience: Player?) : C
             .replacement(Component.textOfChildren(
                 when (filterFormat) {
                     FilterFormat.STRIKETHROUGH -> Component.text(match.value).style(Style.style(TextDecoration.STRIKETHROUGH))
-                    FilterFormat.CENSOR -> Component.text("*".repeat(match.value.length))
+                    FilterFormat.CENSOR -> Component.text("⁎".repeat(match.value.length))
                     FilterFormat.DELETE -> Component.empty()
                     FilterFormat.BLOCK -> {
-                        player.sendFormattedMessage(chatty.messages.chatFilter.blockMessage, blockedWords)
+                        player?.sendFormattedMessage(chatty.messages.chatFilter.blockMessage, blockedWords)
                         if (audience?.hasPermission(ChattyPermissions.MODERATION_PERM) == true)
                             audience.sendFormattedMessage(chatty.messages.chatFilter.notifyStaff + blockedWords)
                         return null
                     }
                 }.takeIf { it != Component.empty() }?.let {
                     if (audience?.hasPermission(ChattyPermissions.MODERATION_PERM) == true)
-                        it.hoverEventShowText(Component.text(match.value).style(Style.style(TextDecoration.ITALIC)))
+                        it.hoverEventShowText(Component.text(match.value.toCharArray().joinToString(Space.PLUS_1.unicode)).style(Style.style(TextDecoration.ITALIC)))
                     else it
                 } ?: Component.empty()
             ))
@@ -210,7 +212,7 @@ fun handleChatFilters(message: Component, player: Player, audience: Player?) : C
     // If filterFormat is DELETE and message is empty, aka only containing blocked words
     // Give feedback to player and notify staff
     if (finalMessage == Component.empty() && filterFormat == FilterFormat.DELETE) {
-        if (audience == player) player.sendFormattedMessage(chatty.messages.chatFilter.deleteWordsEmptyMessage)
+        if (audience == player) player?.sendFormattedMessage(chatty.messages.chatFilter.deleteWordsEmptyMessage)
         else if (audience?.hasPermission(ChattyPermissions.MODERATION_PERM) == true)
             audience.sendFormattedMessage(chatty.messages.chatFilter.notifyStaff, blockedWords, optionalPlayer = player)
     }
@@ -219,6 +221,7 @@ fun handleChatFilters(message: Component, player: Player, audience: Player?) : C
 }
 
 fun handleUrlReplacements(message: Component, player: Player?): Component {
+    if (!chatty.config.chat.formatURLs) return message
     var component = message
     component.clickEvent()?.takeIf { it.action() == ClickEvent.Action.OPEN_URL }?.let { clickEvent ->
         val (regex, replacement) = chatty.config.chat.urlReplacements.firstOrNull { it.regex in clickEvent.value() }?.let { it.regex to it.replacement } ?: return@let
@@ -227,4 +230,11 @@ fun handleUrlReplacements(message: Component, player: Player?): Component {
     }
 
     return component.children(component.children().map { handleUrlReplacements(it, player) })
+}
+
+fun Component.asFlatTextContent(): String {
+    return buildString {
+        append((this@asFlatTextContent as? TextComponent)?.content())
+        append(this@asFlatTextContent.children().joinToString("") { it.asFlatTextContent() })
+    }
 }
