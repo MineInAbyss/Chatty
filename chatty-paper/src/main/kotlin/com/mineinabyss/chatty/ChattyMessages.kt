@@ -20,7 +20,7 @@ class ChattyMessages(
     data class ChatFilter(
         val blockMessage: String = "<yellow>⚠<gray>Your message contained blocked words:<i>",
         val deleteWordsEmptyMessage: String = "<yellow>⚠<gray>Your message was not sent as it contained only blocked words.",
-        val notifyStaff: String = "<yellow>⚠<gray><chatty_nickname> sent a message containing blocked words:<i>"
+        val notifyStaff: String = "<yellow>⚠<gray><chatty_nickname> sent a message containing blocked words: <i>"
     )
 
     @Serializable

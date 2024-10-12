@@ -178,13 +178,14 @@ fun formatPlayerPingMessage(source: Player, pingedPlayer: Player?, audience: Aud
     } ?: message
 }
 
-fun handleChatFilters(message: Component, player: Player?, audience: Player?) : Component? {
+fun handleChatFilters(message: Component, player: Player?, audience: Player?, silent: Boolean) : Component? {
     var finalMessage = message
     val serialized = finalMessage.asFlatTextContent()
     if (player?.hasPermission(ChattyPermissions.BYPASS_CHAT_FILTERS_PERM) == true) return finalMessage
+    val staffAudience = audience?.takeUnless { silent }?.let { listOf(it) } ?: Bukkit.getServer().onlinePlayers.filter { !silent && it.hasPermission(ChattyPermissions.MODERATION_PERM) }
 
     val matchResults = chatty.config.chat.filters.flatMap { it.regex.findAll(serialized).map { m -> m to it.format  } }
-    val blockedWords = matchResults.joinToString(", ") { it.first.value }
+    val blockedWords = matchResults.distinctBy { it.first.value }.joinToString(", "){ it.first.value }
     matchResults.forEach { (match, format) ->
         finalMessage = finalMessage.replaceText(TextReplacementConfig.builder()
             .matchLiteral(match.value)
@@ -194,13 +195,12 @@ fun handleChatFilters(message: Component, player: Player?, audience: Player?) : 
                     FilterFormat.CENSOR -> Component.text("⁎".repeat(match.value.length))
                     FilterFormat.DELETE -> Component.empty()
                     FilterFormat.BLOCK -> {
-                        player?.sendFormattedMessage(chatty.messages.chatFilter.blockMessage, blockedWords)
-                        if (audience?.hasPermission(ChattyPermissions.MODERATION_PERM) == true)
-                            audience.sendFormattedMessage(chatty.messages.chatFilter.notifyStaff + blockedWords)
+                        player?.takeUnless { silent }?.sendFormattedMessage(chatty.messages.chatFilter.blockMessage, blockedWords)
+                        staffAudience.forEach { it.sendFormattedMessage(chatty.messages.chatFilter.notifyStaff + blockedWords, optionalPlayer = player) }
                         return null
                     }
                 }.takeIf { it != Component.empty() }?.let {
-                    if (audience?.hasPermission(ChattyPermissions.MODERATION_PERM) == true)
+                    if (!silent && audience?.hasPermission(ChattyPermissions.MODERATION_PERM) == true)
                         it.hoverEventShowText(Component.text(match.value.toCharArray().joinToString(Space.PLUS_1.unicode)).style(Style.style(TextDecoration.ITALIC)))
                     else it
                 } ?: Component.empty()
@@ -211,9 +211,8 @@ fun handleChatFilters(message: Component, player: Player?, audience: Player?) : 
     // If filterFormat is DELETE and message is empty, aka only containing blocked words
     // Give feedback to player and notify staff
     if (finalMessage == Component.empty() && matchResults.any { it.second == FilterFormat.DELETE }) {
-        if (audience == player) player?.sendFormattedMessage(chatty.messages.chatFilter.deleteWordsEmptyMessage)
-        else if (audience?.hasPermission(ChattyPermissions.MODERATION_PERM) == true)
-            audience.sendFormattedMessage(chatty.messages.chatFilter.notifyStaff, blockedWords, optionalPlayer = player)
+        if (audience == player && !silent) player?.sendFormattedMessage(chatty.messages.chatFilter.deleteWordsEmptyMessage)
+        staffAudience.forEach { it.sendFormattedMessage(chatty.messages.chatFilter.notifyStaff, blockedWords, optionalPlayer = player) }
     }
 
     return finalMessage.compact().takeIf { it != Component.empty() }

@@ -80,13 +80,14 @@ class ChatListener : Listener {
         handleProxyMessage(player, channelId, channel, message(), simpleMessage)
 
         val pingedPlayer = originalMessage().serialize().checkForPlayerPings(channelId)
-        val playerViewers = viewers().mapNotNull { it as? Player }.toSet()
+        val playerViewers = viewers().mapNotNull { it as? Player }.toMutableSet()
         when {
             playerViewers.isEmpty() -> player.sendFormattedMessage(chatty.messages.channels.emptyChannelMessage)
             chatty.config.chat.disableChatSigning -> {
+                if (handleChatFilters(baseMessage, null, null, false) == null) playerViewers.clear()
                 playerViewers.forEach { receiver ->
                     var finalMessage = message()
-                    finalMessage = handleChatFilters(finalMessage, player, receiver) ?: return@forEach
+                    finalMessage = handleChatFilters(finalMessage, player, receiver, false) ?: return@forEach
                     finalMessage = formatPlayerPingMessage(player, pingedPlayer, receiver, finalMessage)
                     finalMessage = formatModerationMessage(
                         channel.messageDeletion,
@@ -105,22 +106,25 @@ class ChatListener : Listener {
                 //isCancelled = true
             }
 
-            else -> renderer { source, _, message, audience ->
-                var finalMessage = message
-                finalMessage = handleChatFilters(finalMessage, player, audience as? Player)
-                    ?: return@renderer Component.empty()
-                finalMessage = formatPlayerPingMessage(source, pingedPlayer, audience, finalMessage)
-                finalMessage = formatModerationMessage(
-                    channel.messageDeletion,
-                    finalMessage,
-                    simpleMessage,
-                    signedMessage(),
-                    audience,
-                    source,
-                    playerViewers
-                )
+            else -> {
+                if (handleChatFilters(baseMessage, player, null, false) == null) viewers().clear()
+                renderer { source, _, message, audience ->
+                    var finalMessage = message
+                    finalMessage = handleChatFilters(finalMessage, player, audience as? Player, false)
+                        ?: return@renderer Component.empty()
+                    finalMessage = formatPlayerPingMessage(source, pingedPlayer, audience, finalMessage)
+                    finalMessage = formatModerationMessage(
+                        channel.messageDeletion,
+                        finalMessage,
+                        simpleMessage,
+                        signedMessage(),
+                        audience,
+                        source,
+                        playerViewers
+                    )
 
-                return@renderer finalMessage
+                    return@renderer finalMessage
+                }
             }
         }
     }

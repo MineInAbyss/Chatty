@@ -36,7 +36,7 @@ class DiscordListener {
         val channelId = ComponentDSV.text(channel.key)
         val simpleMessage = mm.deserialize(message.author.name + ": " + message.contentRaw)
         var message = handleUrlReplacements(minecraftMessage.toComponent(), null)
-        message = handleChatFilters(message, null, null) ?: run { isCancelled = true; return }
+        message = handleChatFilters(message, null, null, true) ?: run { isCancelled = true; return }
 
         val minecraftMessage = ComponentDSV.textOfChildren(senderName, channelId, message.toComponentDSV(), simpleMessage)
         chatty.plugin.server.sendPluginMessage(chatty.plugin, discordSrvChannel, gson.serialize(minecraftMessage).toByteArray())
@@ -50,7 +50,7 @@ class DiscordListener {
     fun GameChatMessagePreProcessEvent.onChat() {
         val channel = player.toGeary().get<ChannelData>()?.withChannelVerified()?.channel ?: return
         val baseMessage = messageComponent.children().last().toComponent()
-        val filteredMessage = handleChatFilters(baseMessage, player, null)?.toComponentDSV()
+        val filteredMessage = handleChatFilters(baseMessage, player, null, true)?.toComponentDSV()
         if (!channel.discordsrv || filteredMessage == null) isCancelled = true
         else messageComponent = filteredMessage
     }
