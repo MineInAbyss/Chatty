@@ -34,7 +34,7 @@ import java.util.regex.Pattern
 
 val alternativePingSounds: List<String> =
     chatty.config.ping.let { ping -> if ("*" in ping.alternativePingSounds || "all" in ping.alternativePingSounds)
-        Sound.entries.map { it.key.toString() }.toList() else ping.alternativePingSounds }
+        Sound.entries.map { it.key().toString() }.toList() else ping.alternativePingSounds }
 
 val pingEnabledChannels: List<String> =
     chatty.config.ping.let { ping -> if ("*" in ping.enabledChannels || "all" in ping.enabledChannels) channelNames() else ping.enabledChannels }
