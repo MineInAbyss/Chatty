@@ -6,7 +6,6 @@ import net.kyori.adventure.text.minimessage.tag.standard.StandardTags
 import org.bukkit.permissions.Permission
 
 object ChattyPermissions {
-    const val NICKNAME = "chatty.nickname"
     const val NICKNAME_OTHERS = "chatty.nickname.others"
     const val BYPASS_TAG_PERM = "chatty.tags.bypass"
     const val BYPASS_CHAT_FILTERS_PERM = "chatty.chat.filters.bypass"

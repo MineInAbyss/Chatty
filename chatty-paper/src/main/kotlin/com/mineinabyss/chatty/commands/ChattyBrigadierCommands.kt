@@ -16,6 +16,7 @@ import com.mineinabyss.geary.serialization.getOrSetPersisting
 import com.mineinabyss.geary.serialization.setPersisting
 import com.mineinabyss.idofront.commands.brigadier.IdoRootCommand
 import com.mineinabyss.idofront.commands.brigadier.commands
+import com.mineinabyss.idofront.commands.brigadier.playerExecutes
 import com.mineinabyss.idofront.entities.toPlayer
 import com.mineinabyss.idofront.events.call
 import com.mineinabyss.idofront.messaging.error
@@ -71,36 +72,31 @@ object ChattyBrigadierCommands {
                         }
                     }
                     "sound" {
-                        playerExecutes {
-                            player.error("Missing sound-argument...")
-                        }
-                        val soundName by StringArgumentType.word().suggests {
+                        playerExecutes(StringArgumentType.word().suggests {
                             suggest(
                                 chatty.config.ping.alternativePingSounds
-                                .takeUnless { "all" in it } ?: Sound.entries.map { it.key.asString() }
+                                    .takeUnless { "all" in it } ?: Sound.entries.map { it.key().asString() }
                             )
-                        }
-                        playerExecutes {
+                        }.named("sound")) { sound ->
                             val gearyPlayer = player.toGeary()
                             val oldData = gearyPlayer.get<ChannelData>() ?: return@playerExecutes
-                            if (soundName() in alternativePingSounds) {
-                                gearyPlayer.setPersisting(oldData.copy(pingSound = soundName()))
+                            if (sound in alternativePingSounds) {
+                                gearyPlayer.setPersisting(oldData.copy(pingSound = sound))
                                 player.sendFormattedMessage(chatty.messages.ping.changedPingSound)
                             } else player.sendFormattedMessage(chatty.messages.ping.invalidPingSound)
                         }
                     }
                 }
                 "channels" {
+                    requiresPermission("")
                     executes {
                         (sender as? Player)?.sendFormattedMessage(chatty.messages.channels.availableChannels)
                             ?: sender.sendRichMessage(chatty.messages.channels.availableChannels)
                     }
                 }
                 "channel" {
-                    playerExecutes {
-                        player.error("Missing channel-argument...")
-                    }
-                    val channel by ChattyChannelArgument().suggests {
+                    requiresPermission("")
+                    playerExecutes(ChattyChannelArgument().suggests {
                         suggest(chatty.config.channels.entries.asSequence()
                             .filter { it.value.channelType != ChannelType.CUSTOM }
                             .filter { it.value.permission.isEmpty() || context.source.sender.hasPermission(it.value.permission) }
@@ -108,9 +104,8 @@ object ChattyBrigadierCommands {
                                 it.key in setOf(defaultChannel().key, radiusChannel()?.key, adminChannel()?.key).filterNotNull()
                             }.map { it.key }.toList()
                         )
-                    }
-                    playerExecutes {
-                        if (channel()?.channelType != ChannelType.CUSTOM) swapChannel(player, channel())
+                    }.named("channel")) { channel ->
+                        if (channel.channelType != ChannelType.CUSTOM) swapChannel(player, channel)
                     }
                 }
                 "commandspy" {
@@ -126,23 +121,15 @@ object ChattyBrigadierCommands {
                     }
                 }
                 "spy" {
-                    playerExecutes {
-                        player.error("Missing channel-argument...")
-                    }
-                    val channel by ChattyChannelArgument().suggests {
-                        suggest(chatty.config.channels.entries
-                            .filter {
-                                it.value.permission.isEmpty() || context.source.sender.hasPermission(it.value.permission)
-                            }.sortedBy {
+                    playerExecutes(ChattyChannelArgument().suggests {
+                        suggest(chatty.config.channels.entries.asSequence()
+                            .filter { it.value.channelType != ChannelType.CUSTOM }
+                            .filter { it.value.permission.isEmpty() || context.source.sender.hasPermission(it.value.permission) }
+                            .sortedBy {
                                 it.key in setOf(defaultChannel().key, radiusChannel()?.key, adminChannel()?.key).filterNotNull()
-                            }.map { it.key }
+                            }.map { it.key }.toList()
                         )
-                    }
-                    playerExecutes {
-                        val channel = channel() ?: run {
-                            player.sendFormattedMessage(chatty.messages.channels.noChannelWithName)
-                            return@playerExecutes
-                        }
+                    }.named("channel")) { channel ->
                         val spy = player.toGeary().getOrSetPersisting<SpyOnChannels> { SpyOnChannels() }
 
                         when {
@@ -166,16 +153,6 @@ object ChattyBrigadierCommands {
                 }
                 "nickname" {
                     val nickMessage = chatty.messages.nicknames
-                    playerExecutes {
-                        player.chattyNickname = null
-                        sender.sendFormattedMessage(nickMessage.selfEmpty)
-                    }
-
-                    val nickname by StringArgumentType.greedyString().suggests {
-                        (context.source.executor as? Player)?.chattyNickname?.let {
-                            suggestFiltering(it)
-                        }
-                    }
 
                     fun String.nicknameTooLong(): Boolean {
                         return when (chatty.config.nicknames.countTagsInLength) {
@@ -184,44 +161,61 @@ object ChattyBrigadierCommands {
                         }
                     }
 
-                    fun handleNickname(player: Player, applyTo: Player, nick: String) {
+                    playerExecutes(
+                        StringArgumentType.string().suggests {
+                            (context.source.executor as? Player)?.chattyNickname?.let {
+                                suggestFiltering(it)
+                            }
+                        }.named("nickname").default { "" },
+                        ArgumentTypes.player().resolve().map { it.single() }.named("player").default { executor as Player },
+                        ) { nickname, applyTo ->
                         when {
-                            !player.hasPermission(ChattyPermissions.NICKNAME) ->
-                                player.sendFormattedMessage(nickMessage.selfDenied)
-
+                            player == applyTo && nickname.isEmpty() -> {
+                                applyTo.chattyNickname = null
+                                applyTo.sendFormattedMessage(nickMessage.selfEmpty)
+                            }
                             player.uniqueId != applyTo.uniqueId && !player.hasPermission(ChattyPermissions.NICKNAME_OTHERS) ->
                                 player.sendFormattedMessage(nickMessage.otherDenied, applyTo)
 
-                            player.uniqueId != applyTo.uniqueId && nick.isEmpty() -> {
+                            player.uniqueId != applyTo.uniqueId && nickname.isEmpty() -> {
                                 applyTo.chattyNickname = null
                                 applyTo.sendFormattedMessage(nickMessage.selfEmpty)
                                 player.sendFormattedMessage(nickMessage.otherEmpty, applyTo)
                             }
 
-                            !player.hasPermission(ChattyPermissions.BYPASS_TAG_PERM) && nick.nicknameTooLong() ->
+                            !player.hasPermission(ChattyPermissions.BYPASS_TAG_PERM) && nickname.nicknameTooLong() ->
                                 player.sendFormattedMessage(nickMessage.tooLong)
 
-                            nick.isNotEmpty() -> {
-                                applyTo.chattyNickname = nick
+                            nickname.isNotEmpty() -> {
+                                applyTo.chattyNickname = nickname
                                 if (player.uniqueId != applyTo.uniqueId) player.sendFormattedMessage(nickMessage.otherSuccess, player)
                                 else player.sendFormattedMessage(nickMessage.selfSuccess)
                             }
                         }
                     }
-
-                    playerExecutes {
-                        val nickname = nickname() ?: return@playerExecutes
-                        val applyTo = nickname.substringBefore(" ").toPlayer()?.takeIf { it.uniqueId != player.uniqueId } ?: player
-                        handleNickname(player, applyTo, nickname.removePrefix(applyTo.name.takeIf { applyTo.uniqueId != player.uniqueId } ?: ""))
-                    }
                 }
             }
 
-            ("global" / "g") { handleShortCutChannel(globalChannel()) }
-            ("local" / "l") { handleShortCutChannel(radiusChannel()) }
-            ("admin" / "a") { handleShortCutChannel(adminChannel()) }
-            ("message" / "msg") { handleMessage() }
-            ("reply" / "r") { handleReply() }
+            ("global" / "g") {
+                requiresPermission("")
+                handleShortCutChannel(globalChannel())
+            }
+            ("local" / "l") {
+                requiresPermission("")
+                handleShortCutChannel(radiusChannel())
+            }
+            ("admin" / "a") {
+                requiresPermission("chatty.channel.admin")
+                handleShortCutChannel(adminChannel())
+            }
+            ("message" / "msg") {
+                requiresPermission("")
+                handleMessage()
+            }
+            ("reply" / "r") {
+                requiresPermission("")
+                handleReply()
+            }
         }
     }
 
@@ -244,50 +238,19 @@ object ChattyBrigadierCommands {
     }
 
     private fun IdoRootCommand.handleMessage() {
-        playerExecutes {
-            player.error("Missing player-argument...")
-        }
-        val sendTo by ArgumentTypes.player()
-        playerExecutes {
-            player.error("Missing message-argument...")
-        }
-        if (chatty.config.chat.disableChatSigning) {
-            val message by StringArgumentType.greedyString()
-            playerExecutes {
-                player.handleSendingPrivateMessage(sendTo().first(), null, message(), false)
-            }
-        } else {
-            val message by ArgumentTypes.signedMessage()
-            playerExecutes {
-                chatty.plugin.launch {
-                    val signedMessage = message().resolveSignedMessage("message", context).await()
-                    player.handleSendingPrivateMessage(sendTo().first(), signedMessage, null, false)
-                }
-            }
+        playerExecutes(
+            ArgumentTypes.player().resolve().map { it.single() }.named("sendTo"),
+            StringArgumentType.greedyString().named("message")
+        ) { sendTo, message ->
+            player.handleSendingPrivateMessage(sendTo, null, message, false)
         }
     }
 
     private fun IdoRootCommand.handleReply() {
-        playerExecutes {
-            player.error("Missing message-argument...")
-        }
-        if (chatty.config.chat.disableChatSigning) {
-            val message by StringArgumentType.greedyString()
-            playerExecutes {
-                player.toGeary().get<ChannelData>()?.lastMessager?.toPlayer()
-                    ?.let { player.handleSendingPrivateMessage(it, null, message(), true) }
-                    ?: player.sendFormattedMessage(chatty.messages.privateMessages.emptyReply)
-            }
-        } else {
-            val message by ArgumentTypes.signedMessage()
-            playerExecutes {
-                chatty.plugin.launch {
-                    val signedMessage = message().resolveSignedMessage("message", context).await()
-                    player.toGeary().get<ChannelData>()?.lastMessager?.toPlayer()
-                        ?.let { player.handleSendingPrivateMessage(it, signedMessage, null, true) }
-                        ?: player.sendFormattedMessage(chatty.messages.privateMessages.emptyReply)
-                }
-            }
+        playerExecutes(StringArgumentType.greedyString().named("message")) { message ->
+            player.toGeary().get<ChannelData>()?.lastMessager?.toPlayer()
+                ?.let { player.handleSendingPrivateMessage(it, null, message, true) }
+                ?: player.sendFormattedMessage(chatty.messages.privateMessages.emptyReply)
         }
     }
 

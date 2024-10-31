@@ -7,9 +7,10 @@ import com.mineinabyss.chatty.components.ChannelData
 import com.mineinabyss.chatty.components.CommandSpy
 import com.mineinabyss.chatty.events.ChattyPlayerChatEvent
 import com.mineinabyss.chatty.helpers.*
+import com.mineinabyss.geary.modules.Geary
 import com.mineinabyss.geary.modules.geary
+import com.mineinabyss.geary.papermc.gearyPaper
 import com.mineinabyss.geary.papermc.tracking.entities.toGearyOrNull
-import com.mineinabyss.geary.systems.builders.cache
 import com.mineinabyss.geary.systems.query.GearyQuery
 import com.mineinabyss.idofront.textcomponents.serialize
 import io.papermc.paper.event.player.AsyncChatCommandDecorateEvent
@@ -28,10 +29,9 @@ import org.bukkit.event.player.PlayerCommandPreprocessEvent
 
 @Suppress("UnstableApiUsage")
 class ChatListener : Listener {
-    val plainText = PlainTextComponentSerializer.plainText()
-    val commandSpyQuery = geary.cache(CommandSpyQuery())
+    val commandSpyQuery = gearyPaper.worldManager.global.cache(::CommandSpyQuery)
 
-    class CommandSpyQuery : GearyQuery() {
+    class CommandSpyQuery(world: Geary) : GearyQuery(world) {
         val player by get<Player>()
         override fun ensure() = this { has<CommandSpy>() }
     }
