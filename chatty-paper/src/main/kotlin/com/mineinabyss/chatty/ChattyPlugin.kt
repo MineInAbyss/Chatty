@@ -1,7 +1,8 @@
 package com.mineinabyss.chatty
 
-import com.github.shynixn.mccoroutine.bukkit.launch
 import com.mineinabyss.chatty.commands.ChattyBrigadierCommands
+import com.mineinabyss.chatty.components.ChannelData
+import com.mineinabyss.chatty.components.ChattyNickname
 import com.mineinabyss.chatty.helpers.DiscordEmoteFixer
 import com.mineinabyss.chatty.listeners.ChatListener
 import com.mineinabyss.chatty.listeners.ChattyProxyListener
@@ -11,23 +12,14 @@ import com.mineinabyss.chatty.placeholders.PlaceholderAPIHook
 import com.mineinabyss.chatty.queries.SpyingPlayersQuery
 import com.mineinabyss.geary.addons.dsl.createAddon
 import com.mineinabyss.geary.autoscan.autoscan
+import com.mineinabyss.geary.helpers.componentId
 import com.mineinabyss.geary.papermc.configure
 import com.mineinabyss.geary.papermc.gearyPaper
 import com.mineinabyss.idofront.config.config
 import com.mineinabyss.idofront.di.DI
 import com.mineinabyss.idofront.plugin.Plugins
 import com.mineinabyss.idofront.plugin.listeners
-import com.mineinabyss.idofront.textcomponents.miniMsg
-import com.mojang.brigadier.Command
 import github.scarsz.discordsrv.DiscordSRV
-import io.papermc.paper.command.brigadier.Commands
-import io.papermc.paper.command.brigadier.argument.ArgumentTypes
-import io.papermc.paper.command.brigadier.argument.SignedMessageResolver
-import io.papermc.paper.event.player.AsyncChatEvent
-import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents
-import kotlinx.coroutines.future.await
-import net.kyori.adventure.chat.ChatType
-import net.kyori.adventure.chat.SignedMessage
 import org.bukkit.plugin.java.JavaPlugin
 
 class ChattyPlugin : JavaPlugin() {
@@ -41,11 +33,10 @@ class ChattyPlugin : JavaPlugin() {
     override fun onLoad() {
         gearyPaper.configure {
             install(ChattyAddon)
+            // register components we'll use async now since they'll error otherwise
+            geary.componentId<ChattyNickname>()
+            geary.componentId<ChannelData>()
         }
-
-        // register components we'll use async now since they'll error otherwise
-        //componentId<ChattyNickname>()
-        //componentId<ChannelData>()
     }
 
     override fun onEnable() {
