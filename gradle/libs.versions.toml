@@ -1,5 +1,5 @@
 [versions]
-geary = "0.31.0"
+geary = "0.31.3"
 velocity = "3.4.0-SNAPSHOT"
 discordsrv = "1.28.0"
 placeholderapi = "2.11.6"
