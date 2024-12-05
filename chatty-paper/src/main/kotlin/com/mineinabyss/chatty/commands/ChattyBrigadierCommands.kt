@@ -96,15 +96,7 @@ object ChattyBrigadierCommands {
                 }
                 "channel" {
                     requiresPermission("")
-                    playerExecutes(ChattyChannelArgument().suggests {
-                        suggest(chatty.config.channels.entries.asSequence()
-                            .filter { it.value.channelType != ChannelType.CUSTOM }
-                            .filter { it.value.permission.isEmpty() || context.source.sender.hasPermission(it.value.permission) }
-                            .sortedBy {
-                                it.key in setOf(defaultChannel().key, radiusChannel()?.key, adminChannel()?.key).filterNotNull()
-                            }.map { it.key }.toList()
-                        )
-                    }.named("channel")) { channel ->
+                    playerExecutes(ChattyChannelArgument()) { channel ->
                         if (channel.channelType != ChannelType.CUSTOM) swapChannel(player, channel)
                     }
                 }
