@@ -5,9 +5,6 @@ import com.github.shynixn.mccoroutine.bukkit.launch
 import com.github.shynixn.mccoroutine.bukkit.minecraftDispatcher
 import com.mineinabyss.chatty.ChattyChannel
 import com.mineinabyss.chatty.chatty
-import com.mineinabyss.chatty.commands.ChattyBrigadierCommands.handleSendingPrivateMessage
-import com.mineinabyss.chatty.commands.ChattyBrigadierCommands.sendFormattedMessage
-import com.mineinabyss.chatty.commands.ChattyBrigadierCommands.shortcutCommand
 import com.mineinabyss.chatty.components.*
 import com.mineinabyss.chatty.helpers.*
 import com.mineinabyss.geary.papermc.tracking.entities.toGeary
@@ -19,34 +16,22 @@ import com.mineinabyss.idofront.commands.brigadier.commands
 import com.mineinabyss.idofront.commands.brigadier.playerExecutes
 import com.mineinabyss.idofront.entities.toPlayer
 import com.mineinabyss.idofront.events.call
-import com.mineinabyss.idofront.messaging.error
 import com.mineinabyss.idofront.textcomponents.miniMsg
-import com.mineinabyss.idofront.textcomponents.serialize
-import com.mojang.brigadier.Command
 import com.mojang.brigadier.arguments.StringArgumentType
-import com.mojang.brigadier.tree.ArgumentCommandNode
-import com.mojang.brigadier.tree.LiteralCommandNode
-import io.papermc.paper.command.brigadier.CommandSourceStack
-import io.papermc.paper.command.brigadier.Commands
 import io.papermc.paper.command.brigadier.argument.ArgumentTypes
-import io.papermc.paper.command.brigadier.argument.SignedMessageResolver
-import io.papermc.paper.command.brigadier.argument.resolvers.selector.PlayerSelectorArgumentResolver
 import io.papermc.paper.event.player.AsyncChatDecorateEvent
-import io.papermc.paper.event.player.AsyncChatEvent
-import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.future.await
 import kotlinx.coroutines.withContext
 import net.kyori.adventure.chat.ChatType
 import net.kyori.adventure.chat.SignedMessage
-import net.kyori.adventure.identity.Identity
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
-import org.bukkit.Bukkit
 import org.bukkit.Sound
 import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
+import java.util.*
 
 @Suppress("UnstableApiUsage", "NAME_SHADOWING")
 object ChattyBrigadierCommands {
@@ -241,7 +226,7 @@ object ChattyBrigadierCommands {
     private fun IdoRootCommand.handleReply() {
         playerExecutes(StringArgumentType.greedyString().named("message")) { message ->
             player.toGeary().get<ChannelData>()?.lastMessager?.toPlayer()
-                ?.let { player.handleSendingPrivateMessage(it, null, message, true) }
+                ?.also { player.handleSendingPrivateMessage(it, null, message, true) }
                 ?: player.sendFormattedMessage(chatty.messages.privateMessages.emptyReply)
         }
     }
@@ -319,15 +304,16 @@ object ChattyBrigadierCommands {
         }
     }
 
-    private val replyMap = mutableMapOf<Player, Job>()
+    private val replyMap = mutableMapOf<UUID, Job>()
     private fun handleReplyTimer(player: Player, chattyData: ChannelData): Job {
-        replyMap[player]?.let { return it }
-        replyMap[player]?.cancel()
+        val uuid = player.uniqueId
+        replyMap[uuid]?.let { return it }
+        replyMap[uuid]?.cancel()
         return chatty.plugin.launch {
             delay(chatty.config.privateMessages.messageReplyTime)
-            replyMap[player]?.cancel()
-            replyMap.remove(player)
-            player.toGeary().setPersisting(chattyData.copy(lastMessager = null))
+            replyMap[uuid]?.cancel()
+            replyMap.remove(uuid)
+            player.toGearyOrNull()?.setPersisting(chattyData.copy(lastMessager = null))
         }
     }
 
@@ -343,7 +329,7 @@ object ChattyBrigadierCommands {
             else -> {
                 if ((message.isNullOrEmpty() && signedMessage == null) || this == other) return
 
-                replyMap[other] = handleReplyTimer(other, chattyData)
+                replyMap[other.uniqueId] = handleReplyTimer(other, chattyData)
 
                 this.sendFormattedPrivateMessage(chatty.config.privateMessages.messageSendFormat, signedMessage, message, other)
                 other.sendFormattedPrivateMessage(chatty.config.privateMessages.messageReceiveFormat, signedMessage, message, this)
