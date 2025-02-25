@@ -28,13 +28,14 @@ import net.kyori.adventure.text.minimessage.MiniMessage
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer
 import org.bukkit.Bukkit
-import org.bukkit.Sound
+import org.bukkit.Registry
 import org.bukkit.entity.Player
 import java.util.regex.Pattern
 
 val alternativePingSounds: List<String> =
     chatty.config.ping.let { ping -> if ("*" in ping.alternativePingSounds || "all" in ping.alternativePingSounds)
-        Sound.entries.map { it.key().toString() }.toList() else ping.alternativePingSounds }
+        //FIXME I don't think this is actually getting the key names
+        Registry.SOUND_EVENT.tags.map { it.tagKey().key().asMinimalString() }.toList() else ping.alternativePingSounds }
 
 val pingEnabledChannels: List<String> =
     chatty.config.ping.let { ping -> if ("*" in ping.enabledChannels || "all" in ping.enabledChannels) channelNames() else ping.enabledChannels }

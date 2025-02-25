@@ -28,7 +28,7 @@ import net.kyori.adventure.chat.ChatType
 import net.kyori.adventure.chat.SignedMessage
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
-import org.bukkit.Sound
+import org.bukkit.Registry
 import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
 import java.util.*
@@ -58,10 +58,8 @@ object ChattyBrigadierCommands {
                     }
                     "sound" {
                         playerExecutes(StringArgumentType.word().suggests {
-                            suggest(
-                                chatty.config.ping.alternativePingSounds
-                                    .takeUnless { "all" in it } ?: Sound.entries.map { it.key().asString() }
-                            )
+                            chatty.config.ping.alternativePingSounds.takeUnless { "all" in it }
+                                ?: Registry.SOUND_EVENT.tags.map { it.tagKey().key().asMinimalString() }
                         }.named("sound")) { sound ->
                             val gearyPlayer = player.toGeary()
                             val oldData = gearyPlayer.get<ChannelData>() ?: return@playerExecutes
