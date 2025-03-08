@@ -32,6 +32,7 @@ import org.bukkit.Sound
 import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
 import java.util.*
+import org.bukkit.Registry
 
 @Suppress("UnstableApiUsage", "NAME_SHADOWING")
 object ChattyBrigadierCommands {
@@ -58,10 +59,7 @@ object ChattyBrigadierCommands {
                     }
                     "sound" {
                         playerExecutes(StringArgumentType.word().suggests {
-                            suggest(
-                                chatty.config.ping.alternativePingSounds
-                                    .takeUnless { "all" in it } ?: Sound.entries.map { it.key().asString() }
-                            )
+                            chatty.config.ping.alternativePingSounds.takeUnless { "all" in it } ?: Registry.SOUNDS.map { it.key().asMinimalString() }
                         }.named("sound")) { sound ->
                             val gearyPlayer = player.toGeary()
                             val oldData = gearyPlayer.get<ChannelData>() ?: return@playerExecutes

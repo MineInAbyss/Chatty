@@ -31,13 +31,23 @@ import org.bukkit.Bukkit
 import org.bukkit.Sound
 import org.bukkit.entity.Player
 import java.util.regex.Pattern
+import org.bukkit.Registry
 
 val alternativePingSounds: List<String> =
-    chatty.config.ping.let { ping -> if ("*" in ping.alternativePingSounds || "all" in ping.alternativePingSounds)
-        Sound.entries.map { it.key().toString() }.toList() else ping.alternativePingSounds }
+    chatty.config.ping.let { ping ->
+        when {
+            "*" in ping.alternativePingSounds || "all" in ping.alternativePingSounds -> Registry.SOUNDS.map { it.key().asMinimalString() }
+            else -> ping.alternativePingSounds
+        }
+    }
 
 val pingEnabledChannels: List<String> =
-    chatty.config.ping.let { ping -> if ("*" in ping.enabledChannels || "all" in ping.enabledChannels) channelNames() else ping.enabledChannels }
+    chatty.config.ping.let { ping ->
+        when {
+            "*" in ping.enabledChannels || "all" in ping.enabledChannels -> channelNames()
+            else -> ping.enabledChannels
+        }
+    }
 
 fun String.checkForPlayerPings(channelId: String): Player? {
     val ping = chatty.config.ping
