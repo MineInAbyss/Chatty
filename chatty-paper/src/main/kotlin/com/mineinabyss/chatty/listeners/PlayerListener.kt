@@ -26,7 +26,7 @@ class PlayerListener : Listener {
     fun PlayerJoinEvent.onFirstJoin() {
         if (player.toGeary().has<ChannelData>()) return
         if (chatty.config.join.enabled && chatty.config.join.firstJoin.enabled) {
-            joinMessage(translatePlaceholders(player, chatty.messages.joinLeave.firstJoinMessage).miniMsg(player.buildTagResolver(true)))
+            joinMessage(translatePlaceholders(player, chatty.messages.joinLeave.firstJoinMessage).takeUnless { it.isEmpty() }?.miniMsg(player.buildTagResolver(true)))
         }
     }
 
@@ -35,24 +35,21 @@ class PlayerListener : Listener {
         val gearyPlayer = player.toGeary()
         gearyPlayer.getOrSetPersisting<ChannelData> { ChannelData() }
         if (chatty.config.join.enabled && !gearyPlayer.has<HideJoinLeave>())
-            joinMessage(translatePlaceholders(player, chatty.messages.joinLeave.joinMessage).miniMsg(player.buildTagResolver(true)))
+            joinMessage(translatePlaceholders(player, chatty.messages.joinLeave.joinMessage).takeUnless { it.isEmpty() }?.miniMsg(player.buildTagResolver(true)))
     }
 
     @EventHandler
     fun PlayerQuitEvent.onDisconnect() {
         if (chatty.config.leave.enabled && !player.toGeary().has<HideJoinLeave>())
-            quitMessage(translatePlaceholders(player, chatty.messages.joinLeave.leaveMessage).miniMsg(player.buildTagResolver(true)))
+            quitMessage(translatePlaceholders(player, chatty.messages.joinLeave.leaveMessage).takeUnless { it.isEmpty() }?.miniMsg(player.buildTagResolver(true)))
     }
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     fun PlayerEditBookEvent.onBookSign() {
         if (isSigning) newBookMeta = newBookMeta.apply {
-            if (hasAuthor())
-                author(author().parseTags(player))
-            if (hasTitle())
-                title(title().parseTags(player))
-            if (hasPages())
-                pages(pages().map { it.parseTags(player) })
+            if (hasAuthor()) author(author().parseTags(player))
+            if (hasTitle()) title(title().parseTags(player))
+            if (hasPages()) pages(pages().map { it.parseTags(player) })
         }
     }
 
@@ -66,7 +63,6 @@ class PlayerListener : Listener {
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     fun PrepareAnvilEvent.onAnvilRename() {
         result = result?.editItemMeta {
-            if (!hasDisplayName()) return@editItemMeta
             displayName(displayName()?.parseTags(viewers.firstOrNull() as? Player))
         }
     }
