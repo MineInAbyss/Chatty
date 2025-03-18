@@ -9,7 +9,6 @@ import com.mineinabyss.chatty.discordSrvChannel
 import com.mineinabyss.chatty.helpers.gson
 import com.mineinabyss.chatty.helpers.toPlayer
 import com.mineinabyss.geary.papermc.tracking.entities.toGeary
-import com.mineinabyss.idofront.plugin.Plugins
 import com.mineinabyss.idofront.textcomponents.serialize
 import github.scarsz.discordsrv.Debug
 import github.scarsz.discordsrv.DiscordSRV
@@ -37,7 +36,7 @@ class ChattyProxyListener : PluginMessageListener {
         val onlinePlayers = Bukkit.getOnlinePlayers().filter { it.server == Bukkit.getServer() }
 
         val canSpy = chatty.spyingPlayers.mapWithEntity { q ->
-            q.player.takeIf { q.spying.channels.contains(channelId) }
+            q.player.takeIf { channelId in q.spying.channels }
         }.mapNotNull { it.data }
 
         // If the channel is not found, it is discord
@@ -55,10 +54,7 @@ class ChattyProxyListener : PluginMessageListener {
             }.forEach { it.sendMessage(message) }
         }
 
-        if (chatty.config.proxy.sendProxyMessagesToDiscord
-            && channel?.discordsrv == true
-            && chatty.isDiscordSRVLoaded
-        ) {
+        if (chatty.config.proxy.proxyToDiscord && channel?.discordsrv == true && chatty.isDiscordSRVLoaded) {
             sendToDiscord(message.serialize(), senderName, channel)
         }
 

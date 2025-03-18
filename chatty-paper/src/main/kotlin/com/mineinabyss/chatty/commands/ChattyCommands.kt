@@ -5,8 +5,22 @@ import com.github.shynixn.mccoroutine.bukkit.launch
 import com.github.shynixn.mccoroutine.bukkit.minecraftDispatcher
 import com.mineinabyss.chatty.ChattyChannel
 import com.mineinabyss.chatty.chatty
-import com.mineinabyss.chatty.components.*
-import com.mineinabyss.chatty.helpers.*
+import com.mineinabyss.chatty.components.ChannelData
+import com.mineinabyss.chatty.components.ChannelType
+import com.mineinabyss.chatty.components.CommandSpy
+import com.mineinabyss.chatty.components.SpyOnChannels
+import com.mineinabyss.chatty.components.chattyNickname
+import com.mineinabyss.chatty.helpers.ChattyPermissions
+import com.mineinabyss.chatty.helpers.GenericChattyChatEvent
+import com.mineinabyss.chatty.helpers.adminChannel
+import com.mineinabyss.chatty.helpers.alternativePingSounds
+import com.mineinabyss.chatty.helpers.appendChannelFormat
+import com.mineinabyss.chatty.helpers.buildTagResolver
+import com.mineinabyss.chatty.helpers.defaultChannel
+import com.mineinabyss.chatty.helpers.globalChannel
+import com.mineinabyss.chatty.helpers.radiusChannel
+import com.mineinabyss.chatty.helpers.stripTags
+import com.mineinabyss.chatty.helpers.translatePlaceholders
 import com.mineinabyss.geary.papermc.tracking.entities.toGeary
 import com.mineinabyss.geary.papermc.tracking.entities.toGearyOrNull
 import com.mineinabyss.geary.serialization.getOrSetPersisting
@@ -20,6 +34,7 @@ import com.mineinabyss.idofront.textcomponents.miniMsg
 import com.mojang.brigadier.arguments.StringArgumentType
 import io.papermc.paper.command.brigadier.argument.ArgumentTypes
 import io.papermc.paper.event.player.AsyncChatDecorateEvent
+import java.util.UUID
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.future.await
@@ -28,14 +43,12 @@ import net.kyori.adventure.chat.ChatType
 import net.kyori.adventure.chat.SignedMessage
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
-import org.bukkit.Sound
+import org.bukkit.Registry
 import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
-import java.util.*
-import org.bukkit.Registry
 
 @Suppress("UnstableApiUsage", "NAME_SHADOWING")
-object ChattyBrigadierCommands {
+object ChattyCommands {
 
     fun registerSignedCommands() {}
 
@@ -230,33 +243,32 @@ object ChattyBrigadierCommands {
     }
 
     private fun Player.shortcutCommand(
-        channel: Map.Entry<String, ChattyChannel>?,
+        channelEntry: Map.Entry<String, ChattyChannel>?,
         message: String?,
         signedMessage: SignedMessage?
     ) {
+        val (channelId, channel) = channelEntry ?: return sendFormattedMessage(chatty.messages.channels.noChannelWithName)
         val chattyData = toGeary().get<ChannelData>() ?: return
         val currentChannel = chattyData.channelId
         when {
-            channel == null -> sendFormattedMessage(chatty.messages.channels.noChannelWithName)
-            channel.value.permission.isNotBlank() && !hasPermission(channel.value.permission) ->
+            channel.permission.isNotBlank() && !hasPermission(channel.permission) ->
                 sendFormattedMessage(chatty.messages.channels.missingChannelPermission)
-
-            message.isNullOrEmpty() && signedMessage == null -> swapChannel(this, channel.value)
+            message.isNullOrEmpty() && signedMessage == null -> swapChannel(this, channel)
             else -> {
                 if (chatty.config.chat.disableChatSigning && !message.isNullOrEmpty()) {
-                    toGeary().setPersisting(chattyData.copy(channelId = channel.key, lastChannelUsedId = channel.key))
+                    toGeary().setPersisting(chattyData.copy(channelId = channelId, lastChannelUsedId = channelId))
                     chatty.plugin.launch(chatty.plugin.asyncDispatcher) {
                         AsyncChatDecorateEvent(this@shortcutCommand, message.miniMsg()).call<AsyncChatDecorateEvent> {
                             GenericChattyChatEvent(this@shortcutCommand, result()).callEvent()
-                        }
-                        withContext(chatty.plugin.minecraftDispatcher) {
-                            // chance that player logged out by now
-                            toGearyOrNull()?.setPersisting(chattyData.copy(channelId = currentChannel))
+                            withContext(chatty.plugin.minecraftDispatcher) {
+                                // chance that player logged out by now
+                                toGearyOrNull()?.setPersisting(chattyData.copy(channelId = currentChannel))
+                            }
                         }
                     }
                 } else if (!chatty.config.chat.disableChatSigning && signedMessage != null) {
-                    val audience = channel.value.getAudience(this)
-                    audience.forEach { it.sendMessage(signedMessage, ChatType.CHAT.bind(appendChannelFormat(Component.empty(), this, channel.value))) }
+                    val audience = channel.getAudience(this)
+                    audience.forEach { it.sendMessage(signedMessage, ChatType.CHAT.bind(appendChannelFormat(Component.empty(), this, channel))) }
                 }
             }
         }
@@ -284,10 +296,11 @@ object ChattyBrigadierCommands {
         }
     }
 
-    private fun CommandSender.sendFormattedMessage(message: String, optionalPlayer: Player? = null) =
-        (optionalPlayer ?: this as? Player)?.let { player ->
+    private fun CommandSender.sendFormattedMessage(message: String, optionalPlayer: Player? = null) {
+        (optionalPlayer ?: this as? Player)?.also { player ->
             this.sendMessage(translatePlaceholders(player, message).miniMsg(player.buildTagResolver(true)))
         }
+    }
 
     private fun Player.sendFormattedPrivateMessage(messageFormat: String, signedMessage: SignedMessage?, message: String?, receiver: Player) {
         if (signedMessage != null) {

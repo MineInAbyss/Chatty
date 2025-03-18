@@ -6,9 +6,15 @@ import com.mineinabyss.chatty.chattyProxyChannel
 import com.mineinabyss.chatty.components.ChannelData
 import com.mineinabyss.chatty.components.CommandSpy
 import com.mineinabyss.chatty.events.ChattyPlayerChatEvent
-import com.mineinabyss.chatty.helpers.*
+import com.mineinabyss.chatty.helpers.appendChannelFormat
+import com.mineinabyss.chatty.helpers.checkForPlayerPings
+import com.mineinabyss.chatty.helpers.formatModerationMessage
+import com.mineinabyss.chatty.helpers.formatPlayerPingMessage
+import com.mineinabyss.chatty.helpers.gson
+import com.mineinabyss.chatty.helpers.handleChatFilters
+import com.mineinabyss.chatty.helpers.parseTags
+import com.mineinabyss.chatty.helpers.sendFormattedMessage
 import com.mineinabyss.geary.modules.Geary
-import com.mineinabyss.geary.modules.geary
 import com.mineinabyss.geary.papermc.gearyPaper
 import com.mineinabyss.geary.papermc.tracking.entities.toGearyOrNull
 import com.mineinabyss.geary.systems.query.GearyQuery
@@ -19,7 +25,6 @@ import io.papermc.paper.event.player.AsyncChatEvent
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.Style
 import net.kyori.adventure.text.format.TextDecoration
-import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
@@ -71,11 +76,7 @@ class ChatListener : Listener {
         if (chattyEvent.callEvent()) message(chattyEvent.message)
         else viewers().clear()
 
-        val simpleMessage = Component.textOfChildren(
-            player.name().style(Style.style(TextDecoration.ITALIC)),
-            Component.text(": "),
-            baseMessage
-        )
+        val simpleMessage = Component.textOfChildren(player.name().style(Style.style(TextDecoration.ITALIC)), Component.text(": "), baseMessage)
         if (channel.logToConsole) Bukkit.getConsoleSender().sendMessage(simpleMessage)
         handleProxyMessage(player, channelId, channel, message(), simpleMessage)
 
@@ -89,21 +90,12 @@ class ChatListener : Listener {
                     var finalMessage = message()
                     finalMessage = handleChatFilters(finalMessage, player, receiver, false) ?: return@forEach
                     finalMessage = formatPlayerPingMessage(player, pingedPlayer, receiver, finalMessage)
-                    finalMessage = formatModerationMessage(
-                        channel.messageDeletion,
-                        finalMessage,
-                        simpleMessage,
-                        signedMessage(),
-                        receiver,
-                        player,
-                        playerViewers
-                    )
+                    finalMessage = formatModerationMessage(channel.messageDeletion, finalMessage, simpleMessage, signedMessage(), receiver, player, playerViewers)
 
                     receiver.sendMessage(finalMessage)
                 }
 
                 viewers().clear()
-                //isCancelled = true
             }
 
             else -> {
@@ -113,15 +105,7 @@ class ChatListener : Listener {
                     finalMessage = handleChatFilters(finalMessage, player, audience as? Player, false)
                         ?: return@renderer Component.empty()
                     finalMessage = formatPlayerPingMessage(source, pingedPlayer, audience, finalMessage)
-                    finalMessage = formatModerationMessage(
-                        channel.messageDeletion,
-                        finalMessage,
-                        simpleMessage,
-                        signedMessage(),
-                        audience,
-                        source,
-                        playerViewers
-                    )
+                    finalMessage = formatModerationMessage(channel.messageDeletion, finalMessage, simpleMessage, signedMessage(), audience, source, playerViewers)
 
                     return@renderer finalMessage
                 }
@@ -134,7 +118,7 @@ class ChatListener : Listener {
         channelId: String,
         channel: ChattyChannel,
         message: Component,
-        simpleMessage: Component
+        simpleMessage: Component,
     ) {
         if (!channel.proxy) return
         val proxyMessage = Component.textOfChildren(player.name(), Component.text(channelId), message, simpleMessage)

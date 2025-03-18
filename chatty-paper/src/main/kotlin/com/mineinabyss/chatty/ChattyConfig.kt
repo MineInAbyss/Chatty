@@ -98,7 +98,7 @@ data class ChattyConfig(
     data class Proxy(
         val enableProxySwitchMessages: Boolean = true,
         val discordSrvChannelID: String = "Global",
-        val sendProxyMessagesToDiscord: Boolean = true,
+        val proxyToDiscord: Boolean = true,
     )
 
     @Serializable
