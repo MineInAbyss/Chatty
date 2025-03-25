@@ -25,8 +25,10 @@ class PlayerListener : Listener {
     @EventHandler(priority = EventPriority.LOWEST)
     fun PlayerJoinEvent.onFirstJoin() {
         if (player.toGeary().has<ChannelData>()) return
-        if (chatty.config.join.enabled && chatty.config.join.firstJoin.enabled) {
-            joinMessage(translatePlaceholders(player, chatty.messages.joinLeave.firstJoinMessage).takeUnless { it.isEmpty() }?.miniMsg(player.buildTagResolver(true)))
+        if (chatty.config.join.firstJoin.enabled) {
+            val message = chatty.messages.joinLeave.firstJoinMessage
+            if (message.isEmpty()) joinMessage(null)
+            else joinMessage(translatePlaceholders(player, message).takeUnless { it.isEmpty() }?.miniMsg(player.buildTagResolver(true)))
         }
     }
 
@@ -34,14 +36,20 @@ class PlayerListener : Listener {
     fun PlayerJoinEvent.onJoin() {
         val gearyPlayer = player.toGeary()
         gearyPlayer.getOrSetPersisting<ChannelData> { ChannelData() }
-        if (chatty.config.join.enabled && !gearyPlayer.has<HideJoinLeave>())
-            joinMessage(translatePlaceholders(player, chatty.messages.joinLeave.joinMessage).takeUnless { it.isEmpty() }?.miniMsg(player.buildTagResolver(true)))
+        if (chatty.config.join.enabled) {
+            val message = chatty.messages.joinLeave.joinMessage
+            if (message.isEmpty() || gearyPlayer.has<HideJoinLeave>()) joinMessage(null)
+            else joinMessage(translatePlaceholders(player, message).takeUnless { it.isEmpty() }?.miniMsg(player.buildTagResolver(true)))
+        }
     }
 
     @EventHandler
     fun PlayerQuitEvent.onDisconnect() {
-        if (chatty.config.leave.enabled && !player.toGeary().has<HideJoinLeave>())
-            quitMessage(translatePlaceholders(player, chatty.messages.joinLeave.leaveMessage).takeUnless { it.isEmpty() }?.miniMsg(player.buildTagResolver(true)))
+        if (chatty.config.leave.enabled) {
+            val message = chatty.messages.joinLeave.leaveMessage
+            if (message.isEmpty() || player.toGeary().has<HideJoinLeave>()) quitMessage(null)
+            else quitMessage(translatePlaceholders(player, chatty.messages.joinLeave.leaveMessage).takeUnless { it.isEmpty() }?.miniMsg(player.buildTagResolver(true)))
+        }
     }
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)

@@ -1,15 +1,46 @@
 package com.mineinabyss.chatty
 
+import com.charleskorn.kaml.Yaml
+import com.charleskorn.kaml.decodeFromStream
+import com.charleskorn.kaml.encodeToStream
 import com.velocitypowered.api.proxy.Player
 import com.velocitypowered.api.proxy.server.RegisteredServer
+import java.io.File
+import java.nio.file.Path
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.decodeFromStream
+import kotlinx.serialization.json.encodeToStream
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.TextReplacementConfig
 import net.kyori.adventure.text.minimessage.MiniMessage
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder
 
 @Serializable
-data class AlreadyJoined(val alreadyJoined: MutableSet<String>)
+data class AlreadyJoined(val alreadyJoined: MutableSet<String>) {
+    companion object {
+        fun readConfig(dataDirectory: Path): MutableSet<String> {
+            val file = dataDirectory.resolve("already_joined.json").toFile().apply { parentFile.mkdirs() }
+            if (!file.exists()) this::class.java.classLoader.getResourceAsStream("already_joined.json")?.use {
+                file.writeBytes(it.readAllBytes())
+            }
+            return runCatching {
+                file.inputStream().use {
+                    Json.decodeFromStream<AlreadyJoined>(it).alreadyJoined
+                }
+            }.onFailure { it.printStackTrace() }.getOrDefault(mutableSetOf())
+        }
+
+        fun saveToFile(dataDirectory: Path) {
+            val file = dataDirectory.resolve("already_joined.json").toFile().apply { parentFile.mkdirs() }
+            file.createNewFile()
+            file.outputStream().use {
+                Json.encodeToStream(AlreadyJoined(alreadyJoined), it)
+            }
+        }
+    }
+}
 
 @Serializable
 data class ChattyConfig(
@@ -17,6 +48,29 @@ data class ChattyConfig(
     val leave: Leave = Leave(),
     val switch: Switch = Switch(),
 ) {
+
+    companion object {
+        fun readConfig(dataDirectory: java.nio.file.Path): ChattyConfig {
+            val config = dataDirectory.resolve("config.yml").toFile().apply { parentFile.mkdirs() }
+            if (!config.exists()) this::class.java.classLoader.getResourceAsStream("config.yml")?.use {
+                config.writeBytes(it.readAllBytes())
+            }
+            return runCatching {
+                config.inputStream().use {
+                    Yaml.default.decodeFromStream<ChattyConfig>(it)
+                }
+            }.onFailure { it.printStackTrace() }.getOrDefault(ChattyConfig())
+        }
+
+        @OptIn(ExperimentalSerializationApi::class)
+        fun saveToFile(dataDirectory: Path) {
+            val file = dataDirectory.resolve("config.json").toFile().apply { parentFile.mkdirs() }
+            file.createNewFile()
+            file.outputStream().use {
+                Yaml.default.encodeToStream(chattyConfig, it)
+            }
+        }
+    }
 
     @Serializable
     data class Join(

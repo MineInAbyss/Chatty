@@ -53,26 +53,8 @@ class ChattyPlugin @Inject constructor(
         server.channelRegistrar.register(discordChannel)
         eventManager.register(this, ChattyProxyListener(server))
 
-        val file = dataDirectory.resolve("already_joined.json").toFile().apply { parentFile.mkdirs() }
-        if (!file.exists()) this::class.java.classLoader.getResourceAsStream("already_joined.json")?.use {
-            file.writeBytes(it.readAllBytes())
-        }
-        alreadyJoined = runCatching {
-            file.inputStream().use {
-                Json.decodeFromStream<AlreadyJoined>(it).alreadyJoined
-            }
-        }.onFailure { it.printStackTrace() }.getOrDefault(mutableSetOf())
-
-
-        val config = dataDirectory.resolve("config.yml").toFile().apply { parentFile.mkdirs() }
-        if (!config.exists()) this::class.java.classLoader.getResourceAsStream("config.yml")?.use {
-            config.writeBytes(it.readAllBytes())
-        }
-        chattyConfig = runCatching {
-            config.inputStream().use {
-                Yaml.default.decodeFromStream<ChattyConfig>(it)
-            }
-        }.onFailure { it.printStackTrace() }.getOrDefault(ChattyConfig())
+        alreadyJoined = AlreadyJoined.readConfig(dataDirectory)
+        chattyConfig = ChattyConfig.readConfig(dataDirectory)
 
         eventManager.register(this, ChattyJoinListener(server))
     }
@@ -80,20 +62,8 @@ class ChattyPlugin @Inject constructor(
     @OptIn(ExperimentalSerializationApi::class)
     @Subscribe
     fun onShutdown(e: ProxyShutdownEvent) {
-        dataDirectory.resolve("already_joined.json").toFile().apply { createNewFile() }.outputStream().use {
-            runCatching {
-                Json.encodeToStream(AlreadyJoined(alreadyJoined), it)
-            }.onFailure {
-                it.printStackTrace()
-            }
-        }
-        dataDirectory.resolve("config.yml").toFile().apply { createNewFile() }.outputStream().use {
-            runCatching {
-                Yaml.default.encodeToStream(chattyConfig, it)
-            }.onFailure {
-                it.printStackTrace()
-            }
-        }
+        AlreadyJoined.saveToFile(dataDirectory)
+        ChattyConfig.saveToFile(dataDirectory)
     }
 
     @Subscribe
