@@ -11,7 +11,6 @@ class ChattyMessages(
     val messageDeletion: MessageDeletion = MessageDeletion(),
     val chatFilter: ChatFilter = ChatFilter(),
     val channels: Channels = Channels(),
-    val proxies: Proxies = Proxies(),
     val joinLeave: JoinLeave = JoinLeave(),
     val other: Other = Other()
 ) {
@@ -77,14 +76,6 @@ class ChattyMessages(
         val noChannelWithName: String = "No channel by this name exists.",
         val missingChannelPermission: String = "You do not have permission to join this channel.",
         val emptyChannelMessage: String = "<red>There is no-one to read your message",
-    )
-
-    @Serializable
-    data class Proxies(
-        val proxyJoin: String = "<green>+ <white>| <aqua><chatty_nickname>%player_server%)",
-        val proxyLeave: String = "<red>- <white>| <aqua><chatty_nickname>",
-        val proxySwitchToMessage: String = "<gray>↑<white> ┃ <aqua><chatty_nickname> <gray>left to <aqua><chatty_player_proxy_new_server> server.",
-        val proxySwitchFromMessage: String = "<gray>↑<white> ┃ <aqua><chatty_nickname> <gray>left to <aqua><chatty_player_proxy_new_server> server.",
     )
 
     @Serializable

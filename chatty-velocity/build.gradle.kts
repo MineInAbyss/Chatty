@@ -22,6 +22,7 @@ dependencies {
     implementation(kotlin("reflect"))
     implementation(idofrontLibs.kotlinx.coroutines)
     implementation(idofrontLibs.kotlinx.serialization.json)
+    implementation(idofrontLibs.kotlinx.serialization.kaml)
     implementation("net.kyori:adventure-extra-kotlin:4.11.0")
 
     compileOnly(libs.velocity)

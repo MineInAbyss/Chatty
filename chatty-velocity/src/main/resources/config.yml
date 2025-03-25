@@ -1,0 +1,10 @@
+join:
+  message: "<green>+</green> | <aqua><player>"
+  otherServerMessage: "<green>+</green> | <aqua><player> <gray>(</gray><aqua><server></aqua><gray>)"
+  firstJoinMessage: "<gradient:#058330:#ff9200>Welcome <player> to <server></gradient>"
+leave:
+  message: "<red>-</red> | <aqua><player>"
+  otherServerMessage: "<red>-</red> | <aqua><player> <gray>(</gray><aqua><server></aqua><gray>)"
+switch:
+  toMessage: "<gray>↓</gray> ┃ <aqua><player> <gray>joined from</gray> <from_server> server."
+  fromMessage: "<gray>↑</gray> ┃ <aqua><player> <gray>left to</gray> <to_server> server."
