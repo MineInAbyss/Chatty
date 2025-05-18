@@ -5,17 +5,15 @@ import com.charleskorn.kaml.decodeFromStream
 import com.charleskorn.kaml.encodeToStream
 import com.velocitypowered.api.proxy.Player
 import com.velocitypowered.api.proxy.server.RegisteredServer
-import java.io.File
-import java.nio.file.Path
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromStream
 import kotlinx.serialization.json.encodeToStream
 import net.kyori.adventure.text.Component
-import net.kyori.adventure.text.TextReplacementConfig
 import net.kyori.adventure.text.minimessage.MiniMessage
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder
+import java.nio.file.Path
 
 @Serializable
 data class AlreadyJoined(val alreadyJoined: MutableSet<String>) {
@@ -50,7 +48,7 @@ data class ChattyConfig(
 ) {
 
     companion object {
-        fun readConfig(dataDirectory: java.nio.file.Path): ChattyConfig {
+        fun readConfig(dataDirectory: Path): ChattyConfig {
             val config = dataDirectory.resolve("config.yml").toFile().apply { parentFile.mkdirs() }
             if (!config.exists()) this::class.java.classLoader.getResourceAsStream("config.yml")?.use {
                 config.writeBytes(it.readAllBytes())
@@ -64,7 +62,7 @@ data class ChattyConfig(
 
         @OptIn(ExperimentalSerializationApi::class)
         fun saveToFile(dataDirectory: Path) {
-            val file = dataDirectory.resolve("config.json").toFile().apply { parentFile.mkdirs() }
+            val file = dataDirectory.resolve("config.yml").toFile().apply { parentFile.mkdirs() }
             file.createNewFile()
             file.outputStream().use {
                 Yaml.default.encodeToStream(chattyConfig, it)
