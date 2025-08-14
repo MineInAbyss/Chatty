@@ -8,8 +8,8 @@ import com.mineinabyss.chatty.helpers.parseTags
 import com.mineinabyss.chatty.helpers.translatePlaceholders
 import com.mineinabyss.geary.papermc.tracking.entities.toGeary
 import com.mineinabyss.geary.serialization.getOrSetPersisting
-import com.mineinabyss.idofront.items.editItemMeta
 import com.mineinabyss.idofront.textcomponents.miniMsg
+import io.papermc.paper.datacomponent.DataComponentTypes
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
@@ -70,8 +70,8 @@ class PlayerListener : Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     fun PrepareAnvilEvent.onAnvilRename() {
-        result = result?.editItemMeta {
-            displayName(displayName()?.parseTags(viewers.firstOrNull() as? Player))
-        }
+        val player = viewers.firstOrNull() as? Player ?: return
+        val customName = result?.getData(DataComponentTypes.CUSTOM_NAME) ?: return
+        result?.setData(DataComponentTypes.CUSTOM_NAME, customName.parseTags(player))
     }
 }

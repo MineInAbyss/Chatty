@@ -1,7 +1,7 @@
 plugins {
-    alias(idofrontLibs.plugins.mia.kotlin.jvm)
-    alias(idofrontLibs.plugins.mia.papermc)
-    alias(idofrontLibs.plugins.mia.publication)
+    id(idofrontLibs.plugins.mia.kotlin.jvm.get().pluginId)
+    id(idofrontLibs.plugins.mia.papermc.get().pluginId)
+    id(idofrontLibs.plugins.mia.publication.get().pluginId)
     id(idofrontLibs.plugins.mia.copyjar.get().pluginId)
     alias(idofrontLibs.plugins.kotlinx.serialization)
 }
