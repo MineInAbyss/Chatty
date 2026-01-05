@@ -1,8 +1,8 @@
 [versions]
-geary = "0.33.0"
+geary = "0.33.16"
 velocity = "3.4.0-SNAPSHOT"
-discordsrv = "1.30.0"
-placeholderapi = "2.11.6"
+discordsrv = "1.30.3"
+placeholderapi = "2.11.7"
 
 [libraries]
 geary-papermc = { module = "com.mineinabyss:geary-papermc", version.ref = "geary" }
