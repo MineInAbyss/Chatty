@@ -57,7 +57,6 @@ class ChatListener : Listener {
     fun AsyncChatDecorateEvent.onChatPreview() {
         player()?.let { player ->
             result(result().parseTags(player, false))
-            result(appendChannelFormat(result(), player))
         }
     }
 
@@ -78,7 +77,7 @@ class ChatListener : Listener {
 
         val simpleMessage = Component.textOfChildren(player.name().style(Style.style(TextDecoration.ITALIC)), Component.text(": "), baseMessage)
         if (channel.logToConsole) Bukkit.getConsoleSender().sendMessage(simpleMessage)
-        handleProxyMessage(player, channelId, channel, message(), simpleMessage)
+        handleProxyMessage(player, channelId, channel, appendChannelFormat(message(), player, channel), simpleMessage)
 
         val pingedPlayer = originalMessage().serialize().checkForPlayerPings(channelId)
         val playerViewers = viewers().mapNotNull { it as? Player }.toMutableSet()
@@ -90,6 +89,7 @@ class ChatListener : Listener {
                     var finalMessage = message()
                     finalMessage = handleChatFilters(finalMessage, player, receiver, false) ?: return@forEach
                     finalMessage = formatPlayerPingMessage(player, pingedPlayer, receiver, finalMessage)
+                    finalMessage = appendChannelFormat(finalMessage, player, channel)
                     finalMessage = formatModerationMessage(channel.messageDeletion, finalMessage, simpleMessage, signedMessage(), receiver, player, playerViewers)
 
                     receiver.sendMessage(finalMessage)
@@ -105,6 +105,7 @@ class ChatListener : Listener {
                     finalMessage = handleChatFilters(finalMessage, player, audience as? Player, false)
                         ?: return@renderer Component.empty()
                     finalMessage = formatPlayerPingMessage(source, pingedPlayer, audience, finalMessage)
+                    finalMessage = appendChannelFormat(finalMessage, source, channel)
                     finalMessage = formatModerationMessage(channel.messageDeletion, finalMessage, simpleMessage, signedMessage(), audience, source, playerViewers)
 
                     return@renderer finalMessage
