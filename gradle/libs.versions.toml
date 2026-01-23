@@ -1,7 +1,7 @@
 [versions]
 geary = "0.33.16"
 velocity = "3.4.0-SNAPSHOT"
-discordsrv = "1.30.3"
+discordsrv = "1.30.4"
 placeholderapi = "2.11.7"
 
 [libraries]
