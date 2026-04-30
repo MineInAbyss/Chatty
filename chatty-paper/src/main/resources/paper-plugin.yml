@@ -19,3 +19,7 @@ dependencies:
       required: false
       load: BEFORE
       join-classpath: true
+    Emojy:
+      required: false
+      load: BEFORE
+      join-classpath: true

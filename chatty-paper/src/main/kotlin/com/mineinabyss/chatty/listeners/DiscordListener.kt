@@ -21,6 +21,7 @@ import github.scarsz.discordsrv.objects.MessageFormat
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
 import github.scarsz.discordsrv.dependencies.kyori.adventure.text.Component as ComponentDSV
+import github.scarsz.discordsrv.dependencies.kyori.adventure.text.TextReplacementConfig as TextReplacementConfigDSV
 
 
 class DiscordListener {
@@ -28,6 +29,19 @@ class DiscordListener {
     private val plainText = github.scarsz.discordsrv.dependencies.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer.plainText()
     private val legacy = LegacyComponentSerializer.builder().useUnusualXRepeatedCharacterHexFormat().build()
     private val gson = GsonComponentSerializer.gson()
+    private val emojyStripConfig = TextReplacementConfigDSV.builder()
+        .match(":([^:]+):".toRegex().pattern)
+        .replacement { result, _ ->
+            val fullMatch = result.group()
+            val content = result.group(1) ?: ""
+
+            when {
+                fullMatch.equals(":discord:", ignoreCase = true) -> ComponentDSV.text(":$content:")
+                content == " " -> ComponentDSV.text(":$content:")
+                content.startsWith("space_") -> ComponentDSV.text(":$content:")
+                else -> ComponentDSV.text(":$content;")
+            }
+        }.build()
 
     @Subscribe(priority = ListenerPriority.HIGHEST)
     fun DiscordGuildMessagePostProcessEvent.sendDiscordToProxy() {
@@ -40,7 +54,7 @@ class DiscordListener {
 
         val minecraftMessage = ComponentDSV.textOfChildren(senderName, channelId, message.toComponentDSV(), simpleMessage)
         chatty.plugin.server.sendPluginMessage(chatty.plugin, discordSrvChannel, gson.serialize(minecraftMessage).toByteArray())
-        setMinecraftMessage(message.toComponentDSV())
+        setMinecraftMessage(message.toComponentDSV().replaceText(emojyStripConfig))
     }
 
     private fun ComponentDSV.toComponent() = mm.serialize(this).miniMsg()
