@@ -1,7 +1,6 @@
 rootProject.name = "chatty"
 
 pluginManagement {
-
     repositories {
         mavenCentral()
         gradlePluginPortal()
@@ -11,18 +10,11 @@ pluginManagement {
         mavenLocal()
         google()
     }
-
-    val idofrontVersion: String by settings
-    resolutionStrategy {
-        eachPlugin {
-            if (requested.id.id.startsWith("com.mineinabyss.conventions"))
-                useVersion(idofrontVersion)
-        }
-    }
+//    includeBuild("../gradle-conventions")
 }
 
 dependencyResolutionManagement {
-    val idofrontVersion: String by settings
+    val miaLibs: String by settings
 
     repositories {
         mavenCentral()
@@ -32,8 +24,8 @@ dependencyResolutionManagement {
     }
 
     versionCatalogs {
-        create("idofrontLibs") {
-            from("com.mineinabyss:catalog:$idofrontVersion")
+        create("miaLibs") {
+            from("com.mineinabyss:catalog:$miaLibs")
         }
     }
 }
@@ -42,3 +34,4 @@ include(
     "chatty-paper",
     "chatty-velocity"
 )
+

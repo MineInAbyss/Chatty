@@ -3,17 +3,22 @@ package com.mineinabyss.chatty
 import com.mineinabyss.chatty.helpers.DiscordEmoteFixer
 import com.mineinabyss.chatty.queries.SpyingPlayersQuery
 import com.mineinabyss.geary.systems.query.CachedQuery
-import com.mineinabyss.idofront.di.DI
+import org.bukkit.plugin.Plugin
 
 const val chattyProxyChannel = "chatty:proxy"
 const val discordSrvChannel = "chatty:discordsrv"
-val chatty by DI.observe<ChattyContext>()
-interface ChattyContext {
-    val plugin: ChattyPlugin
+
+interface ChattyContext : Plugin {
     val config: ChattyConfig
     val messages: ChattyMessages
     val emotefixer: DiscordEmoteFixer
     val isPlaceholderApiLoaded: Boolean
     val isDiscordSRVLoaded: Boolean
     val spyingPlayers: CachedQuery<SpyingPlayersQuery>
+
+    companion object {
+        var instance: ChattyContext? = null
+    }
 }
+
+val chatty get() = ChattyContext.instance ?: error("Chatty not loaded!")

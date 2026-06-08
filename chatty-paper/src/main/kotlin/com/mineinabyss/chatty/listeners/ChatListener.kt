@@ -123,6 +123,6 @@ class ChatListener : Listener {
     ) {
         if (!channel.proxy) return
         val proxyMessage = Component.textOfChildren(player.name(), Component.text(channelId), message, simpleMessage)
-        player.sendPluginMessage(chatty.plugin, chattyProxyChannel, gson.serialize(proxyMessage).toByteArray())
+        player.sendPluginMessage(chatty, chattyProxyChannel, gson.serialize(proxyMessage).toByteArray())
     }
 }

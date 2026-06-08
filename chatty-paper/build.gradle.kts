@@ -1,9 +1,12 @@
+import net.minecrell.pluginyml.paper.PaperPluginDescription
+import net.minecrell.pluginyml.paper.PaperPluginDescription.RelativeLoadOrder.BEFORE
+
 plugins {
-    id(idofrontLibs.plugins.mia.kotlin.jvm.get().pluginId)
-    id(idofrontLibs.plugins.mia.papermc.get().pluginId)
-    id(idofrontLibs.plugins.mia.publication.get().pluginId)
-    id(idofrontLibs.plugins.mia.copyjar.get().pluginId)
-    alias(idofrontLibs.plugins.kotlinx.serialization)
+    id(miaLibs.plugins.mia.kotlin.jvm.get().pluginId)
+    id(miaLibs.plugins.mia.papermc.get().pluginId)
+    id(miaLibs.plugins.mia.publication.get().pluginId)
+    id(miaLibs.plugins.mia.copyjar.get().pluginId)
+    alias(miaLibs.plugins.kotlinx.serialization)
 }
 
 repositories {
@@ -16,14 +19,14 @@ repositories {
 
 dependencies {
     // MineInAbyss platform
-    compileOnly(idofrontLibs.kotlinx.serialization.json)
-    compileOnly(idofrontLibs.kotlinx.serialization.kaml)
-    compileOnly(idofrontLibs.kotlinx.coroutines)
-    compileOnly(idofrontLibs.minecraft.mccoroutine)
-    compileOnly(idofrontLibs.bundles.idofront.core)
+    compileOnly(miaLibs.kotlinx.serialization.json)
+    compileOnly(miaLibs.kotlinx.serialization.kaml)
+    compileOnly(miaLibs.kotlinx.coroutines)
+    compileOnly(miaLibs.minecraft.mccoroutine)
+    compileOnly(miaLibs.bundles.idofront.core)
 
     // Other plugins
-    compileOnly(libs.geary.papermc)
+    compileOnly(miaLibs.geary.papermc)
 
     /// Third-party plugins
     compileOnly(libs.placeholderapi)
@@ -42,7 +45,35 @@ kotlin {
         freeCompilerArgs.addAll(
             "-opt-in=kotlinx.serialization.ExperimentalSerializationApi",
             "-opt-in=kotlin.ExperimentalUnsignedTypes",
-            "-Xcontext-receivers"
         )
+    }
+}
+
+paper {
+    name = "Chatty"
+    main = "com.mineinabyss.chatty.ChattyPlugin"
+    author = "boy0000"
+    description = "Highly customizable chat plugin"
+    serverDependencies {
+        register("Geary") {
+            required = true
+            load = BEFORE
+            joinClasspath = true
+        }
+        register("PlaceholderAPI") {
+            required = false
+            load = BEFORE
+            joinClasspath = true
+        }
+        register("DiscordSRV") {
+            required = false
+            load = BEFORE
+            joinClasspath = true
+        }
+        register("Emojy") {
+            required = false
+            load = BEFORE
+            joinClasspath = true
+        }
     }
 }

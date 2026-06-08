@@ -53,7 +53,7 @@ class DiscordListener {
         message = handleChatFilters(message, null, null, true) ?: run { isCancelled = true; return }
 
         val minecraftMessage = ComponentDSV.textOfChildren(senderName, channelId, message.toComponentDSV(), simpleMessage)
-        chatty.plugin.server.sendPluginMessage(chatty.plugin, discordSrvChannel, gson.serialize(minecraftMessage).toByteArray())
+        chatty.server.sendPluginMessage(chatty, discordSrvChannel, gson.serialize(minecraftMessage).toByteArray())
         setMinecraftMessage(message.toComponentDSV().replaceText(emojyStripConfig))
     }
 

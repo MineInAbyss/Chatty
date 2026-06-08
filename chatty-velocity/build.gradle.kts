@@ -3,12 +3,13 @@ plugins {
     kotlin("kapt")
     kotlin("plugin.serialization")
     `maven-publish`
-    id(idofrontLibs.plugins.mia.copyjar.get().pluginId)
+    id(miaLibs.plugins.mia.copyjar.get().pluginId)
 }
 
 copyJar {
-    destPath.set(project.findProperty("velocity_plugin_path") as String? ?: "./build/publish")
-    excludePlatformDependencies.set(false)
+    destPath = project.findProperty("velocity_plugin_path") as String? ?: "./build/publish"
+    generatePluginYml = false
+    excludePlatformDependencies = false
 }
 
 repositories {
@@ -20,9 +21,9 @@ repositories {
 
 dependencies {
     implementation(kotlin("reflect"))
-    implementation(idofrontLibs.kotlinx.coroutines)
-    implementation(idofrontLibs.kotlinx.serialization.json)
-    implementation(idofrontLibs.kotlinx.serialization.kaml)
+    implementation(miaLibs.kotlinx.coroutines)
+    implementation(miaLibs.kotlinx.serialization.json)
+    implementation(miaLibs.kotlinx.serialization.kaml)
     implementation("net.kyori:adventure-extra-kotlin:4.11.0")
 
     compileOnly(libs.velocity)
