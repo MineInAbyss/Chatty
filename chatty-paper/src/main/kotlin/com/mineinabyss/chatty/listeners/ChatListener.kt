@@ -13,6 +13,7 @@ import com.mineinabyss.chatty.helpers.formatPlayerPingMessage
 import com.mineinabyss.chatty.helpers.gson
 import com.mineinabyss.chatty.helpers.handleChatFilters
 import com.mineinabyss.chatty.helpers.parseTags
+import com.mineinabyss.chatty.helpers.playPingSound
 import com.mineinabyss.chatty.helpers.sendFormattedMessage
 import com.mineinabyss.geary.modules.Geary
 import com.mineinabyss.geary.papermc.gearyPaper
@@ -85,6 +86,7 @@ class ChatListener : Listener {
             playerViewers.isEmpty() -> player.sendFormattedMessage(chatty.messages.channels.emptyChannelMessage)
             chatty.config.chat.disableChatSigning -> {
                 if (handleChatFilters(baseMessage, player, null, false) == null) playerViewers.clear()
+                if (pingedPlayer != null && pingedPlayer in playerViewers) pingedPlayer.playPingSound()
                 playerViewers.forEach { receiver ->
                     var finalMessage = message()
                     finalMessage = handleChatFilters(finalMessage, player, receiver, false) ?: return@forEach
@@ -100,6 +102,7 @@ class ChatListener : Listener {
 
             else -> {
                 if (handleChatFilters(baseMessage, player, null, false) == null) viewers().clear()
+                else if (pingedPlayer != null && pingedPlayer in playerViewers) pingedPlayer.playPingSound()
                 renderer { source, _, message, audience ->
                     var finalMessage = message
                     finalMessage = handleChatFilters(finalMessage, player, audience as? Player, false)

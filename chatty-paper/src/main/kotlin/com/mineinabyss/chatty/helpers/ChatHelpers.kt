@@ -53,7 +53,14 @@ fun String.checkForPlayerPings(channelId: String): Player? {
     val ping = chatty.config.ping
     if (channelId !in pingEnabledChannels || ping.pingPrefix.isEmpty() || ping.pingPrefix !in this) return null
     val pingedName = this.substringAfter(ping.pingPrefix).substringBefore(" ")
-    return Bukkit.getOnlinePlayers().firstOrNull { it.name == pingedName }
+    return Bukkit.getOnlinePlayers().firstOrNull { it.name == pingedName || it.chattyNickname == pingedName }
+}
+
+fun Player.playPingSound() {
+    val ping = chatty.config.ping
+    val channelData = toGearyOrNull()?.get<ChannelData>() ?: return
+    if (channelData.disablePingSound) return
+    playSound(location, channelData.pingSound ?: ping.defaultPingSound, ping.pingVolume, ping.pingPitch)
 }
 
 val emptyMiniMessage = MiniMessage.builder().tags(TagResolver.empty()).build()
