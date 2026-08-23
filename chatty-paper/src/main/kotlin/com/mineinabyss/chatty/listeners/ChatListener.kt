@@ -84,7 +84,7 @@ class ChatListener : Listener {
         when {
             playerViewers.isEmpty() -> player.sendFormattedMessage(chatty.messages.channels.emptyChannelMessage)
             chatty.config.chat.disableChatSigning -> {
-                if (handleChatFilters(baseMessage, null, null, false) == null) playerViewers.clear()
+                if (handleChatFilters(baseMessage, player, null, false) == null) playerViewers.clear()
                 playerViewers.forEach { receiver ->
                     var finalMessage = message()
                     finalMessage = handleChatFilters(finalMessage, player, receiver, false) ?: return@forEach

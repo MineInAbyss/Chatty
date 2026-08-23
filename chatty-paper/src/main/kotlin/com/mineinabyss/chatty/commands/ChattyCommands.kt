@@ -135,7 +135,7 @@ object ChattyCommands {
                     fun String.nicknameTooLong(): Boolean {
                         return when (chatty.config.nicknames.countTagsInLength) {
                             true -> this.length > chatty.config.nicknames.maxLength
-                            false -> this.stripTags().length >= chatty.config.nicknames.maxLength
+                            false -> this.stripTags().length > chatty.config.nicknames.maxLength
                         }
                     }
 
@@ -170,7 +170,7 @@ object ChattyCommands {
                                 applyTo.chattyNickname = nickname
                                 if (player.uniqueId != applyTo.uniqueId) player.sendFormattedMessage(
                                     nickMessage.otherSuccess,
-                                    player
+                                    applyTo
                                 )
                                 else player.sendFormattedMessage(nickMessage.selfSuccess)
                             }
@@ -342,15 +342,15 @@ object ChattyCommands {
     }
 
     private val replyMap = mutableMapOf<UUID, Job>()
-    private fun handleReplyTimer(player: Player, chattyData: ChannelData): Job {
+    private fun handleReplyTimer(player: Player): Job {
         val uuid = player.uniqueId
-        replyMap[uuid]?.let { return it }
         replyMap[uuid]?.cancel()
         return chatty.launch {
             delay(chatty.config.privateMessages.messageReplyTime)
-            replyMap[uuid]?.cancel()
             replyMap.remove(uuid)
-            player.toGearyOrNull()?.setPersisting(chattyData.copy(lastMessager = null))
+            player.toGearyOrNull()?.let { geary ->
+                geary.get<ChannelData>()?.let { geary.setPersisting(it.copy(lastMessager = null)) }
+            }
         }
     }
 
@@ -371,7 +371,7 @@ object ChattyCommands {
             else -> {
                 if ((message.isNullOrEmpty() && signedMessage == null) || this == other) return
 
-                replyMap[other.uniqueId] = handleReplyTimer(other, chattyData)
+                replyMap[other.uniqueId] = handleReplyTimer(other)
 
                 this.sendFormattedPrivateMessage(
                     chatty.config.privateMessages.messageSendFormat,
@@ -391,7 +391,7 @@ object ChattyCommands {
                     gearyOther.setPersisting(otherChannelData.copy(lastMessager = uniqueId))
                 }
                 if (chatty.config.privateMessages.messageSendSound.isNotEmpty())
-                    this.playSound(other.location, chatty.config.privateMessages.messageSendSound, 1f, 1f)
+                    this.playSound(this.location, chatty.config.privateMessages.messageSendSound, 1f, 1f)
                 if (chatty.config.privateMessages.messageReceivedSound.isNotEmpty())
                     other.playSound(other.location, chatty.config.privateMessages.messageReceivedSound, 1f, 1f)
             }

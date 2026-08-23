@@ -53,7 +53,9 @@ class DiscordListener {
         message = handleChatFilters(message, null, null, true) ?: run { isCancelled = true; return }
 
         val minecraftMessage = ComponentDSV.textOfChildren(senderName, channelId, message.toComponentDSV(), simpleMessage)
-        chatty.server.sendPluginMessage(chatty, discordSrvChannel, gson.serialize(minecraftMessage).toByteArray())
+        // Send through a single player, Server#sendPluginMessage would relay once per online player
+        chatty.server.onlinePlayers.firstOrNull()
+            ?.sendPluginMessage(chatty, discordSrvChannel, gson.serialize(minecraftMessage).toByteArray())
         setMinecraftMessage(message.toComponentDSV().replaceText(emojyStripConfig))
     }
 
