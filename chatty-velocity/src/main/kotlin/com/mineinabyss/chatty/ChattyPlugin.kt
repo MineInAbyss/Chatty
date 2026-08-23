@@ -17,6 +17,7 @@ import com.velocitypowered.api.event.proxy.ProxyShutdownEvent
 import com.velocitypowered.api.plugin.Plugin
 import com.velocitypowered.api.plugin.annotation.DataDirectory
 import com.velocitypowered.api.proxy.ProxyServer
+import com.velocitypowered.api.proxy.ServerConnection
 import com.velocitypowered.api.proxy.messages.MinecraftChannelIdentifier
 import java.nio.file.Path
 import kotlinx.serialization.ExperimentalSerializationApi
@@ -117,8 +118,10 @@ class ChattyProxyListener @Inject constructor(private val server: ProxyServer) {
     @Subscribe(order = PostOrder.NORMAL)
     fun PluginMessageEvent.onPluginMessage() {
         if (identifier != chattyChannel && identifier != discordChannel) return
-        //Hacky way of knowing what the old server was, prob a better way lol
-        server.allServers.filter { (it.serverInfo.name !in this.source.toString()) }.forEach {
+        // Never forward to clients, and ignore payloads not sent by a backend server
+        result = PluginMessageEvent.ForwardResult.handled()
+        val sourceServer = source as? ServerConnection ?: return
+        server.allServers.filter { it.serverInfo.name != sourceServer.serverInfo.name }.forEach {
             it.sendPluginMessage(identifier, this.data)
         }
     }

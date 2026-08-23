@@ -27,11 +27,13 @@ import org.bukkit.plugin.messaging.PluginMessageListener
 class ChattyProxyListener : PluginMessageListener {
     override fun onPluginMessageReceived(ch: String, player: Player, byteArray: ByteArray) {
         if (ch != chattyProxyChannel && (ch != discordSrvChannel || chatty.isDiscordSRVLoaded)) return
-        val decoded = gson.deserialize(byteArray.decodeToString())
-        val senderName = (decoded.children()[0] as? TextComponent)?.content() ?: return
-        val channelId = (decoded.children()[1] as? TextComponent)?.content() ?: return
-        val message = decoded.children()[2] ?: return
-        val simpleMessage = decoded.children()[3] ?: return
+        val decoded = runCatching { gson.deserialize(byteArray.decodeToString()) }.getOrNull() ?: return
+        val children = decoded.children()
+        if (children.size < 4) return
+        val senderName = (children[0] as? TextComponent)?.content() ?: return
+        val channelId = (children[1] as? TextComponent)?.content() ?: return
+        val message = children[2]
+        val simpleMessage = children[3]
         val channel = chatty.config.channels[channelId]
         val onlinePlayers = Bukkit.getOnlinePlayers().filter { it.server == Bukkit.getServer() }
 
