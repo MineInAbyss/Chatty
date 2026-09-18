@@ -12,6 +12,8 @@ import com.mineinabyss.geary.papermc.tracking.entities.toGearyOrNull
 import com.mineinabyss.idofront.font.Space
 import com.mineinabyss.idofront.textcomponents.miniMsg
 import com.mineinabyss.idofront.textcomponents.serialize
+import io.papermc.paper.registry.RegistryAccess
+import io.papermc.paper.registry.RegistryKey
 import me.clip.placeholderapi.PlaceholderAPI
 import net.kyori.adventure.audience.Audience
 import net.kyori.adventure.chat.SignedMessage
@@ -28,15 +30,15 @@ import net.kyori.adventure.text.minimessage.MiniMessage
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer
 import org.bukkit.Bukkit
-import org.bukkit.Sound
 import org.bukkit.entity.Player
 import java.util.regex.Pattern
-import org.bukkit.Registry
 
 val alternativePingSounds: List<String> =
     chatty.config.ping.let { ping ->
         when {
-            "*" in ping.alternativePingSounds || "all" in ping.alternativePingSounds -> Registry.SOUNDS.map { it.key().asMinimalString() }
+            "*" in ping.alternativePingSounds || "all" in ping.alternativePingSounds ->
+                RegistryAccess.registryAccess().getRegistry(RegistryKey.SOUND_EVENT)
+                    .keyStream().map { it.asMinimalString() }.toList()
             else -> ping.alternativePingSounds
         }
     }
@@ -239,8 +241,9 @@ fun handleUrlReplacements(message: Component, player: Player?): Component {
     if (!chatty.config.chat.formatURLs) return message
     var component = message
     component.clickEvent()?.takeIf { it.action() == ClickEvent.Action.OPEN_URL }?.let { clickEvent ->
-        val (regex, replacement) = chatty.config.chat.urlReplacements.firstOrNull { it.regex in clickEvent.value() }?.let { it.regex to it.replacement } ?: return@let
-        val hoverComponent = Component.text(clickEvent.value()).style(Style.style(TextDecoration.UNDERLINED))
+        val url = (clickEvent.payload() as? ClickEvent.Payload.Text)?.value() ?: return@let
+        val (regex, replacement) = chatty.config.chat.urlReplacements.firstOrNull { it.regex in url }?.let { it.regex to it.replacement } ?: return@let
+        val hoverComponent = Component.text(url).style(Style.style(TextDecoration.UNDERLINED))
         component = component.replaceText(TextReplacementConfig.builder().match(regex.pattern).replacement(replacement.hoverEventShowText(hoverComponent)).build())
     }
 

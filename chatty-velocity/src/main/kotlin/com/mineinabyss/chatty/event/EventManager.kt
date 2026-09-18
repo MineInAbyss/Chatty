@@ -2,7 +2,6 @@ package com.mineinabyss.chatty.event
 
 import com.velocitypowered.api.event.EventManager
 import com.velocitypowered.api.event.EventTask
-import com.velocitypowered.api.event.PostOrder
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.coroutines.startCoroutine
@@ -12,11 +11,13 @@ import com.velocitypowered.api.event.Continuation as EventContinuation
  * Registers an event listener for the event [E] for the given [plugin]. The listener will use a
  * suspended coroutine, allowing you to use a coroutine context to process the event in a
  * non-blocking way.
+ *
+ * The higher [priority] is, the earlier the handler runs
  */
 inline fun <reified E : Any> EventManager.on(
-  plugin: Any, order: PostOrder = PostOrder.NORMAL, crossinline handler: suspend (E) -> Unit
+  plugin: Any, priority: Short = 0, crossinline handler: suspend (E) -> Unit
 ) =
-  register(plugin, E::class.java, order) { event ->
+  register(plugin, E::class.java, priority) { event ->
     suspendingEventTask {
       handler(event)
     }

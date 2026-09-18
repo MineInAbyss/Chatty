@@ -21,6 +21,8 @@ import com.mineinabyss.idofront.textcomponents.miniMsg
 import com.mojang.brigadier.arguments.StringArgumentType
 import io.papermc.paper.command.brigadier.argument.ArgumentTypes
 import io.papermc.paper.event.player.AsyncChatDecorateEvent
+import io.papermc.paper.registry.RegistryAccess
+import io.papermc.paper.registry.RegistryKey
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.future.await
@@ -54,7 +56,9 @@ object ChattyCommands {
                         executes.asPlayer().args(
                             "sound" to StringArgumentType.word().suggests {
                                 chatty.config.ping.alternativePingSounds.takeUnless { "all" in it }
-                                    ?: Registry.SOUNDS.map { it.key().asMinimalString() }
+                                    ?: RegistryAccess.registryAccess().getRegistry(RegistryKey.SOUND_EVENT).let {
+                                        it.map { s -> it.getKey(s)?.asMinimalString() }
+                                    }
                             }
                         ) { sound ->
                             val gearyPlayer = player.toGeary()

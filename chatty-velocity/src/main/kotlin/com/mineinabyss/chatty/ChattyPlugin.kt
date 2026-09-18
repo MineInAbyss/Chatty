@@ -6,7 +6,6 @@ import com.charleskorn.kaml.encodeToStream
 import com.google.inject.Inject
 import com.mineinabyss.chatty.event.registerCoroutineContinuationAdapter
 import com.velocitypowered.api.event.EventManager
-import com.velocitypowered.api.event.PostOrder
 import com.velocitypowered.api.event.Subscribe
 import com.velocitypowered.api.event.connection.DisconnectEvent
 import com.velocitypowered.api.event.connection.PluginMessageEvent
@@ -47,7 +46,7 @@ class ChattyPlugin @Inject constructor(
     }
 
     @OptIn(ExperimentalSerializationApi::class)
-    @Subscribe(order = PostOrder.FIRST)
+    @Subscribe(priority = Short.MAX_VALUE)
     fun onInit(e: ProxyInitializeEvent) {
         logger.info("The Kotlin Language Adapter is initialized!")
         server.channelRegistrar.register(chattyChannel)
@@ -80,7 +79,7 @@ class ChattyPlugin @Inject constructor(
 
 class ChattyJoinListener @Inject constructor(private val proxyServer: ProxyServer) {
 
-    @Subscribe(order = PostOrder.NORMAL)
+    @Subscribe
     fun ServerConnectedEvent.onPlayerJoin() {
         val prev = previousServer.getOrNull()
         when {
@@ -115,7 +114,7 @@ class ChattyJoinListener @Inject constructor(private val proxyServer: ProxyServe
 
 class ChattyProxyListener @Inject constructor(private val server: ProxyServer) {
 
-    @Subscribe(order = PostOrder.NORMAL)
+    @Subscribe
     fun PluginMessageEvent.onPluginMessage() {
         if (identifier != chattyChannel && identifier != discordChannel) return
         // Never forward to clients, and ignore payloads not sent by a backend server

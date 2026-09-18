@@ -55,8 +55,8 @@ class PlayerListener : Listener {
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     fun PlayerEditBookEvent.onBookSign() {
         if (isSigning) newBookMeta = newBookMeta.apply {
-            if (hasAuthor()) author(author().parseTags(player))
-            if (hasTitle()) title(title().parseTags(player))
+            if (hasAuthor()) author(author()!!.parseTags(player))
+            if (hasTitle()) title(title()!!.parseTags(player))
             if (hasPages()) pages(pages().map { it.parseTags(player) })
         }
     }

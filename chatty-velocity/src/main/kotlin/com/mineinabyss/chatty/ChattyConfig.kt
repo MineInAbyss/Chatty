@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalSerializationApi::class)
+
 package com.mineinabyss.chatty
 
 import com.charleskorn.kaml.Yaml
