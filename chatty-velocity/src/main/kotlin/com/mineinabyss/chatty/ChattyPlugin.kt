@@ -9,7 +9,7 @@ import com.velocitypowered.api.event.EventManager
 import com.velocitypowered.api.event.Subscribe
 import com.velocitypowered.api.event.connection.DisconnectEvent
 import com.velocitypowered.api.event.connection.PluginMessageEvent
-import com.velocitypowered.api.event.player.ServerConnectedEvent
+import com.velocitypowered.api.event.player.ServerPostConnectEvent
 import com.velocitypowered.api.event.proxy.ProxyInitializeEvent
 import com.velocitypowered.api.event.proxy.ProxyReloadEvent
 import com.velocitypowered.api.event.proxy.ProxyShutdownEvent
@@ -56,13 +56,14 @@ class ChattyPlugin @Inject constructor(
         alreadyJoined = AlreadyJoined.readConfig(dataDirectory)
         chattyConfig = ChattyConfig.readConfig(dataDirectory)
 
-        eventManager.register(this, ChattyJoinListener(server))
+        eventManager.register(this, ChattyJoinListener(server, dataDirectory))
     }
 
     @OptIn(ExperimentalSerializationApi::class)
     @Subscribe
     fun onShutdown(e: ProxyShutdownEvent) {
-        AlreadyJoined.saveToFile(dataDirectory)
+        // already_joined.json is written on each new player, saving the in-memory set here would
+        // undo any edit made to the file while the proxy was running
         ChattyConfig.saveToFile(dataDirectory)
     }
 
@@ -77,24 +78,28 @@ class ChattyPlugin @Inject constructor(
     }
 }
 
-class ChattyJoinListener @Inject constructor(private val proxyServer: ProxyServer) {
+class ChattyJoinListener @Inject constructor(private val proxyServer: ProxyServer, private val dataDirectory: Path) {
 
+    // ServerPostConnectEvent rather than ServerConnectedEvent, the joining player is only part of
+    // the target server's audience once the connection completed
     @Subscribe
-    fun ServerConnectedEvent.onPlayerJoin() {
-        val prev = previousServer.getOrNull()
+    fun ServerPostConnectEvent.onPlayerJoin() {
+        val server = player.currentServer.getOrNull()?.server ?: return
+        val prev = previousServer
         when {
             chattyConfig.join.firstJoinMessage.isNotEmpty() && player.uniqueId.toString() !in alreadyJoined -> {
-                server.sendMessage(chattyConfig.join.firstMessage(player, server))
-                alreadyJoined.add(player.uniqueId.toString())
+                val message = chattyConfig.join.firstMessage(player, server)
+                proxyServer.allServers.forEach { it.sendMessage(message) }
+                AlreadyJoined.markJoined(player.uniqueId, dataDirectory)
             }
             prev != null -> {
-                if (chattyConfig.switch.toMessage.isNotEmpty()) server.sendMessage(chattyConfig.switch.toServerMessage(player, prev, server))
-                if (chattyConfig.switch.fromMessage.isNotEmpty()) prev.sendMessage(chattyConfig.switch.fromServerMessage(player, prev, server))
+                if (chattyConfig.switch.fromMessage.isNotEmpty()) server.sendMessage(chattyConfig.switch.fromServerMessage(player, prev, server))
+                if (chattyConfig.switch.toMessage.isNotEmpty()) prev.sendMessage(chattyConfig.switch.toServerMessage(player, prev, server))
             }
             else -> {
                 if (chattyConfig.join.message.isNotEmpty()) server.sendMessage(chattyConfig.join.message(player, server))
                 if (chattyConfig.join.otherServerMessage.isNotEmpty()) proxyServer.allServers.forEach {
-                    if (it != server) it.sendMessage(chattyConfig.join.otherServerMessage(player, it))
+                    if (it.serverInfo.name != server.serverInfo.name) it.sendMessage(chattyConfig.join.otherServerMessage(player, server))
                 }
             }
         }

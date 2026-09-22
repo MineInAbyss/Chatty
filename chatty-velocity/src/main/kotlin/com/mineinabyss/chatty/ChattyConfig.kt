@@ -16,6 +16,7 @@ import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.minimessage.MiniMessage
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder
 import java.nio.file.Path
+import java.util.UUID
 
 @Serializable
 data class AlreadyJoined(val alreadyJoined: MutableSet<String>) {
@@ -32,7 +33,13 @@ data class AlreadyJoined(val alreadyJoined: MutableSet<String>) {
             }.onFailure { it.printStackTrace() }.getOrDefault(mutableSetOf())
         }
 
-        fun saveToFile(dataDirectory: Path) {
+        // Written out on every new player rather than only on shutdown, an unclean proxy stop would
+        // otherwise make every player first-join again
+        fun markJoined(uuid: UUID, dataDirectory: Path) = synchronized(alreadyJoined) {
+            if (alreadyJoined.add(uuid.toString())) saveToFile(dataDirectory)
+        }
+
+        fun saveToFile(dataDirectory: Path) = synchronized(alreadyJoined) {
             val file = dataDirectory.resolve("already_joined.json").toFile().apply { parentFile.mkdirs() }
             file.createNewFile()
             file.outputStream().use {
