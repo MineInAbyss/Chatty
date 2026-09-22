@@ -10,6 +10,7 @@ import com.mineinabyss.geary.papermc.tracking.entities.toGearyOrNull
 import com.mineinabyss.idofront.font.Space
 import com.mineinabyss.idofront.textcomponents.miniMsg
 import com.mineinabyss.idofront.textcomponents.serialize
+import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver
 import org.bukkit.entity.Player
@@ -45,15 +46,20 @@ fun chattyPlaceholders(player: Player?, string: String? = null): Map<String, Str
         "player_ping_toggle" to (channelData?.disablePingSound?.not() ?: "false").toString(),
 
         "nickname" to (player?.chattyNickname ?: player?.displayName()?.serialize() ?: player?.name.toString()),
+        PLAYER_HEAD to (player?.name?.let { "<head:$it>" } ?: ""),
         "shift_$shift" to Space.of(shift)
     )
 }
 
+private const val PLAYER_HEAD = "player_head"
+
 val Player?.chattyPlaceholderTags: TagResolver
     get() {
         val tagResolver = TagResolver.builder()
-        chattyPlaceholders(this).map { p ->
-            Placeholder.component("chatty_${p.key}", p.value.miniMsg())
+        chattyPlaceholders(this).map { (key, value) ->
+            // Building from the player embeds their skin properties and hat preference, unlike the name-only head tag which the client has to resolve
+            if (key == PLAYER_HEAD && this != null) Placeholder.component("chatty_$key", Component.`object`(this))
+            else Placeholder.component("chatty_$key", value.miniMsg())
         }.forEach { tagResolver.resolver(it) }
 
         return tagResolver.build()

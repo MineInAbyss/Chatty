@@ -63,8 +63,6 @@ class ChattyPlugin : JavaPlugin(), ChattyContext, DI {
         }
         ChattyContext.instance = this
 
-        saveDefaultAssets()
-
         // Register the proxy listener
         registerProxyChannels()
         registerDiscordChannels()
@@ -83,12 +81,6 @@ class ChattyPlugin : JavaPlugin(), ChattyContext, DI {
     override fun onDisable() {
         if (chatty.isDiscordSRVLoaded)
             DiscordSRV.api.unsubscribe(DiscordListener())
-    }
-
-    private fun saveDefaultAssets() {
-        saveResource("assets/minecraft/font/chatty_heads.json", true)
-        saveResource("assets/space/textures/ui/utils/null.png", true)
-        saveResource("assets/space/textures/ui/utils/whiteblank_4.png", true)
     }
 
     private fun registerProxyChannels() {

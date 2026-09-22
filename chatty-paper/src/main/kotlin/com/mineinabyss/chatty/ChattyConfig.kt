@@ -12,7 +12,6 @@ import kotlin.time.Duration.Companion.minutes
 
 @Serializable
 data class ChattyConfig(
-    val playerHeadFont: String = "minecraft:chatty_heads",
     val nicknames: Nickname = Nickname(),
     val chat: Chat = Chat(),
     val ping: Ping = Ping(),

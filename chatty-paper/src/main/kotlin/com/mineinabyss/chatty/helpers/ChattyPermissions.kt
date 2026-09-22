@@ -25,6 +25,7 @@ object ChattyPermissions {
         Permission("chatty.tags.hover") to StandardTags.hoverEvent(),
         Permission("chatty.tags.reset") to StandardTags.reset(),
         Permission("chatty.tags.shift") to ChattyTags.SHIFT_RESOLVER,
+        Permission("chatty.tags.head") to StandardTags.sequentialHead(),
     )
     const val HELD_ITEM_RESOLVER = "chatty.tags.held_item"
 }
