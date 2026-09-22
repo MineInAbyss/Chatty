@@ -85,7 +85,7 @@ class ChatListener : Listener {
         when {
             playerViewers.isEmpty() -> player.sendFormattedMessage(chatty.messages.channels.emptyChannelMessage)
             chatty.config.chat.disableChatSigning -> {
-                if (handleChatFilters(baseMessage, player, null, false) == null) playerViewers.clear()
+                if (handleChatFilters(message(), player, null, false) == null) playerViewers.clear()
                 if (pingedPlayer != null && pingedPlayer in playerViewers) pingedPlayer.playPingSound()
                 playerViewers.forEach { receiver ->
                     var finalMessage = message()
@@ -101,10 +101,12 @@ class ChatListener : Listener {
             }
 
             else -> {
-                if (handleChatFilters(baseMessage, player, null, false) == null) viewers().clear()
+                if (handleChatFilters(message(), player, null, false) == null) viewers().clear()
                 else if (pingedPlayer != null && pingedPlayer in playerViewers) pingedPlayer.playPingSound()
                 renderer { source, _, message, audience ->
                     var finalMessage = message
+                    // A renderer cannot drop an audience, returning empty would deliver a blank chat line.
+                    // Unreachable as the filters already cleared every viewer above if they block this message
                     finalMessage = handleChatFilters(finalMessage, player, audience as? Player, false)
                         ?: return@renderer Component.empty()
                     finalMessage = formatPlayerPingMessage(source, pingedPlayer, audience, finalMessage)
