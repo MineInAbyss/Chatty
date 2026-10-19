@@ -8,6 +8,7 @@ import com.mineinabyss.chatty.listeners.ChatListener
 import com.mineinabyss.chatty.listeners.ChattyProxyListener
 import com.mineinabyss.chatty.listeners.DiscordListener
 import com.mineinabyss.chatty.listeners.PlayerListener
+import com.mineinabyss.chatty.listeners.ProxyPrivateMessages
 import com.mineinabyss.chatty.placeholders.PlaceholderAPIHook
 import com.mineinabyss.chatty.queries.SpyingPlayersQuery
 import com.mineinabyss.dependencies.DI
@@ -87,6 +88,8 @@ class ChattyPlugin : JavaPlugin(), ChattyContext, DI {
         runCatching {
             server.messenger.registerIncomingPluginChannel(this, chattyProxyChannel, ChattyProxyListener())
             server.messenger.registerOutgoingPluginChannel(this, chattyProxyChannel)
+            server.messenger.registerIncomingPluginChannel(this, privateMessageChannel, ProxyPrivateMessages)
+            server.messenger.registerOutgoingPluginChannel(this, privateMessageChannel)
         }.onFailure {
             logger.warning("Could not register proxy channel. Is another plugin using it?")
         }

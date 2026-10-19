@@ -7,6 +7,7 @@ import com.mineinabyss.chatty.ChattyChannel
 import com.mineinabyss.chatty.chatty
 import com.mineinabyss.chatty.components.*
 import com.mineinabyss.chatty.helpers.*
+import com.mineinabyss.chatty.listeners.ProxyPrivateMessages
 import com.mineinabyss.geary.papermc.tracking.entities.toGeary
 import com.mineinabyss.geary.papermc.tracking.entities.toGearyOrNull
 import com.mineinabyss.geary.serialization.getOrSetPersisting
@@ -30,6 +31,7 @@ import kotlinx.coroutines.withContext
 import net.kyori.adventure.chat.ChatType
 import net.kyori.adventure.chat.SignedMessage
 import net.kyori.adventure.text.Component
+import org.bukkit.Bukkit
 import org.bukkit.Registry
 import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
@@ -232,10 +234,18 @@ object ChattyCommands {
 
     private fun IdoRootCommand.handleMessage() {
         executes.asPlayer().args(
-            "sendTo" to ArgumentTypes.player().resolve().map { it.single() },
+            "sendTo" to StringArgumentType.word().suggests {
+                suggestFiltering((Bukkit.getOnlinePlayers().map { it.name } + ProxyPrivateMessages.networkPlayers).distinct())
+            },
             "message" to StringArgumentType.greedyString(),
         ) { sendTo, message ->
-            player.handleSendingPrivateMessage(sendTo, null, message, false)
+            val target = Bukkit.getPlayerExact(sendTo)
+            when {
+                target != null -> player.handleSendingPrivateMessage(target, null, message, false)
+                chatty.config.privateMessages.enabled && chatty.config.privateMessages.proxy ->
+                    ProxyPrivateMessages.send(player, sendTo, message)
+                else -> player.sendFormattedMessage(chatty.messages.privateMessages.invalidPlayer)
+            }
         }
     }
 
@@ -244,9 +254,14 @@ object ChattyCommands {
         executes.asPlayer().args(
             "message" to StringArgumentType.greedyString()
         ) { message ->
-            player.toGeary().get<ChannelData>()?.lastMessager?.toPlayer()
-                ?.also { player.handleSendingPrivateMessage(it, null, message, true) }
-                ?: player.sendFormattedMessage(chatty.messages.privateMessages.emptyReply)
+            val lastMessager = player.toGeary().get<ChannelData>()?.lastMessager
+            val target = lastMessager?.toPlayer()
+            when {
+                target != null -> player.handleSendingPrivateMessage(target, null, message, true)
+                lastMessager != null && chatty.config.privateMessages.enabled && chatty.config.privateMessages.proxy ->
+                    ProxyPrivateMessages.send(player, lastMessager.toString(), message)
+                else -> player.sendFormattedMessage(chatty.messages.privateMessages.emptyReply)
+            }
         }
     }
 
@@ -336,13 +351,27 @@ object ChattyCommands {
                 )
             )
         } else if (message != null) {
-            this.sendMessage(
-                Component.textOfChildren(
-                    translatePlaceholders(receiver, messageFormat).miniMsg(receiver.buildTagResolver(true)),
-                    message.miniMsg(receiver.buildTagResolver(true))
-                )
-            )
+            this.sendMessage(privateMessageComponent(messageFormat, message, receiver))
         }
+    }
+
+    fun privateMessageComponent(messageFormat: String, message: String, formatPlayer: Player): Component =
+        Component.textOfChildren(
+            translatePlaceholders(formatPlayer, messageFormat).miniMsg(formatPlayer.buildTagResolver(true)),
+            message.miniMsg(formatPlayer.buildTagResolver(true))
+        )
+
+    fun Player.receivedPrivateMessage(from: UUID) {
+        replyMap[uniqueId] = handleReplyTimer(this)
+        val geary = toGeary()
+        geary.get<ChannelData>()?.let { geary.setPersisting(it.copy(lastMessager = from)) }
+        if (chatty.config.privateMessages.messageReceivedSound.isNotEmpty())
+            playSound(location, chatty.config.privateMessages.messageReceivedSound, 1f, 1f)
+    }
+
+    fun Player.playPrivateMessageSendSound() {
+        if (chatty.config.privateMessages.messageSendSound.isNotEmpty())
+            playSound(location, chatty.config.privateMessages.messageSendSound, 1f, 1f)
     }
 
     private val replyMap = mutableMapOf<UUID, Job>()
@@ -375,8 +404,6 @@ object ChattyCommands {
             else -> {
                 if ((message.isNullOrEmpty() && signedMessage == null) || this == other) return
 
-                replyMap[other.uniqueId] = handleReplyTimer(other)
-
                 this.sendFormattedPrivateMessage(
                     chatty.config.privateMessages.messageSendFormat,
                     signedMessage,
@@ -389,15 +416,8 @@ object ChattyCommands {
                     message,
                     this
                 )
-                val gearyOther = other.toGeary()
-                val otherChannelData = gearyOther.get<ChannelData>()
-                if (otherChannelData != null) {
-                    gearyOther.setPersisting(otherChannelData.copy(lastMessager = uniqueId))
-                }
-                if (chatty.config.privateMessages.messageSendSound.isNotEmpty())
-                    this.playSound(this.location, chatty.config.privateMessages.messageSendSound, 1f, 1f)
-                if (chatty.config.privateMessages.messageReceivedSound.isNotEmpty())
-                    other.playSound(other.location, chatty.config.privateMessages.messageReceivedSound, 1f, 1f)
+                other.receivedPrivateMessage(uniqueId)
+                playPrivateMessageSendSound()
             }
         }
     }

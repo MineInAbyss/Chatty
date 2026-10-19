@@ -7,6 +7,7 @@ import org.bukkit.plugin.Plugin
 
 const val chattyProxyChannel = "chatty:proxy"
 const val discordSrvChannel = "chatty:discordsrv"
+const val privateMessageChannel = "chatty:privatemessage"
 
 interface ChattyContext : Plugin {
     val config: ChattyConfig

@@ -29,6 +29,7 @@ import kotlin.jvm.optionals.getOrNull
 
 val chattyChannel: MinecraftChannelIdentifier = MinecraftChannelIdentifier.create("chatty", "proxy")
 val discordChannel: MinecraftChannelIdentifier = MinecraftChannelIdentifier.create("chatty", "discordsrv")
+val privateMessageChannel: MinecraftChannelIdentifier = MinecraftChannelIdentifier.create("chatty", "privatemessage")
 
 lateinit var alreadyJoined: MutableSet<String>
 lateinit var chattyConfig: ChattyConfig
@@ -51,7 +52,9 @@ class ChattyPlugin @Inject constructor(
         logger.info("The Kotlin Language Adapter is initialized!")
         server.channelRegistrar.register(chattyChannel)
         server.channelRegistrar.register(discordChannel)
+        server.channelRegistrar.register(privateMessageChannel)
         eventManager.register(this, ChattyProxyListener(server))
+        eventManager.register(this, PrivateMessageProxyListener(server))
 
         alreadyJoined = AlreadyJoined.readConfig(dataDirectory)
         chattyConfig = ChattyConfig.readConfig(dataDirectory)
